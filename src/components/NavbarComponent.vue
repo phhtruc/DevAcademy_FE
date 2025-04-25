@@ -245,9 +245,9 @@
                     </div>
                   </a>
                   <div class="d-inline-block w-100 text-center p-3">
-                    <a class="iq-bg-danger iq-sign-btn" href="sign-in.html" role="button"
-                      >Sign out<i class="ri-login-box-line ml-2"></i
-                    ></a>
+                    <button class="iq-bg-danger iq-sign-btn btn btn-danger" @click="handleLogout">
+                      Đăng xuất <i class="ri-login-box-line ml-2"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -259,4 +259,19 @@
   </div>
 </template>
 
+<script setup>
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+function handleLogout() {
+  // Xoá token khỏi localStorage
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('roles')
+  localStorage.removeItem('refreshToken')
+
+  // Chuyển hướng về trang đăng nhập
+  router.push('/login')
+}
+</script>
 
