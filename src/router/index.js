@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import ManagerCourse from '../views/teacher/course/ManagerCourse.vue'
 import Login from '@/views/Authentication/Login.vue'
 import Register from '@/views/Authentication/Register.vue'
 import AdminDashboard from '@/views/admin/AdminDashboard.vue'
 import UserPage from '@/views/user/UserPage.vue'
-import Course from '@/views/teacher/course/Course.vue'
+import CourseForm from '@/views/teacher/course/CourseForm.vue'
+import Course from '../views/teacher/course/Course.vue'
+import Chapter from '@/views/teacher/chapter/Chapter.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -28,16 +29,30 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['ADMIN'] }
     },
     {
-      path: '/teacher',
-      name: 'teacher',
-      component: ManagerCourse,
+      path: '/teacher/courses',
+      name: 'teacher-courses',
+      component: Course,
       meta: { requiresAuth: true, roles: ['TEACHER'] }
     },
     {
-      path: '/teacher/add-course',
-      name: 'course',
-      component: Course,
+      path: '/teacher/courses/add',
+      name: 'course-add',
+      component: CourseForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] }
+    },
+    {
+      path: '/teacher/courses/:id/edit',
+      name: 'course-edit',
+      component: CourseForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/courses/:id/chapters',
+      name: 'têcher-course-chapters',
+      component: Chapter,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
     },
     {
       path: '/user',

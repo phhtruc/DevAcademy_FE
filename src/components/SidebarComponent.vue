@@ -17,7 +17,7 @@
         <ul id="iq-sidebar-toggle" class="iq-menu">
           <li class="active">
             <router-link
-              :to="'/teacher'"
+              :to="'/teacher/courses'"
               class="iq-waves-effect collapsed"
               data-toggle="collapse"
               aria-expanded="false"
