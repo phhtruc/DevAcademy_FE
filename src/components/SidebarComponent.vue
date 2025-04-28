@@ -15,20 +15,14 @@
     <div id="sidebar-scrollbar">
       <nav class="iq-sidebar-menu">
         <ul id="iq-sidebar-toggle" class="iq-menu">
-          <li class="iq-menu-title"><i class="ri-separator"></i><span>Main</span></li>
           <li class="active">
-            <a
-              href="#dashboard"
+            <router-link
+              :to="'/teacher/courses'"
               class="iq-waves-effect collapsed"
               data-toggle="collapse"
               aria-expanded="false"
-              ><i class="ri-home-4-line"></i><span>Dashboard</span
-              ><i class="ri-arrow-right-s-line iq-arrow-right"></i
-            ></a>
-            <ul id="dashboard" class="iq-submenu collapse" data-parent="#iq-sidebar-toggle">
-              <li class="active"><a href="index.html">Dashboard 1</a></li>
-              <li><a href="dashboard1.html">Dashboard 2</a></li>
-            </ul>
+              ><i class="ri-home-4-line"></i><span>Quản Lý Khoá Học</span></router-link
+            >
           </li>
           <li>
             <a
