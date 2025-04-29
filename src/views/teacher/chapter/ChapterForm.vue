@@ -53,7 +53,7 @@
                 <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
                 <span v-else>{{ isUpdate ? 'Cập nhật' : 'Lưu' }}</span>
               </button>
-              <button type="button" class="btn iq-bg-danger ml-2" @click="cancel">Hủy</button>
+              <button type="button" class="btn iq-bg-danger ml-2" @click="goBack">Hủy</button>
             </div>
           </form>
         </div>
@@ -76,6 +76,10 @@ const isUpdate = ref(false)
 
 const props = defineProps({
   idCourse: {
+    type: String,
+    required: false,
+  },
+  idChapter: {
     type: String,
     required: false,
   },
@@ -113,9 +117,10 @@ const addChapter = async () => {
 
   try {
     if (isUpdate.value) {
-      await axios.put(`${rootAPI}/chapters/${props.id}`, {
+      await axios.put(`${rootAPI}/chapters/${props.idChapter}`, {
         name: chapter.value.name,
         isPublic: chapter.value.isPublic === 'true' || chapter.value.isPublic === true,
+        courseId: props.idCourse,
       })
 
       toast.success('Cập nhật thành công', {
@@ -134,6 +139,9 @@ const addChapter = async () => {
         autoClose: 1000,
       })
     }
+    setTimeout(() => {
+      router.push(`/teacher/courses/${props.idCourse}/chapters`)
+    }, 1100)
   } catch (error) {
     toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
       position: 'top-right',
@@ -171,9 +179,9 @@ const goBack = () => {
 }
 
 onMounted(async () => {
-  if (props.id) {
+  if (props.idChapter) {
     isUpdate.value = true
-    await fetchChapter(props.id)
+    await fetchChapter(props.idChapter)
   }
 })
 </script>

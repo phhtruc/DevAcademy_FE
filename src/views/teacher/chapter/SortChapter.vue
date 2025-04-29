@@ -1,32 +1,45 @@
 <template>
-  <div class="d-flex mt-3 justify-content-between align-items-center chapter-header">
-    <router-link
-      :to="{ path: '/chapters', query: { idCourse: idCourse } }"
-      class="text-decoration-none"
-    >
-      <div class="d-flex align-items-center gap-2">
-        <i class="fa-solid fa-arrow-left text-dark"></i>
-        <p class="mb-0 text-dark">Danh sách chương</p>
+  <div id="content-page" class="content-page">
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-12">
+          <router-link
+            :to="`/teacher/courses/${props.idCourse}/chapters`"
+            class="text-decoration-none btn btn-light mb-3"
+          >
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-arrow-left text-dark"></i>
+              <p class="mb-0 text-dark">Danh sách chương</p>
+            </div>
+          </router-link>
+          <div class="iq-card">
+            <div class="iq-card-header d-flex justify-content-between">
+              <div class="iq-header-title">
+                <h4 class="card-title">Sắp xếp danh sách chương</h4>
+              </div>
+              <div>
+                <button class="d-flex btn-save btn btn-warning align-self-end" @click="saveOrder">
+                  Lưu thay đổi
+                </button>
+              </div>
+            </div>
+            <div class="iq-card-body">
+              <div class="table-responsive">
+                <Table
+                  :header="header"
+                  :data="data.chapter"
+                  :keys="keys"
+                  :actions="actions"
+                  :isDraggable="true"
+                  @updateOrder="handleDragUpdate"
+                >
+                </Table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-    </router-link>
-  </div>
-  <hr class="border border-grey border-1 opacity-50" />
-  <div class="d-flex justify-content-center flex-column align-items-center">
-    <div class="d-flex justify-content-between w-100 px-4 align-items-center">
-      <h4 class="title-sort m-0">Sắp xếp danh sách chương</h4>
-      <button class="d-flex btn-save btn btn-warning align-self-end" @click="saveOrder">
-        Lưu thay đổi
-      </button>
     </div>
-    <Table
-      :header="header"
-      :data="data.chapter"
-      :keys="keys"
-      :actions="actions"
-      :isDraggable="true"
-      @updateOrder="handleDragUpdate"
-    >
-    </Table>
   </div>
 </template>
 <script setup>
@@ -49,11 +62,17 @@ const data = reactive({
   updatedOrder: [],
 })
 
+const actions = reactive({
+  view: () => '#',
+  edit: () => '#',
+  delete: () => '#',
+})
+
 const currentPage = ref(1)
 const perPage = ref(50)
 
-const header = ['STT', 'Tên chương', 'Trạng thái', 'Hành động']
-const keys = ['name', 'isPublic']
+const header = ['STT', 'Tên chương', 'Trạng thái']
+const keys = ['name']
 
 function handleDragUpdate(updatedData) {
   data.updatedOrder = updatedData.map((item, index) => ({
@@ -75,9 +94,12 @@ async function saveOrder() {
     await axios.patch(`${rootAPI}/chapters/update-order`, data.updatedOrder)
     toast.success('Cập nhật thứ tự thành công', {
       position: 'top-right',
-      autoClose: 3000,
+      autoClose: 1000,
     })
-    data.updatedOrder = [] // Clear the local updated order after saving
+    data.updatedOrder = []
+    setTimeout(() => {
+      router.push(`/teacher/courses/${props.idCourse}/chapters`)
+    }, 1100)
   } catch (error) {
     toast.error('Lỗi cập nhật thứ tự chương', {
       position: 'top-right',

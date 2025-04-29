@@ -143,7 +143,7 @@ const keys = ['name', 'isPublic']
 
 const actions = {
   view: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/lesssons`,
-  edit: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}`,
+  edit: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/edit`,
   delete: (item) => `/courses/${item.id}`,
 }
 

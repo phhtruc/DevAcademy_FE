@@ -42,7 +42,9 @@
             {{ element[key] || 'N/A' }}
           </td>
           <td v-if="viewPublic">
-            {{ element.isPublic ? 'Công khai' : 'Riêng tư' }}
+            <span :class="element.isPublic ? 'iq-bg-primary' : 'iq-bg-warning'">
+              {{ element.isPublic ? 'Học thử' : 'Khoá' }}
+            </span>
           </td>
         </tr>
       </template>
@@ -151,7 +153,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import '@fortawesome/fontawesome-free/css/all.css'
-import draggable from 'vuedraggable'
+import draggable from 'vuedraggable/src/vuedraggable'
 
 const props = defineProps({
   header: {
