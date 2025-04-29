@@ -6,6 +6,8 @@ import UserPage from '@/views/user/UserPage.vue'
 import CourseForm from '@/views/teacher/course/CourseForm.vue'
 import Course from '../views/teacher/course/Course.vue'
 import Chapter from '@/views/teacher/chapter/Chapter.vue'
+import ChapterForm from '@/views/teacher/chapter/ChapterForm.vue'
+import SortChapter from '@/views/teacher/chapter/SortChapter.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -41,16 +43,37 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] }
     },
     {
-      path: '/teacher/courses/:id/edit',
+      path: '/teacher/courses/:idCourse/edit',
       name: 'course-edit',
       component: CourseForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
     {
-      path: '/teacher/courses/:id/chapters',
-      name: 'têcher-course-chapters',
+      path: '/teacher/courses/:idCourse/chapters',
+      name: 'teacher-course-chapters',
       component: Chapter,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/courses/:idCourse/chapters/add',
+      name: 'teacher-course-chapters-add',
+      component: ChapterForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/courses/:idCourse/chapters/:idChapter/edit',
+      name: 'teacher-course-chapters-edit',
+      component: ChapterForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/courses/:idCourse/chapters/sort',
+      name: 'teacher-course-chapters-sort',
+      component: SortChapter,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },

@@ -9,7 +9,7 @@
             'd-none':
               (widthScreen < 1000 && header === 'Giá tiền') ||
               (widthScreen < 1000 && header === 'Trạng thái'),
-            'text-center': header === 'STT',
+            'action-column': header === 'STT',
             'table-price': header === 'Giá tiền',
             'action-column': header === 'Hành động',
           }"
@@ -70,10 +70,23 @@
               </router-link>
             </template>
             <template v-else-if="key === 'price'">
-              {{ formatPrice(item[key]) + ' VND'|| 'N/A' }}
+              {{ formatPrice(item[key]) + ' VND' || 'N/A' }}
             </template>
             <template v-else-if="key === 'isPublic'">
-              {{ item[key] ? 'Công khai' : 'Ẩn' }}
+              <span
+                :class="[
+                  'badge',
+                  type === 'course'
+                    ? item[key]
+                      ? 'iq-bg-primary'
+                      : 'iq-bg-warning'
+                    : item[key]
+                    ? 'iq-bg-primary'
+                    : 'iq-bg-warning',
+                ]"
+              >
+                {{ getStatusLabel(type, item[key]) }}
+              </span>
             </template>
             <template v-else-if="key !== 'avatar' && key !== 'roles'">
               {{ item[key] || 'N/A' }}
@@ -181,6 +194,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  type: {
+    type: String,
+    default: 'course',
+  },
 })
 
 var widthScreen = ref(9999)
@@ -218,6 +235,14 @@ const formatPrice = (value) => {
   return value
 }
 
+const getStatusLabel = (type, value) => {
+  if (type === 'course') {
+    return value ? 'Công khai' : 'Ẩn'
+  } else if (type === 'chapter') {
+    return value ? 'Học thử' : 'Khoá'
+  }
+  return 'N/A'
+}
 </script>
 
 <style scoped>

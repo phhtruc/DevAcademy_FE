@@ -18,7 +18,7 @@ const header = ['STT', 'Tên khóa học', 'Giá tiền', 'Trạng thái', 'Hàn
 const keys = ['name', 'price', 'isPublic']
 
 const actions = {
-  view: (item) => `/courses/${item.id}/chapters`,
+  view: (item) => `/teacher/courses/${item.id}/chapters`,
   edit: (item) => `/teacher/courses/${item.id}/edit`,
   delete: (item) => `/courses/${item.id}`,
 }
