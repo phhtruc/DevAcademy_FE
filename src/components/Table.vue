@@ -9,7 +9,7 @@
             'd-none':
               (widthScreen < 1000 && header === 'Giá tiền') ||
               (widthScreen < 1000 && header === 'Trạng thái'),
-            'text-center': header === 'STT',
+            'action-column': header === 'STT',
             'table-price': header === 'Giá tiền',
             'action-column': header === 'Hành động',
           }"
@@ -42,7 +42,9 @@
             {{ element[key] || 'N/A' }}
           </td>
           <td v-if="viewPublic">
-            {{ element.isPublic ? 'Công khai' : 'Riêng tư' }}
+            <span :class="element.isPublic ? 'iq-bg-primary' : 'iq-bg-warning'">
+              {{ element.isPublic ? 'Học thử' : 'Khoá' }}
+            </span>
           </td>
         </tr>
       </template>
@@ -70,10 +72,23 @@
               </router-link>
             </template>
             <template v-else-if="key === 'price'">
-              {{ formatPrice(item[key]) + ' VND'|| 'N/A' }}
+              {{ formatPrice(item[key]) + ' VND' || 'N/A' }}
             </template>
             <template v-else-if="key === 'isPublic'">
-              {{ item[key] ? 'Công khai' : 'Ẩn' }}
+              <span
+                :class="[
+                  'badge',
+                  type === 'course'
+                    ? item[key]
+                      ? 'iq-bg-primary'
+                      : 'iq-bg-warning'
+                    : item[key]
+                    ? 'iq-bg-primary'
+                    : 'iq-bg-warning',
+                ]"
+              >
+                {{ getStatusLabel(type, item[key]) }}
+              </span>
             </template>
             <template v-else-if="key !== 'avatar' && key !== 'roles'">
               {{ item[key] || 'N/A' }}
@@ -138,7 +153,7 @@
 <script setup>
 import { ref, watch } from 'vue'
 import '@fortawesome/fontawesome-free/css/all.css'
-import draggable from 'vuedraggable'
+import draggable from 'vuedraggable/src/vuedraggable'
 
 const props = defineProps({
   header: {
@@ -181,6 +196,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  type: {
+    type: String,
+    default: 'course',
+  },
 })
 
 var widthScreen = ref(9999)
@@ -218,6 +237,14 @@ const formatPrice = (value) => {
   return value
 }
 
+const getStatusLabel = (type, value) => {
+  if (type === 'course') {
+    return value ? 'Công khai' : 'Ẩn'
+  } else if (type === 'chapter') {
+    return value ? 'Học thử' : 'Khoá'
+  }
+  return 'N/A'
+}
 </script>
 
 <style scoped>
