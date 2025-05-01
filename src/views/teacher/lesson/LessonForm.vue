@@ -11,11 +11,11 @@
         <div class="iq-card-body">
           <form @submit.prevent="addLesson">
             <div class="form-group">
-              <label for="title">Tên bài học</label>
+              <label for="title">Tiêu đề</label>
               <input
                 id="title"
                 v-model="lesson.name"
-                placeholder="Nhập tên bài học"
+                placeholder="Nhập tiêu đề"
                 class="form-control"
                 :class="{ 'is-invalid': errors.name }"
               />
@@ -23,7 +23,7 @@
             </div>
 
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="form-group">
                   <label for="lessonType">Loại bài học</label>
                   <select
@@ -36,84 +36,71 @@
                     <option value="LECTURES">Bài giảng</option>
                     <option value="READINGS">Bài đọc</option>
                     <option value="EXERCISES">Bài tập</option>
-                    <option value="QUIZ">Trắc nghiệm</option>
                   </select>
                   <div class="invalid-feedback" v-if="errors.type">{{ errors.type }}</div>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-8">
                 <div class="form-group">
-                  <label for="order">Thứ tự bài học</label>
+                  <label for="videoUrl">URL Video (nếu có)</label>
                   <input
-                    type="number"
-                    min="1"
-                    id="order"
-                    v-model="lesson.lessonOrder"
-                    placeholder="Nhập thứ tự bài học"
+                    id="videoUrl"
+                    v-model="lesson.videoUrl"
+                    placeholder="Nhập URL video"
                     class="form-control"
-                    :class="{ 'is-invalid': errors.lessonOrder }"
+                    :class="{ 'is-invalid': errors.videoUrl }"
+                    disabled="lesson.type !== 'LECTURES'"
                   />
-                  <div class="invalid-feedback" v-if="errors.lessonOrder">
-                    {{ errors.lessonOrder }}
-                  </div>
+                  <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
                 </div>
               </div>
             </div>
-
-            <div class="form-group">
-              <label for="videoUrl">URL Video (nếu có)</label>
-              <input
-                id="videoUrl"
-                v-model="lesson.videoUrl"
-                placeholder="Nhập URL video"
-                class="form-control"
-                :class="{ 'is-invalid': errors.videoUrl }"
-              />
-              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
+            <div class="col-md-12 mt-3">
+              <iframe
+                class=""
+                :class="{ 'd-none': lesson.videoUrl.trim().length < 1 }"
+                width="100%"
+                height="300"
+                title="YouTube video player"
+                frameborder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
             </div>
-
             <div class="form-group">
-              <label for="content">Nội dung bài học</label>
-              <textarea
-                id="content"
-                v-model="lesson.content"
-                placeholder="Nhập nội dung bài học"
-                class="form-control"
-                rows="5"
-                :class="{ 'is-invalid': errors.content }"
-              ></textarea>
-              <div class="invalid-feedback" v-if="errors.content">{{ errors.content }}</div>
-            </div>
-
-            <div class="form-group">
-              <label for="contentRefer">Tài liệu tham khảo</label>
-              <textarea
-                id="contentRefer"
-                v-model="lesson.contentRefer"
-                placeholder="Nhập tài liệu tham khảo"
-                class="form-control"
-                rows="3"
-                :class="{ 'is-invalid': errors.contentRefer }"
-              ></textarea>
-              <div class="invalid-feedback" v-if="errors.contentRefer">
-                {{ errors.contentRefer }}
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label class="d-block">Tài liệu đính kèm (nếu có)</label>
+              <label class="d-block">Hoặc tải lên video tại đây</label>
               <file-pond
                 name="attachments"
                 label-idle="Kéo thả hoặc chọn tệp đính kèm"
                 allow-multiple="true"
-                accepted-file-types="application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/zip"
+                accepted-file-types="
+                  application/pdf,
+                  application/msword,
+                  application/vnd.openxmlformats-officedocument.wordprocessingml.document,
+                  application/zip,
+                  video/mp4,
+                  video/x-msvideo,
+                  video/x-matroska,
+                  video/quicktime"
                 :files="filePondFiles"
                 @updatefiles="handleUpload"
               />
-              <small class="form-text text-muted">Hỗ trợ các định dạng: PDF, DOC, DOCX, ZIP</small>
-              <div class="text-danger" v-if="errors.files">{{ errors.files }}</div>
+              <!-- <small class="form-text text-muted">Hỗ trợ các định dạng: PDF, DOC, DOCX, ZIP</small> -->
+              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
             </div>
-
+            <div class="form-group">
+              <label for="content">Nội dung bài học</label>
+              <CKEditorComponent v-model="lesson.content" />
+              <div class="invalid-feedback" v-if="errors.content">{{ errors.content }}</div>
+            </div>
+            <div class="form-group">
+              <label for="contentRefer">Tài liệu tham khảo</label>
+              <CKEditorComponent v-model="lesson.contentRefer" />
+              <div class="invalid-feedback" v-if="errors.contentRefer">
+                {{ errors.contentRefer }}
+              </div>
+            </div>
             <div class="text-right">
               <button class="btn btn-primary" :disabled="isLoading">
                 <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
@@ -129,7 +116,7 @@
 </template>
       
   <script setup>
-import { onMounted, ref, reactive } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from 'axios'
 import vueFilePond from 'vue-filepond'
@@ -137,22 +124,20 @@ import 'filepond/dist/filepond.min.css'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
+import CKEditorComponent from '@/components/CKEditorComponent.vue'
+import useWebSocket from '@/composables/useWebSocket'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
 const route = useRoute()
 const idCourse = route.params.idCourse
 const idChapter = route.params.idChapter
+const idLesson = route.params.idLesson
 const isLoading = ref(false)
 const isUpdate = ref(false)
 const filePondFiles = ref([])
-
-const props = defineProps({
-  id: {
-    type: String,
-    required: false,
-  },
-})
+let toastId = null
+const linkYoutubeEmbed = 'https://www.youtube.com/embed/'
 
 const lesson = ref({
   name: '',
@@ -174,6 +159,11 @@ const errors = ref({
   files: '',
 })
 
+// function renderVideo(UrlYoutube) {
+//   let idVideoYoutube = UrlYoutube.substring(UrlYoutube.indexOf('=') + 1, UrlYoutube.length)
+//   return linkYoutubeEmbed + idVideoYoutube
+// }
+
 // Xử lý upload file bằng FilePond
 const FilePond = vueFilePond(FilePondPluginFileValidateType)
 
@@ -184,65 +174,95 @@ const handleUpload = (fileItems) => {
 const validateForm = () => {
   let isValid = true
 
-  // Reset errors
   Object.keys(errors.value).forEach((key) => {
     errors.value[key] = ''
   })
 
-  // Validate name
   if (!lesson.value.name.trim()) {
     errors.value.name = 'Tên bài học không được để trống'
     isValid = false
   }
 
-  // Validate type
   if (!lesson.value.type) {
     errors.value.type = 'Loại bài học không được để trống'
     isValid = false
   }
 
-  // Validate lesson order
-  if (!lesson.value.lessonOrder) {
-    errors.value.lessonOrder = 'Thứ tự bài học không được để trống'
-    isValid = false
-  } else if (!/^\d+$/.test(lesson.value.lessonOrder)) {
-    errors.value.lessonOrder = 'Thứ tự bài học phải là số'
-    isValid = false
-  }
-
-  // Validate content
   if (!lesson.value.content.trim()) {
     errors.value.content = 'Nội dung bài học không được để trống'
     isValid = false
   }
 
-  // Validate videoUrl for LECTURES type
-  if (lesson.value.type === 'LECTURES' && !lesson.value.videoUrl.trim()) {
-    errors.value.videoUrl = 'URL video không được để trống cho loại bài giảng'
+  if (
+    (lesson.value.type === 'LECTURES' && !lesson.value.videoUrl.trim()) ||
+    !lesson.value.files.length
+  ) {
+    errors.value.videoUrl = 'Vui lòng thêm url video hoặc tải lên video'
     isValid = false
   }
 
   return isValid
 }
+// WebSocket integration
+const { isConnected, subscribe } = useWebSocket()
 
-const addLesson = async () => {
-  if (!validateForm()) {
-    return
+const updateLessonStatus = (status) => {
+  if (!toastId) {
+    toastId = toast('🎞 Video đang chờ xử lý...', {
+      type: 'default',
+      autoClose: false,
+      position: 'top-right',
+      closeOnClick: true,
+      isLoading: true,
+      style: {
+        color: '#92400e',
+        borderRadius: '12px',
+      },
+    })
   }
 
+  if (status === 'PROCESSING') {
+    toast.update(toastId, {
+      render: '🔄 Video đang được xử lý...',
+      type: 'info',
+      isLoading: true,
+      autoClose: false,
+      style: {
+        color: '#0369a1',
+      },
+    })
+  } else if (status === 'DONE') {
+    toast.update(toastId, {
+      render: '✅ Đã hoàn tất!',
+      type: 'success',
+      isLoading: false,
+      autoClose: 3000,
+      style: {
+        color: '#047857',
+      },
+    })
+    toastId = null
+  }
+}
+
+const addLesson = async () => {
+  // if (!validateForm()) {
+  //   return
+  // }
+
   isLoading.value = true
+  let response = null
 
   try {
     const formData = new FormData()
 
     formData.append('name', lesson.value.name)
     formData.append('type', lesson.value.type)
-    formData.append('lessonOrder', lesson.value.lessonOrder)
     formData.append('content', lesson.value.content)
     formData.append('videoUrl', lesson.value.videoUrl || '')
     formData.append('contentRefer', lesson.value.contentRefer || '')
+    formData.append('chapterId', idChapter)
 
-    // Append files if any
     if (lesson.value.files.length > 0) {
       lesson.value.files.forEach((file) => {
         formData.append('files', file)
@@ -250,7 +270,7 @@ const addLesson = async () => {
     }
 
     if (isUpdate.value) {
-      await axios.put(`${rootAPI}/lessons/${props.id}`, formData, {
+      response = await axios.put(`${rootAPI}/lessons/${props.id}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -260,20 +280,19 @@ const addLesson = async () => {
         autoClose: 1000,
       })
     } else {
-      await axios.post(`${rootAPI}/chapters/${idChapter}/lessons`, formData, {
+      response = await axios.post(`${rootAPI}/lessons`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
-      toast.success('Thêm bài học thành công', {
+      Object.keys(lesson.value).forEach((key) => {
+        lesson.value[key] = ''
+      })
+      toast.success('Quá trình thêm đang được hoàn tất', {
         position: 'top-right',
         autoClose: 1000,
       })
     }
-
-    setTimeout(() => {
-      router.push(`/teacher/courses/${idCourse}/chapters/${idChapter}/lessons`)
-    }, 1100)
   } catch (error) {
     toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
       position: 'top-right',
@@ -322,10 +341,14 @@ const goBack = () => {
 }
 
 onMounted(async () => {
-  if (props.id) {
+  if (idLesson) {
     isUpdate.value = true
     await fetchLesson(props.id)
   }
+  subscribe('/topic/progress', (message) => {
+    updateLessonStatus(message.status)
+    console.log('Received message:', message)
+  })
 })
 </script>
   
