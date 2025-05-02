@@ -49,13 +49,13 @@
                     placeholder="Nhập URL video"
                     class="form-control"
                     :class="{ 'is-invalid': errors.videoUrl }"
-                    disabled="lesson.type !== 'LECTURES'"
+                    :disabled="lesson.type == 'EXERCISES'"
                   />
                   <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
                 </div>
               </div>
             </div>
-            <div class="col-md-12 mt-3">
+            <!-- <div class="col-md-12 mt-3">
               <iframe
                 class=""
                 :class="{ 'd-none': lesson.videoUrl.trim().length < 1 }"
@@ -67,7 +67,7 @@
                 referrerpolicy="strict-origin-when-cross-origin"
                 allowfullscreen
               ></iframe>
-            </div>
+            </div> -->
             <div class="form-group">
               <label class="d-block">Hoặc tải lên video tại đây</label>
               <file-pond
@@ -86,8 +86,19 @@
                 :files="filePondFiles"
                 @updatefiles="handleUpload"
               />
-              <!-- <small class="form-text text-muted">Hỗ trợ các định dạng: PDF, DOC, DOCX, ZIP</small> -->
               <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
+            </div>
+            <div class="form-group">
+              <video
+                v-if="isUpdate"
+                :src="decodeURIComponent(lesson.videoUrl)"
+                controls
+                width="70%"
+                height="300px"
+                class="video-player"
+              >
+                Trình duyệt của bạn không hỗ trợ thẻ video.
+              </video>
             </div>
             <div class="form-group">
               <label for="content">Nội dung bài học</label>
@@ -164,6 +175,19 @@ const errors = ref({
 //   return linkYoutubeEmbed + idVideoYoutube
 // }
 
+const getLessonTypeName = (type) => {
+  switch (type) {
+    case 'LECTURES':
+      return 'Bài giảng';
+    case 'READINGS':
+      return 'Bài đọc';
+    case 'EXERCISES':
+      return 'Bài tập';
+    default:
+      return '';
+  }
+};
+
 // Xử lý upload file bằng FilePond
 const FilePond = vueFilePond(FilePondPluginFileValidateType)
 
@@ -194,7 +218,7 @@ const validateForm = () => {
   }
 
   if (
-    (lesson.value.type === 'LECTURES' && !lesson.value.videoUrl.trim()) ||
+    (lesson.value.type === 'LECTURES' && !lesson.value.videoUrl.trim()) &&
     !lesson.value.files.length
   ) {
     errors.value.videoUrl = 'Vui lòng thêm url video hoặc tải lên video'
@@ -208,12 +232,13 @@ const { isConnected, subscribe } = useWebSocket()
 
 const updateLessonStatus = (status) => {
   if (!toastId) {
-    toastId = toast('🎞 Video đang chờ xử lý...', {
+    toastId = toast(`⏳ Video ${getLessonTypeName(lesson.value.type)} đang chờ xử lý...`, {
       type: 'default',
       autoClose: false,
       position: 'top-right',
       closeOnClick: true,
       isLoading: true,
+      pauseOnFocusLoss: false,
       style: {
         color: '#92400e',
         borderRadius: '12px',
@@ -223,10 +248,11 @@ const updateLessonStatus = (status) => {
 
   if (status === 'PROCESSING') {
     toast.update(toastId, {
-      render: '🔄 Video đang được xử lý...',
+      render: `🔄 Video ${getLessonTypeName(lesson.value.type)} đang được xử lý...`,
       type: 'info',
       isLoading: true,
       autoClose: false,
+      pauseOnFocusLoss: false,
       style: {
         color: '#0369a1',
       },
@@ -237,6 +263,7 @@ const updateLessonStatus = (status) => {
       type: 'success',
       isLoading: false,
       autoClose: 3000,
+      pauseOnFocusLoss: false,
       style: {
         color: '#047857',
       },
@@ -246,9 +273,9 @@ const updateLessonStatus = (status) => {
 }
 
 const addLesson = async () => {
-  // if (!validateForm()) {
-  //   return
-  // }
+  if (!validateForm()) {
+    return
+  }
 
   isLoading.value = true
   let response = null
@@ -270,11 +297,12 @@ const addLesson = async () => {
     }
 
     if (isUpdate.value) {
-      response = await axios.put(`${rootAPI}/lessons/${props.id}`, formData, {
+      response = await axios.put(`${rootAPI}/lessons/${idLesson}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
+
       toast.success('Cập nhật bài học thành công', {
         position: 'top-right',
         autoClose: 1000,
@@ -288,9 +316,10 @@ const addLesson = async () => {
       Object.keys(lesson.value).forEach((key) => {
         lesson.value[key] = ''
       })
+      filePondFiles.value = []
       toast.success('Quá trình thêm đang được hoàn tất', {
         position: 'top-right',
-        autoClose: 1000,
+        autoClose: 2000,
       })
     }
   } catch (error) {
@@ -313,16 +342,9 @@ const fetchLesson = async (id) => {
     lesson.value.type = lessonData.type
     lesson.value.lessonOrder = lessonData.lessonOrder
     lesson.value.content = lessonData.content
-    lesson.value.videoUrl = lessonData.videoUrl || ''
     lesson.value.contentRefer = lessonData.contentRefer || ''
-
-    // Handle attached files if any
-    if (lessonData.attachments && lessonData.attachments.length > 0) {
-      filePondFiles.value = lessonData.attachments.map((attachment) => ({
-        source: attachment.url,
-        options: { type: 'remote' },
-      }))
-    }
+    lesson.value.videoUrl = lessonData.videoUrl || ''
+    
   } catch (error) {
     console.error('Error fetching lesson:', error)
     toast.error('Không thể tải thông tin bài học', {
@@ -343,7 +365,7 @@ const goBack = () => {
 onMounted(async () => {
   if (idLesson) {
     isUpdate.value = true
-    await fetchLesson(props.id)
+    await fetchLesson(idLesson)
   }
   subscribe('/topic/progress', (message) => {
     updateLessonStatus(message.status)

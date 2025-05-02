@@ -237,7 +237,6 @@ const fetchCourse = async () => {
   try {
     const response = await axios.get(`${rootAPI}/courses/${props.idCourse}`)
     dataCourse.course = response.data.data
-    console.log('Course data loaded:', dataCourse.course)
   } catch (error) {
     console.error('Error fetching course:', error)
   } finally {

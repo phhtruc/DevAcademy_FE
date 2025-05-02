@@ -11,6 +11,8 @@ import SortChapter from '@/views/teacher/chapter/SortChapter.vue'
 import Lesson from '@/views/teacher/lesson/Lesson.vue'
 import LessonForm from '@/views/teacher/lesson/LessonForm.vue'
 import SortLesson from '@/views/teacher/lesson/SortLesson.vue'
+import Category from '@/views/teacher/category/Category.vue'
+import CategoryForm from '@/views/teacher/category/CategoryForm.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -105,6 +107,27 @@ const router = createRouter({
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons/sort',
       name: 'teacher-course-chapters-lesson-sort',
       component: SortLesson,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/categorys',
+      name: 'teacher-categorys',
+      component: Category,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/categorys/add',
+      name: 'teacher-categorys-add',
+      component: CategoryForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/categorys/:idCategory/edit',
+      name: 'teacher-categorys-edit',
+      component: CategoryForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },

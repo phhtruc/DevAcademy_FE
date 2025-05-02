@@ -134,14 +134,14 @@ const addChapter = async () => {
         courseId: props.idCourse,
       })
 
+      chapter.value.name = ''
+      chapter.value.isPublic = true
+
       toast.success('Thêm chương thành công', {
         position: 'top-right',
         autoClose: 1000,
       })
     }
-    setTimeout(() => {
-      router.push(`/teacher/courses/${props.idCourse}/chapters`)
-    }, 1100)
   } catch (error) {
     toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
       position: 'top-right',

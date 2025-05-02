@@ -33,7 +33,7 @@ const formatLessonType = (type) => {
 }
 
 const actions = {
-  view: (item) => `/teacher/courses/${idCourse}/chapters/${idChapter}/lessons/${item.id}`,
+  view: (item) => `/teacher/courses/${idCourse}/chapters/${idChapter}/lessons/${item.id}/edit`,
   edit: (item) => `/teacher/courses/${idCourse}/chapters/${idChapter}/lessons/${item.id}/edit`,
   delete: (item) => `/lessons/${item.id}`,
 }

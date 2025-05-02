@@ -3,13 +3,7 @@
     <div class="editor-container editor-container_classic-editor" ref="editorContainerElement">
       <div class="editor-container__editor">
         <div ref="editorElement">
-          <ckeditor
-            v-if="editor && config"
-            :editor="editor"
-            :config="config"
-            :model-value="modelValue"
-            @update:model-value="$emit('update:modelValue', $event)"
-          />
+          <ckeditor v-if="isLayoutReady" v-model="editorData" :editor="editor" :config="config" />
         </div>
       </div>
     </div>
@@ -17,11 +11,6 @@
 </template>
 
 <script setup>
-/**
- * This configuration was generated using the CKEditor 5 Builder. You can modify it anytime using this link:
- * https://ckeditor.com/ckeditor-5/builder/#installation/NoNgNARATAdArDADBSAWAzOxAOKduoCccAjCelCNoiHKQYsYdiKiXIVESChAKYA7FIjDASYESPFSAupDgBDQn1qEIMoA
- */
-
 import { computed, ref, onMounted, watchEffect, watch } from 'vue'
 import { Ckeditor } from '@ckeditor/ckeditor5-vue'
 
@@ -79,16 +68,14 @@ const LICENSE_KEY =
 const CLOUD_SERVICES_TOKEN_URL =
   'https://lu0qsin9o3z4.cke-cs.com/token/dev/47cf623030a5f2ab56c6b380862d079e61ed20450c2e065b2c15ee4de919?limit=10'
 
-const props = defineProps({
-  modelValue: String,
-})
+const props = defineProps(['modelValue'])
+const emits = defineEmits(['update:modelValue'])
 
-const emit = defineEmits(['update:modelValue'])
-
-const editor = ClassicEditor
 const editorContainerElement = ref(null)
 
 const isLayoutReady = ref(false)
+const editor = ClassicEditor;
+const editorData = ref(props.modelValue || "");
 
 const config = computed(() => {
   if (!isLayoutReady.value) {
@@ -322,28 +309,18 @@ function configUpdateAlert(config) {
   }
 }
 
-watch(props.modelValue, (newVal) => {
-  // Optional: update if modelValue changes externally
-  if (editorInstance && editorInstance.getData() !== newVal) {
-    editorInstance.setData(newVal)
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    editorData.value = newValue;
   }
-})
+);
 
-let editorInstance = null
-
-onMounted(() => {
-  ClassicEditor.create(editorContainerElement.value, config.value)
-    .then((editor) => {
-      editorInstance = editor
-      editor.model.document.on('change:data', () => {
-        emit('update:modelValue', editor.getData())
-      })
-    })
-    .catch((err) => {
-      console.error(err)
-    })
-})
+watch(editorData, (newValue) => {
+  emits("update:modelValue", newValue);
+});
 </script>
+
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400;1,700&display=swap');
 
