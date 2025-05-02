@@ -111,22 +111,22 @@ const router = createRouter({
       props: true
     },
     {
-      path: '/teacher/categorys',
-      name: 'teacher-categorys',
+      path: '/teacher/categories',
+      name: 'teacher-categories',
       component: Category,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
     {
-      path: '/teacher/categorys/add',
-      name: 'teacher-categorys-add',
+      path: '/teacher/categories/add',
+      name: 'teacher-categories-add',
       component: CategoryForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
     {
-      path: '/teacher/categorys/:idCategory/edit',
-      name: 'teacher-categorys-edit',
+      path: '/teacher/categories/:idCategory/edit',
+      name: 'teacher-categories-edit',
       component: CategoryForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true

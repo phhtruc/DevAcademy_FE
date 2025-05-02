@@ -26,7 +26,7 @@
           </li>
           <li>
             <router-link
-              :to="'/teacher/categorys'"
+              :to="'/teacher/categories'"
               class="iq-waves-effect collapsed"
               data-toggle="collapse"
               aria-expanded="false"
