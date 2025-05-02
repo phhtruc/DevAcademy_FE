@@ -11,6 +11,7 @@
               (widthScreen < 1000 && header === 'Trạng thái'),
             'action-column': header === 'STT',
             'table-price': header === 'Giá tiền',
+            'action-column': header === 'Loại bài học',
             'action-column': header === 'Hành động',
           }"
         >
@@ -38,8 +39,29 @@
           <th scope="row" class="text-center">
             {{ (currentPage - 1) * props.perPage + index + 1 }}
           </th>
-          <td v-for="(key, keyIndex) in props.keys" :key="keyIndex">
-            {{ element[key] || 'N/A' }}
+          <td
+            v-for="(key, keyIndex) in props.keys"
+            :key="keyIndex"
+            :class="key === 'type' ? 'text-center align-middle' : ''"
+          >
+            <span
+              v-if="key === 'type'"
+              class="badge badge-centered ml-2"
+              :class="[
+                element.type === 'Bài tập'
+                  ? 'iq-bg-success'
+                  : element.type === 'Bài đọc'
+                  ? 'iq-bg-info'
+                  : element.type === 'Bài giảng'
+                  ? 'iq-bg-warning'
+                  : 'iq-bg-secondary',
+              ]"
+            >
+              {{ element.type || 'Không xác định' }}
+            </span>
+            <span v-else>
+              {{ element[key] || 'N/A' }}
+            </span>
           </td>
           <td v-if="viewPublic">
             <span :class="element.isPublic ? 'iq-bg-primary' : 'iq-bg-warning'">
@@ -63,7 +85,7 @@
                 (widthScreen < 1000 && key === 'price') ||
                 (widthScreen < 1000 && key === 'isPublic'),
               'table-price': key === 'price',
-              'text-center': key === 'price' || key === 'isPublic',
+              'text-center': key === 'price' || key === 'isPublic' || key === 'type',
             }"
           >
             <template v-if="key === 'name'">
@@ -88,6 +110,22 @@
                 ]"
               >
                 {{ getStatusLabel(type, item[key]) }}
+              </span>
+            </template>
+            <template v-else-if="key === 'type'">
+              <span
+                :class="[
+                  'badge',
+                  item[key] === 'Bài tập'
+                    ? 'iq-bg-success'
+                    : item[key] === 'Bài đọc'
+                    ? 'iq-bg-info'
+                    : item[key] === 'Bài giảng'
+                    ? 'iq-bg-warning'
+                    : 'iq-bg-secondary',
+                ]"
+              >
+                {{ item[key] }}
               </span>
             </template>
             <template v-else-if="key !== 'avatar' && key !== 'roles'">
@@ -268,6 +306,15 @@ const getStatusLabel = (type, value) => {
   font-weight: bold; /* Chữ in đậm cho tiêu đề */
   text-align: center; /* Căn giữa tiêu đề */
   white-space: nowrap;
+}
+
+.badge-centered {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  text-align: center !important;
+  padding: 5px 8px;
 }
 
 .table tbody tr:nth-child(even) {

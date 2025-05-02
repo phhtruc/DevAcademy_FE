@@ -1,9 +1,9 @@
 <template>
   <div class="iq-sidebar">
     <div class="iq-sidebar-logo d-flex justify-content-between">
-      <a href="index.html">
+      <router-link :to="'/teacher/courses'">
         <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
-      </a>
+      </router-link>
       <div class="iq-menu-bt align-self-center">
         <div class="wrapper-menu">
           <div class="line-menu half start"></div>
@@ -22,6 +22,15 @@
               data-toggle="collapse"
               aria-expanded="false"
               ><i class="ri-home-4-line"></i><span>Quản Lý Khoá Học</span></router-link
+            >
+          </li>
+          <li>
+            <router-link
+              :to="'/teacher/categorys'"
+              class="iq-waves-effect collapsed"
+              data-toggle="collapse"
+              aria-expanded="false"
+              ><i class="ri-list-check"></i><span>Quản Lý Danh Mục</span></router-link
             >
           </li>
           <li>

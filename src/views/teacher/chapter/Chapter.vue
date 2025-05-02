@@ -1,6 +1,13 @@
 <template>
   <div id="content-page" class="content-page">
     <div class="container-fluid">
+      <router-link
+        :to="`/teacher/courses`"
+        class="btn btn-light mb-3 d-inline-flex align-items-center"
+      >
+        <i class="fas fa-arrow-left mr-1"></i>
+        Quay lại danh sách khoá học
+      </router-link>
       <div class="row">
         <div class="col-sm-12">
           <div class="iq-card">
@@ -63,40 +70,62 @@
                   <div>
                     <router-link
                       :to="`/teacher/courses/${props.idCourse}/chapters/add`"
-                      type="button"
-                      class="btn btn-primary mr-3"
-                      >Thêm chương</router-link
+                      class="btn btn-sm iq-bg-success mr-2"
                     >
+                      <i class="ri-add-fill"></i>
+                      <span class="pl-1">Thêm chương</span>
+                    </router-link>
                     <router-link
                       :to="`/teacher/courses/${props.idCourse}/chapters/sort`"
-                      class="btn btn-primary"
-                      >Sắp xếp chương</router-link
+                      class="btn btn-sm iq-bg-primary"
                     >
+                      <i class="ri-list-check"></i>
+                      <span class="pl-1">Sắp xếp</span>
+                    </router-link>
                   </div>
                 </div>
                 <div class="iq-card-body">
+                  <div v-if="isLoading" class="text-center my-5">
+                    <div class="spinner-border text-primary" role="status">
+                      <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Đang tải dữ liệu...</p>
+                  </div>
                   <div class="table-responsive">
-                    <Table
-                      :header="header"
-                      :data="data.chapter"
-                      :keys="keys"
-                      :actions="actions"
-                      :totalRows="totalRows"
-                      type="chapter"
-                      :perPage="perPage"
-                      @delete-item="deleteChapter"
-                      @pageChange="handlePageChange"
-                    ></Table>
-                    <b-modal
-                      v-model="isModalVisible"
-                      title="Xác nhận xóa"
-                      ok-title="Xóa"
-                      cancel-title="Đóng"
-                      ok-variant="danger"
-                      @ok="handleDelete"
-                    >
-                      <p>Bạn có chắc chắn muốn xóa chương không?</p>
-                    </b-modal>
+                    <div v-if="data.chapter.length === 0" class="text-center py-5">
+                      <i class="ri-file-list-3-line text-muted" style="font-size: 3rem"></i>
+                      <p class="mt-2">Chưa có chương nào trong khoá học này</p>
+                      <router-link
+                        :to="`/teacher/courses/${idCourse}/chapters/add`"
+                        class="btn btn-primary mt-2"
+                      >
+                        <i class="ri-add-fill"></i>
+                        <span class="pl-1">Thêm chương mới</span>
+                      </router-link>
+                    </div>
+                    <div v-else>
+                      <Table
+                        :header="header"
+                        :data="data.chapter"
+                        :keys="keys"
+                        :actions="actions"
+                        :totalRows="totalRows"
+                        type="chapter"
+                        :perPage="perPage"
+                        @delete-item="deleteChapter"
+                        @pageChange="handlePageChange"
+                      ></Table>
+                      <b-modal
+                        v-model="isModalVisible"
+                        title="Xác nhận xóa"
+                        ok-title="Xóa"
+                        cancel-title="Đóng"
+                        ok-variant="danger"
+                        @ok="handleDelete"
+                      >
+                        <p>Bạn có chắc chắn muốn xóa chương không?</p>
+                      </b-modal>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -119,6 +148,7 @@ import { useRouter } from 'vue-router'
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const route = useRoute()
 const router = useRouter()
+const isLoading = ref(true)
 
 const props = defineProps({
   idCourse: {
@@ -142,7 +172,7 @@ const header = ['STT', 'Tên chương', 'Trạng thái', 'Hành động']
 const keys = ['name', 'isPublic']
 
 const actions = {
-  view: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/lesssons`,
+  view: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/lessons`,
   edit: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/edit`,
   delete: (item) => `/courses/${item.id}`,
 }
@@ -152,6 +182,7 @@ const perPage = ref(10)
 const totalRows = ref(0)
 
 const fetchChapter = async () => {
+  isLoading.value = true
   try {
     const response = await axios.get(`${rootAPI}/courses/${props.idCourse}/chapters`, {
       params: {
@@ -166,6 +197,8 @@ const fetchChapter = async () => {
       response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
   } catch (error) {
     console.error(error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -174,7 +207,6 @@ const formatPrice = (value) => {
   return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
 
-// Hàm xử lý xóa khóa học
 const deleteChapter = (chapter) => {
   isModalVisible.value = true
   itemToDelete.value = chapter
@@ -201,12 +233,14 @@ const handlePageChange = (page) => {
 }
 
 const fetchCourse = async () => {
+  isLoading.value = true
   try {
     const response = await axios.get(`${rootAPI}/courses/${props.idCourse}`)
     dataCourse.course = response.data.data
-    console.log('Course data loaded:', dataCourse.course)
   } catch (error) {
     console.error('Error fetching course:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 

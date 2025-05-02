@@ -3,9 +3,9 @@
     <div class="iq-navbar-custom">
       <div class="iq-sidebar-logo">
         <div class="top-logo">
-          <a href="index.html" class="logo">
+          <router-link :to="'teacher/courses'" href="" class="logo">
             <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
-          </a>
+          </router-link>
         </div>
       </div>
       <div class="navbar-breadcrumb">
