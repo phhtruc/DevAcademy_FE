@@ -6,7 +6,7 @@ import { toast } from 'vue3-toastify'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const currentPage = ref(1)
-const perPage = ref(10)
+const perPage = ref(8)
 const totalRows = ref(0)
 const isModalVisible = ref(false)
 const itemToDelete = ref()
@@ -20,8 +20,8 @@ const header = ['STT', 'Tên danh mục', 'Hành động']
 const keys = ['name']
 
 const actions = {
-  view: (item) => `/categories/${item.id}/edit`,
-  edit: (item) => `/categories/${item.id}/edit`,
+  view: (item) => `/teacher/categories/${item.id}/edit`,
+  edit: (item) => `/teacher/categories/${item.id}/edit`,
   delete: (item) => `/categories/${item.id}`,
 }
 
