@@ -9,11 +9,15 @@
         </div>
       </div>
       <div class="navbar-breadcrumb">
-        <h5 class="mb-0">Dashboard</h5>
+        <h5 class="mb-0">{{ currentBreadcrumb.title }}</h5>
         <nav aria-label="breadcrumb">
           <ul class="breadcrumb">
-            <li class="breadcrumb-item"><a href="index.html">Home</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Home</li>
+            <li class="breadcrumb-item">
+              <router-link to="/teacher/courses">Trang chủ</router-link>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+              {{ currentBreadcrumb.title }}
+            </li>
           </ul>
         </nav>
       </div>
@@ -260,9 +264,22 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
 
+const route = useRoute()
 const router = useRouter()
+
+const breadcrumbMap = {
+  '/teacher/courses': { title: 'Quản Lý Khoá Học' },
+  '/teacher/categories': { title: 'Quản Lý Danh Mục' },
+  '/teacher/tech-stacks': { title: 'Quản Lý Công Nghệ' },
+}
+
+const currentBreadcrumb = computed(() => {
+  const path = route.path
+  return breadcrumbMap[path] || { title: 'Trang chủ' }
+})
 
 function handleLogout() {
   // Xoá token khỏi localStorage

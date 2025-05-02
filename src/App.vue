@@ -18,4 +18,7 @@ const route = useRoute()
 html {
   scroll-behavior: smooth;
 }
+.vue-devtools__panel, .vue-devtools__anchor-btn {
+  display: none !important;
+}
 </style>

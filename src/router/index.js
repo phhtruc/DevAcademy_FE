@@ -13,10 +13,13 @@ import LessonForm from '@/views/teacher/lesson/LessonForm.vue'
 import SortLesson from '@/views/teacher/lesson/SortLesson.vue'
 import Category from '@/views/teacher/category/Category.vue'
 import CategoryForm from '@/views/teacher/category/CategoryForm.vue'
+import TechStack from '@/views/teacher/techStack/TechStack.vue'
+import TechStackForm from '@/views/teacher/techStack/TechStackForm.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // Authentication routes
     {
       path: '/login',
       name: 'login',
@@ -29,12 +32,15 @@ const router = createRouter({
       component: Register,
       meta: { hideNavbar: true }
     },
+    // Admin routes
     {
       path: '/admin',
       name: 'admin',
       component: AdminDashboard,
       meta: { requiresAuth: true, roles: ['ADMIN'] }
     },
+    // Teacher routes
+    // Teacher courses
     {
       path: '/teacher/courses',
       name: 'teacher-courses',
@@ -54,6 +60,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
+    // Teacher chapters
     {
       path: '/teacher/courses/:idCourse/chapters',
       name: 'teacher-course-chapters',
@@ -82,6 +89,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
+    // Teacher lessons
     {
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons',
       name: 'teacher-course-chapters-lesson',
@@ -110,6 +118,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
+    // Teacher categories
     {
       path: '/teacher/categories',
       name: 'teacher-categories',
@@ -128,6 +137,28 @@ const router = createRouter({
       path: '/teacher/categories/:idCategory/edit',
       name: 'teacher-categories-edit',
       component: CategoryForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    // Teacher tech stacks
+    {
+      path: '/teacher/tech-stacks',
+      name: 'teacher-tech-stacks',
+      component: TechStack,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/tech-stacks/add',
+      name: 'teacher-tech-stacks-add',
+      component: TechStackForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    {
+      path: '/teacher/tech-stacks/:idTechStack/edit',
+      name: 'teacher-tech-stacks-edit',
+      component: TechStackForm,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
