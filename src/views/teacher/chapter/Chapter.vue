@@ -63,11 +63,26 @@
           <div class="row">
             <div class="col-sm-12">
               <div class="iq-card">
-                <div class="iq-card-header d-flex justify-content-between">
+                <div class="iq-card-header d-flex justify-content-between align-items-center">
                   <div class="iq-header-title">
                     <h4 class="card-title">Danh sách chương</h4>
                   </div>
-                  <div>
+                  <div class="d-flex align-items-center">
+                    <div class="mr-3">
+                      <form class="position-relative" @submit.prevent="handleSearch">
+                        <div class="form-group mb-0">
+                          <input
+                            type="search"
+                            class="form-control"
+                            id="exampleInputSearch"
+                            placeholder="Tìm kiếm chương"
+                            aria-controls="chapter-list-table"
+                            v-model="searchName"
+                            @input="handleClear"
+                          />
+                        </div>
+                      </form>
+                    </div>
                     <router-link
                       :to="`/teacher/courses/${props.idCourse}/chapters/add`"
                       class="btn btn-sm iq-bg-success mr-2"
@@ -149,6 +164,7 @@ const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const route = useRoute()
 const router = useRouter()
 const isLoading = ref(true)
+const searchName = ref('')
 
 const props = defineProps({
   idCourse: {
@@ -184,14 +200,27 @@ const totalRows = ref(0)
 const fetchChapter = async () => {
   isLoading.value = true
   try {
-    const response = await axios.get(`${rootAPI}/courses/${props.idCourse}/chapters`, {
-      params: {
-        page: currentPage.value,
-        pageSize: perPage.value,
-      },
-    })
-    data.chapter = response.data.data.items
+    let response = null
 
+    if (searchName.value) {
+      response = await axios.get(`${rootAPI}/chapters/search`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+          name: searchName.value,
+          idCourse: props.idCourse,
+        },
+      })
+    } else {
+      response = await axios.get(`${rootAPI}/courses/${props.idCourse}/chapters`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+        },
+      })
+    }
+
+    data.chapter = response.data.data.items
     perPage.value = response.data.data.pageSize
     totalRows.value =
       response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
@@ -230,6 +259,17 @@ const handleDelete = async () => {
 const handlePageChange = (page) => {
   currentPage.value = page
   fetchChapter()
+}
+
+const handleSearch = () => {
+  currentPage.value = 1
+  fetchChapter()
+}
+
+const handleClear = () => {
+  if (searchName.value === '') {
+    fetchChapter()
+  }
 }
 
 const fetchCourse = async () => {
@@ -274,6 +314,16 @@ img {
 .header-table h5 {
   margin-left: 30px;
   margin-bottom: 0;
+}
+
+.form-control {
+  height: 38px; /* Chiều cao phù hợp với nút */
+  border-radius: 5px; /* Bo góc nhẹ */
+}
+
+/* Khoảng cách giữa ô tìm kiếm và nút thêm mới */
+.mr-3 {
+  margin-right: 1rem !important;
 }
 </style>
   
