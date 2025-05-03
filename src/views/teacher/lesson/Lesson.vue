@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import axios from 'axios'
+import axios  from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router'

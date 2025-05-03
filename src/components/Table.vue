@@ -9,13 +9,26 @@
             'd-none':
               (widthScreen < 1000 && header === 'Giá tiền') ||
               (widthScreen < 1000 && header === 'Trạng thái'),
-            'action-column': header === 'STT',
+            'table-stt': header === 'STT',
             'table-price': header === 'Giá tiền',
-            'action-column': header === 'Loại bài học',
-            'action-column': header === 'Hành động',
+            'table-status': header === 'Loại bài học' || header === 'Trạng thái',
+            'table-action': header === 'Hành động',
           }"
         >
-          {{ header }}
+          <span v-if="header === 'Giá tiền'" @click="emit('sortPrice')">
+            {{ header }}
+            <i
+              class="ml-2 fas"
+              :class="{
+                'fa-sort': !sortOrder,
+                'fa-sort-up': sortOrder === 'asc',
+                'fa-sort-down': sortOrder === 'desc',
+              }"
+            ></i>
+          </span>
+          <span v-else>
+            {{ header }}
+          </span>
         </th>
       </tr>
     </thead>
@@ -63,8 +76,8 @@
               {{ element[key] || 'N/A' }}
             </span>
           </td>
-          <td v-if="viewPublic">
-            <span :class="element.isPublic ? 'iq-bg-primary' : 'iq-bg-warning'">
+          <td v-if="viewPublic" class="text-center align-middle">
+            <span :class="element.isPublic ? 'badge iq-bg-primary' : 'badge iq-bg-warning'">
               {{ element.isPublic ? 'Học thử' : 'Khoá' }}
             </span>
           </td>
@@ -238,6 +251,10 @@ const props = defineProps({
     type: String,
     default: 'course',
   },
+  sortOrder: {
+    type: String,
+    default: '',
+  },
 })
 
 var widthScreen = ref(9999)
@@ -248,7 +265,7 @@ window.addEventListener('resize', function () {
 
 const currentPage = ref(1)
 
-const emit = defineEmits(['updateOrder', 'deleteItem', 'pageChange'])
+const emit = defineEmits(['updateOrder', 'deleteItem', 'pageChange', 'sortPrice'])
 const enabled = true
 const dragging = ref(false)
 
@@ -287,27 +304,128 @@ const getStatusLabel = (type, value) => {
 
 <style scoped>
 .table {
-  width: 100%; /* Đảm bảo bảng chiếm toàn bộ chiều rộng của container */
-  border-collapse: collapse; /* Gộp đường viền của các ô */
+  width: 100%;
+  table-layout: auto; /* Cho phép cột name chiếm không gian dư */
+  border-collapse: collapse;
   margin-bottom: 1rem; /* Thêm khoảng cách bên dưới bảng */
+  background-color: #fff; /* Màu nền bảng */
+  border: 1px solid #dee2e6; /* Đường viền bảng */
 }
 
+/* Tiêu đề bảng */
 .table th,
-.table td {
-  padding: 0.75rem; /* Khoảng cách bên trong ô */
-  vertical-align: middle; /* Căn giữa nội dung theo chiều dọc */
-  border-top: 1px solid #dee2e6; /* Đường viền phía trên các ô */
-  text-align: left; /* Căn trái nội dung văn bản mặc định */
-}
-
 .table thead th {
-  background-color: #f8f9fa; /* Màu nền cho tiêu đề */
-  border-bottom: 2px solid #dee2e6; /* Đường viền đậm hơn ở phía dưới tiêu đề */
-  font-weight: bold; /* Chữ in đậm cho tiêu đề */
-  text-align: center; /* Căn giữa tiêu đề */
+  padding: 8px 12px;
+  vertical-align: middle;
+  text-align: center;
+  background-color: #f8f9fa;
+  font-weight: bold;
+  border-bottom: 2px solid #dee2e6;
   white-space: nowrap;
 }
 
+/* Nội dung bảng */
+.table td {
+  padding: 8px 12px;
+  vertical-align: middle;
+  border: 1px solid #ddd;
+  white-space: nowrap;
+}
+
+/* Cột name (có thể mở rộng) */
+.table-name {
+  width: auto;
+  text-align: left;
+}
+
+/* Cột STT */
+.table-stt {
+  width: 5%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Cột Giá tiền */
+.table-price {
+  width: 10%;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Cột Trạng thái */
+.table-status {
+  width: 10%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Cột Hành động */
+.table-action {
+  width: 10%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* Cột hành động (phiên bản khác - dùng nếu cần linh hoạt hơn chiều rộng) */
+.action-column {
+  white-space: nowrap;
+  width: 1%;
+  text-align: center;
+}
+
+/* Hàng được hover */
+.table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+/* Nút hành động */
+.action-button {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.action-button button {
+  margin: 0 5px;
+}
+
+.btn-action {
+  margin-right: 0.25rem;
+}
+
+.btn-action:last-child {
+  margin-right: 0;
+}
+
+/* Liên kết tên khóa học */
+.course-name-link {
+  text-decoration: none;
+  /* color: #007bff; */
+}
+
+/* Avatar nhỏ */
+.avatar-40 {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+}
+
+/* Lớp ẩn */
+.d-none {
+  display: none;
+}
+
+/* Drag and drop styles */
+.drag-item {
+  cursor: grab;
+}
+
+.ghost {
+  opacity: 0.6;
+  background-color: #ccc;
+  border: 1px dashed #666;
+}
+
+/* Badge căn giữa */
 .badge-centered {
   display: inline-flex;
   align-items: center;
@@ -317,63 +435,19 @@ const getStatusLabel = (type, value) => {
   padding: 5px 8px;
 }
 
-.table tbody tr:nth-child(even) {
-  background-color: #f2f2f2; /* Màu nền khác cho các hàng chẵn để dễ đọc */
-}
+/* Đảm bảo bảng hiển thị tốt trên màn hình nhỏ */
+@media (max-width: 768px) {
+  .table th,
+  .table td {
+    font-size: 0.875rem;
+    padding: 0.5rem;
+  }
 
-.text-center {
-  text-align: center; /* Căn giữa văn bản */
-}
-
-.table-price {
-  text-align: right; /* Căn phải giá tiền */
-}
-
-.action-button {
-  text-align: center; /* Căn giữa các nút hành động */
-  white-space: nowrap; /* Ngăn các nút xuống dòng */
-}
-
-.action-column {
-  white-space: nowrap; /* Đảm bảo nội dung không bị xuống dòng */
-  width: 1%; /* Đặt chiều rộng tự động vừa với nội dung */
-  text-align: center; /* Căn giữa nội dung */
-}
-
-.btn-action {
-  margin-right: 0.25rem; /* Khoảng cách giữa các nút hành động */
-}
-
-.btn-action:last-child {
-  margin-right: 0; /* Loại bỏ khoảng cách ở nút cuối cùng */
-}
-
-.course-name-link {
-  text-decoration: none; /* Loại bỏ gạch chân mặc định của link */
-  /* color: #007bff; Màu xanh dương cho link */
-}
-
-/* .course-name-link:hover {
-  text-decoration: underline; Thêm gạch chân khi hover
-} */
-
-.avatar-40 {
-  width: 40px;
-  height: 40px;
-  object-fit: cover; /* Đảm bảo ảnh không bị méo */
-}
-
-.d-none {
-  display: none; /* Ẩn các cột khi màn hình nhỏ hơn 1000px (CSS này đã có trong component) */
-}
-
-.drag-item {
-  cursor: grab; /* Hiển thị con trỏ "grab" khi có thể kéo */
-}
-
-.ghost {
-  opacity: 0.6;
-  background-color: #ccc;
-  border: 1px dashed #666;
+  .table-stt,
+  .table-price,
+  .table-status,
+  .table-action {
+    width: auto;
+  }
 }
 </style>

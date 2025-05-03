@@ -158,7 +158,7 @@
   <script setup>
 import { onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios from 'axios'
+import axios  from '@/plugins/axios'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
@@ -178,7 +178,7 @@ const isUpdate = ref(false)
 const filePondFiles = ref([])
 
 const props = defineProps({
-  id: {
+  idCourse: {
     type: String,
     required: true,
   },
@@ -302,7 +302,7 @@ const addCourse = async () => {
     })
 
     if (isUpdate.value) {
-      await axios.put(`${rootAPI}/courses/${props.id}`, formData, {
+      await axios.put(`${rootAPI}/courses/${props.idCourse}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -390,9 +390,9 @@ const fetchTechStack = async () => {
 onMounted(async () => {
   await fetchCategory()
   await fetchTechStack()
-  if (props.id) {
+  if (props.idCourse) {
     isUpdate.value = true
-    await fetchCourse(props.id)
+    await fetchCourse(props.idCourse)
   }
 })
 </script>

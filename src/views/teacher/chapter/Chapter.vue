@@ -23,37 +23,37 @@
               <div class="col-lg-7 col-md-12">
                 <div style="color: #000; font-size: 1rem">
                   <p>
-                    <span class="fw-bold">Tên khoá học:</span>
+                    <b class="fw-bold">Tên khoá học: </b>
                     {{ dataCourse.course.name }}
                   </p>
                   <p>
-                    <span class="fw-bold">Mô tả khoá học:</span>
+                    <b class="fw-bold">Mô tả khoá học:</b>
                     {{ dataCourse.course.description }}
                   </p>
                   <p>
-                    <span class="fw-bold">Giá: </span>
-                    {{ formatPrice(dataCourse.course.price) }}
+                    <b class="fw-bold">Giá: </b>
+                    {{ formatPrice(dataCourse.course.price) }} VND
                   </p>
                   <p>
-                    <span class="fw-bold">Trạng thái: </span>
+                    <b class="fw-bold">Trạng thái: </b>
                     {{ dataCourse.course.isPublic ? 'Công khai' : 'Không công khai' }}
                   </p>
                   <p>
-                    <span class="fw-bold">Công nghệ: </span>
+                    <b class="fw-bold">Công nghệ: </b>
                     <span v-if="dataCourse.course?.techStacks?.length > 0">
                       {{ dataCourse.course.techStacks.map((stack) => stack.name).join(', ') }}
                     </span>
                     <span v-else>N/A</span>
                   </p>
                   <p>
-                    <span class="fw-bold">Danh mục: </span>
+                    <b class="fw-bold">Danh mục: </b>
                     <span v-if="dataCourse.course?.category?.name">
                       {{ dataCourse.course.category.name }}
                     </span>
                     <span v-else>N/A</span>
                   </p>
                   <p>
-                    <span class="fw-bold">Thời hạn: </span>
+                    <b class="fw-bold">Thời hạn: </b>
                     {{ dataCourse.course.duration }} tháng
                   </p>
                 </div>
@@ -139,7 +139,7 @@
   
   <script setup>
 import Table from '@/components/Table.vue'
-import axios from 'axios'
+import axios from '@/plugins/axios'
 import { reactive, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { toast } from 'vue3-toastify'

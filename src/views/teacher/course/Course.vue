@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import axios from 'axios'
+import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
@@ -9,6 +9,8 @@ const perPage = ref(7)
 const totalRows = ref(0)
 const isModalVisible = ref(false)
 const itemToDelete = ref()
+const searchName = ref('')
+const sortOrder = ref('')
 
 const data = reactive({
   courses: [],
@@ -25,17 +27,29 @@ const actions = {
 
 const fetchCourses = async () => {
   try {
-    const response = await axios.get(`${rootAPI}/courses`, {
-      params: {
-        page: currentPage.value,
-        pageSize: perPage.value,
-      },
-    })
-    data.courses = response.data.data.items
+    let response = null
 
+    if (searchName.value || sortOrder.value) {
+      response = await axios.get(`${rootAPI}/courses/search`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+          name: searchName.value || undefined,
+          sortPrice: sortOrder.value || undefined,
+        },
+      })
+    } else {
+      response = await axios.get(`${rootAPI}/courses`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+        },
+      })
+    }
+    data.courses = response.data.data.items
     perPage.value = response.data.data.pageSize
-    totalRows.value = response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
-    
+    totalRows.value =
+      response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
   } catch (error) {
     console.error('Error fetching courses', error)
   }
@@ -63,6 +77,26 @@ const handleDelete = async () => {
   }
 }
 
+const handleSearch = () => {
+  currentPage.value = 1
+  fetchCourses()
+}
+
+const handleClear = () => {
+  if (searchName.value === '') {
+    fetchCourses();
+  }
+}
+
+const handleSort = () => {
+  if (sortOrder.value === 'asc') {
+    sortOrder.value = 'desc';
+  } else {
+    sortOrder.value = 'asc';
+  }
+  fetchCourses();
+};
+
 onMounted(async () => {
   await fetchCourses()
 })
@@ -74,13 +108,32 @@ onMounted(async () => {
       <div class="row">
         <div class="col-sm-12">
           <div class="iq-card">
-            <div class="iq-card-header d-flex justify-content-between">
+            <div class="iq-card-header d-flex justify-content-between align-items-center">
               <div class="iq-header-title">
                 <h4 class="card-title">Danh sách khoá học</h4>
               </div>
-              <div>
-                <router-link :to="'/teacher/courses/add'" class="btn btn-sm iq-bg-success">
-                  <i class="ri-add-fill"></i><span class="pl-1">Thêm mới</span>
+              <div class="d-flex align-items-center">
+                <div class="mr-3">
+                  <form class="position-relative" @submit.prevent="handleSearch">
+                    <div class="form-group mb-0">
+                      <input
+                        type="search"
+                        class="form-control"
+                        id="exampleInputSearch"
+                        placeholder="Tìm kiếm khoá học"
+                        aria-controls="user-list-table"
+                        v-model="searchName"
+                        @input="handleClear"
+                      />
+                    </div>
+                  </form>
+                </div>
+                <router-link
+                  :to="'/teacher/courses/add'"
+                  class="btn btn-sm iq-bg-success d-flex align-items-center"
+                >
+                  <i class="ri-add-fill"></i>
+                  <span class="pl-1">Thêm mới</span>
                 </router-link>
               </div>
             </div>
@@ -95,6 +148,7 @@ onMounted(async () => {
                   :perPage="perPage"
                   @deleteItem="deleteCourse"
                   @pageChange="handlePageChange"
+                  @sortPrice="handleSort"
                 ></Table>
                 <b-modal
                   v-model="isModalVisible"
@@ -114,3 +168,23 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.form-control {
+  height: 38px; /* Chiều cao phù hợp với nút */
+  border-radius: 5px; /* Bo góc nhẹ */
+}
+
+/* Căn chỉnh biểu tượng và văn bản trong nút thêm mới */
+.btn-sm.iq-bg-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+}
+
+/* Khoảng cách giữa ô tìm kiếm và nút thêm mới */
+.mr-3 {
+  margin-right: 1rem !important;
+}
+</style>

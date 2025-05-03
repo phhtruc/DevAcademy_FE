@@ -38,7 +38,7 @@
   <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios from 'axios'
+import axios  from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
@@ -56,6 +56,7 @@ const errors = ref({
   name: '',
 })
 
+// Hàm validate form
 const validateForm = () => {
   let isValid = true
   errors.value.name = ''
@@ -68,6 +69,7 @@ const validateForm = () => {
   return isValid
 }
 
+// Hàm lưu danh mục (thêm mới hoặc cập nhật)
 const saveCategory = async () => {
   if (!validateForm()) {
     return
@@ -76,23 +78,22 @@ const saveCategory = async () => {
   isLoading.value = true
   try {
     if (isUpdate.value) {
+      // Cập nhật danh mục
       await axios.patch(`${rootAPI}/categories/${idCategory}`, category.value)
       toast.success('Cập nhật danh mục thành công', {
         position: 'top-right',
-        autoClose: 2000,
+        autoClose: 1000,
       })
     } else {
-
+      // Thêm mới danh mục
       await axios.post(`${rootAPI}/categories`, category.value)
       toast.success('Thêm danh mục thành công', {
         position: 'top-right',
-        autoClose: 2000,
+        autoClose: 1000,
       })
-      category.value.name = ''
+      category.value.name = '' // Reset form sau khi thêm mới
     }
-    setTimeout(() => {
-      router.push('/teacher/categories')
-    }, 2000)
+    router.push('/categories') // Quay lại danh sách danh mục
   } catch (error) {
     toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
       position: 'top-right',
@@ -103,6 +104,7 @@ const saveCategory = async () => {
   }
 }
 
+// Hàm lấy thông tin danh mục (khi cập nhật)
 const fetchCategory = async () => {
   try {
     const response = await axios.get(`${rootAPI}/categories/${idCategory}`)
@@ -115,13 +117,17 @@ const fetchCategory = async () => {
   }
 }
 
+// Hàm hủy và quay lại danh sách
 const cancel = () => {
-  router.push('/teacher/categories')
+  router.push('/categories')
 }
+
+// Hàm quay lại trang trước
 const goBack = () => {
   router.go(-1)
 }
 
+// Khi component được mount
 onMounted(async () => {
   if (idCategory) {
     isUpdate.value = true

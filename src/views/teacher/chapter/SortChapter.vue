@@ -44,7 +44,7 @@
 </template>
 <script setup>
 import Table from '@/components/Table.vue'
-import axios from 'axios'
+import axios  from '@/plugins/axios'
 import { reactive, onMounted, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 
