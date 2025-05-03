@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router'
@@ -15,6 +15,7 @@ const totalRows = ref(0)
 const isModalVisible = ref(false)
 const itemToDelete = ref()
 const isLoading = ref(true)
+const searchName = ref('')
 
 const data = reactive({
   lessons: [],
@@ -39,14 +40,28 @@ const actions = {
 }
 
 const fetchLessons = async () => {
-  //   isLoading.value = true
+  isLoading.value = true
   try {
-    const response = await axios.get(`${rootAPI}/chapters/${idChapter}/lessons`, {
-      params: {
-        page: currentPage.value,
-        pageSize: perPage.value,
-      },
-    })
+    let response = null
+
+    if (searchName.value) {
+      response = await axios.get(`${rootAPI}/lessons/search`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+          name: searchName.value,
+          idChapter: idChapter,
+        },
+      })
+    } else {
+      response = await axios.get(`${rootAPI}/chapters/${idChapter}/lessons`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+        },
+      })
+    }
+
     data.lessons = response.data.data.items.map((lesson) => ({
       ...lesson,
       type: formatLessonType(lesson.type),
@@ -89,6 +104,17 @@ const handleDelete = async () => {
   }
 }
 
+const handleSearch = () => {
+  currentPage.value = 1
+  fetchLessons()
+}
+
+const handleClear = () => {
+  if (searchName.value === '') {
+    fetchLessons()
+  }
+}
+
 onMounted(async () => {
   await fetchLessons()
 })
@@ -104,13 +130,27 @@ onMounted(async () => {
         <i class="fas fa-arrow-left mr-1"></i>
         Quay lại danh sách chương
       </router-link>
-
       <div class="iq-card">
-        <div class="iq-card-header d-flex justify-content-between">
+        <div class="iq-card-header d-flex justify-content-between align-items-center">
           <div class="iq-header-title">
-            <h4 class="card-title">Danh sách bài học</h4>
+            <h4 class="card-title">Danh sách khoá học</h4>
           </div>
-          <div>
+          <div class="d-flex align-items-center">
+            <div class="mr-3">
+              <form class="position-relative" @submit.prevent="handleSearch">
+                <div class="form-group mb-0">
+                  <input
+                    type="search"
+                    class="form-control"
+                    id="exampleInputSearch"
+                    placeholder="Tìm kiếm khoá học"
+                    aria-controls="user-list-table"
+                    v-model="searchName"
+                    @input="handleClear"
+                  />
+                </div>
+              </form>
+            </div>
             <router-link
               :to="`/teacher/courses/${idCourse}/chapters/${idChapter}/lessons/add`"
               class="btn btn-sm iq-bg-success mr-2"
@@ -127,7 +167,6 @@ onMounted(async () => {
             </router-link>
           </div>
         </div>
-
         <div class="iq-card-body">
           <div v-if="isLoading" class="text-center my-5">
             <div class="spinner-border text-primary" role="status">
@@ -135,7 +174,6 @@ onMounted(async () => {
             </div>
             <p class="mt-2">Đang tải dữ liệu...</p>
           </div>
-
           <div v-else class="table-responsive">
             <div v-if="data.lessons.length === 0" class="text-center py-5">
               <i class="ri-file-list-3-line text-muted" style="font-size: 3rem"></i>
@@ -187,5 +225,23 @@ onMounted(async () => {
 .ri-list-check,
 .fas {
   font-size: 0.9rem;
+}
+
+.form-control {
+  height: 38px; /* Chiều cao phù hợp với nút */
+  border-radius: 5px; /* Bo góc nhẹ */
+}
+
+/* Căn chỉnh biểu tượng và văn bản trong nút thêm mới */
+.btn-sm.iq-bg-success {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+}
+
+/* Khoảng cách giữa ô tìm kiếm và nút thêm mới */
+.mr-3 {
+  margin-right: 1rem !important;
 }
 </style>
