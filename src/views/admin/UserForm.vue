@@ -12,47 +12,60 @@
         </div>
         <div class="iq-card-body">
           <form @submit.prevent="addUser">
-            <div class="form-group">
-              <label for="fullName">Họ và tên</label>
-              <input
-                id="fullName"
-                v-model="user.fullName"
-                placeholder="Nhập họ và tên"
-                class="form-control"
-                :class="{ 'is-invalid': errors.fullName }"
-              />
-              <div class="invalid-feedback" v-if="errors.fullName">{{ errors.fullName }}</div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="fullName">Họ và tên</label>
+                <input
+                  id="fullName"
+                  v-model="user.fullName"
+                  placeholder="Nhập họ và tên"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.fullName }"
+                />
+                <div class="invalid-feedback" v-if="errors.fullName">{{ errors.fullName }}</div>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  v-model="user.email"
+                  placeholder="Nhập email"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.email }"
+                />
+                <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
+              </div>
             </div>
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input
-                id="email"
-                type="email"
-                v-model="user.email"
-                placeholder="Nhập email"
-                class="form-control"
-                :class="{ 'is-invalid': errors.email }"
-              />
-              <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
+            <div class="form-row">
+              <div class="form-group col-md-6">
+                <label for="password">Mật khẩu</label>
+                <input
+                  id="password"
+                  type="password"
+                  v-model="user.password"
+                  placeholder="Nhập mật khẩu"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.password }"
+                />
+                <div class="invalid-feedback" v-if="errors.password">{{ errors.password }}</div>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="role">Vai trò</label>
+                <select
+                  id="role"
+                  v-model="user.role"
+                  class="form-control"
+                  :class="{ 'is-invalid': errors.roles }"
+                >
+                  <option value="">Chọn vai trò</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Teacher">Teacher</option>
+                  <option value="Student">Student</option>
+                </select>
+                <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
+              </div>
             </div>
-
-            <!-- Vai trò -->
-            <div class="form-group">
-              <label for="role">Vai trò</label>
-              <select
-                id="role"
-                v-model="user.role"
-                class="form-control"
-                :class="{ 'is-invalid': errors.role }"
-              >
-                <option value="">Chọn vai trò</option>
-                <option v-for="(role, index) in roles" :key="index" :value="role">
-                  {{ role }}
-                </option>
-              </select>
-              <div class="invalid-feedback" v-if="errors.role">{{ errors.role }}</div>
-            </div>
-
             <div class="text-right">
               <button class="btn btn-primary" :disabled="isLoading">
                 <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
@@ -89,18 +102,17 @@ const props = defineProps({
 const user = ref({
   fullName: '',
   email: '',
-  role: '',
+  password: '',
+  roles: '',
 })
 
 const errors = ref({
   fullName: '',
   email: '',
-  role: '',
+  password: '',
+  roles: '',
 })
 
-const roles = ['Admin', 'Teacher', 'Student'] // Danh sách vai trò
-
-// Hàm validate form
 const validateForm = () => {
   let isValid = true
 
@@ -121,15 +133,22 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!user.value.role) {
-    errors.value.role = 'Vai trò không được để trống'
+  if (!user.value.password.trim()) {
+    errors.value.password = 'Mật khẩu không được để trống'
+    isValid = false
+  } else if (user.value.password.length < 6) {
+    errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+    isValid = false
+  }
+
+  if (!user.value.roles) {
+    errors.value.roles = 'Vai trò không được để trống'
     isValid = false
   }
 
   return isValid
 }
 
-// Hàm thêm hoặc cập nhật người dùng
 const addUser = async () => {
   if (!validateForm()) {
     return
@@ -138,16 +157,19 @@ const addUser = async () => {
   isLoading.value = true
 
   try {
+    const payload = { ...user.value }
+    if (payload.roles === 'User') {
+      delete payload.roles
+    }
+
     if (isUpdate.value) {
-      // Cập nhật người dùng
-      await axios.put(`${rootAPI}/users/${props.idUser}`, user.value)
+      await axios.put(`${rootAPI}/users/${props.idUser}`, payload)
       toast.success('Cập nhật người dùng thành công', {
         position: 'top-right',
         autoClose: 1000,
       })
     } else {
-      // Thêm mới người dùng
-      await axios.post(`${rootAPI}/users`, user.value)
+      await axios.post(`${rootAPI}/users`, payload)
       toast.success('Thêm người dùng thành công', {
         position: 'top-right',
         autoClose: 1000,
