@@ -98,7 +98,8 @@
                 (widthScreen < 1000 && key === 'price') ||
                 (widthScreen < 1000 && key === 'isPublic'),
               'table-price': key === 'price',
-              'text-center': key === 'price' || key === 'isPublic' || key === 'type',
+              'text-center':
+                key === 'price' || key === 'isPublic' || key === 'type' || key === 'status',
             }"
           >
             <template v-if="key === 'name'">
@@ -141,6 +142,20 @@
                 {{ item[key] }}
               </span>
             </template>
+            <template v-else-if="key === 'status'">
+              <span
+                :class="[
+                  'badge',
+                  item[key] === 'ACTIVE'
+                    ? 'iq-bg-success'
+                    : item[key] === 'INACTIVE'
+                    ? 'iq-bg-danger'
+                    : 'iq-bg-secondary',
+                ]"
+              >
+                {{ item[key] }}
+              </span>
+            </template>
             <template v-else-if="key !== 'avatar' && key !== 'roles'">
               {{ item[key] || 'N/A' }}
             </template>
@@ -161,7 +176,7 @@
             </template>
           </td>
           <td class="action-button">
-            <span v-if="!props.isUserPage">
+            <span>
               <router-link
                 v-if="viewDetail"
                 :to="props.actions.view(item)"
@@ -177,12 +192,21 @@
               <i class="fas fa-edit"></i>
             </router-link>
             <router-link
+              v-if="!props.isUserPage"
               to=""
               @click="confirmDelete(item)"
               class="btn btn-danger btn-sm btn-action"
             >
               <i class="fas fa-trash"></i>
             </router-link>
+            <button
+              v-if="props.isUserPage"
+              class="btn btn-sm"
+              :class="item.status === 'INACTIVE' ? 'btn-success' : 'btn-danger'"
+              @click="emit('toggleStatus', item)"
+            >
+              <i :class="item.status === 'INACTIVE' ? 'fas fa-lock' : 'fas fa-lock-open'"></i>
+            </button>
           </td>
         </tr>
       </tbody>
@@ -265,7 +289,7 @@ window.addEventListener('resize', function () {
 
 const currentPage = ref(1)
 
-const emit = defineEmits(['updateOrder', 'deleteItem', 'pageChange', 'sortPrice'])
+const emit = defineEmits(['updateOrder', 'deleteItem', 'pageChange', 'sortPrice', 'toggleStatus'])
 const enabled = true
 const dragging = ref(false)
 
