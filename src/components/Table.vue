@@ -90,22 +90,17 @@
           <th scope="row" class="text-center">
             {{ (currentPage - 1) * props.perPage + index + 1 }}
           </th>
-          <td
-            v-for="(key, keyIndex) in props.keys"
-            :key="keyIndex"
-            :class="{
-              'd-none':
-                (widthScreen < 1000 && key === 'price') ||
-                (widthScreen < 1000 && key === 'isPublic'),
-              'table-price': key === 'price',
-              'text-center':
-                key === 'price' || key === 'isPublic' || key === 'type' || key === 'status',
-            }"
-          >
+          <td v-for="(key, keyIndex) in props.keys" :key="keyIndex" :class="getColumnClass(key)">
             <template v-if="key === 'name'">
               <router-link :to="props.actions.view(item)" class="course-name-link">
                 {{ item[key] || 'N/A' }}
               </router-link>
+            </template>
+            <template v-else-if="key === 'roles'">
+              <span v-if="item[key] && item[key] !== '[]'">
+                {{ parseRoles(item[key]) }}
+              </span>
+              <span v-else>N/A</span>
             </template>
             <template v-else-if="key === 'price'">
               {{ formatPrice(item[key]) + ' VND' || 'N/A' }}
@@ -324,6 +319,17 @@ const getStatusLabel = (type, value) => {
   }
   return 'N/A'
 }
+
+const getColumnClass = (key) => {
+  return {
+    'd-none': widthScreen.value < 1000 && (key === 'price' || key === 'isPublic'),
+    'table-price': key === 'price',
+    'text-center': ['price', 'isPublic', 'type', 'status', 'roles'].includes(key),
+  };
+};
+const parseRoles = (roles) => {
+  return roles.replace(/[\[\]"]/g, '');
+};
 </script>
 
 <style scoped>

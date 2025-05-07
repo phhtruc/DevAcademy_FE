@@ -11,14 +11,14 @@ const totalRows = ref(0)
 const isModalVisible = ref(false)
 const itemToDelete = ref()
 const searchName = ref('')
-const status = ref('ACTIVE')
+const searchStatus = ref('')
 
 const data = reactive({
   users: [],
 })
 
-const header = ['STT', 'Họ và tên', 'Email', 'Trạng thái', 'Hành động']
-const keys = ['fullName', 'email', 'status']
+const header = ['STT', 'Họ và tên', 'Email', 'Vai trò', 'Trạng thái', 'Hành động']
+const keys = ['fullName', 'email', 'roles', 'status']
 
 const actions = {
   view: (item) => `/admin/users/${item.id}`,
@@ -26,17 +26,17 @@ const actions = {
   delete: (item) => `/users/${item.id}`,
 }
 
-// Fetch danh sách người dùng
 const fetchUsers = async () => {
   try {
     let response = null
 
-    if (searchName.value) {
+    if (searchName.value || searchStatus.value) {
       response = await axios.get(`${rootAPI}/users/search`, {
         params: {
           page: currentPage.value,
           pageSize: perPage.value,
           name: searchName.value || undefined,
+          status: searchStatus.value || undefined,
         },
       })
     } else {
@@ -63,28 +63,28 @@ const handlePageChange = (page) => {
 }
 
 const openModal = (user) => {
-  itemToDelete.value = user;
-  isModalVisible.value = true;
-};
+  itemToDelete.value = user
+  isModalVisible.value = true
+}
 
 const handleDelete = async () => {
   try {
-    const response = await axios.patch(`${rootAPI}/users/${itemToDelete.value.id}/status`);
-    const updatedStatus = response.data.data.status;
-    itemToDelete.value.status = updatedStatus;
-    await fetchUsers();
-    isModalVisible.value = false;
+    const response = await axios.patch(`${rootAPI}/users/${itemToDelete.value.id}/status`)
+    const updatedStatus = response.data.data.status
+    itemToDelete.value.status = updatedStatus
+    await fetchUsers()
+    isModalVisible.value = false
 
     if (updatedStatus === 'INACTIVE') {
-      toast.success('Khoá người dùng thành công');
+      toast.success('Khoá người dùng thành công')
     } else {
-      toast.success('Mở khoá người dùng thành công');
+      toast.success('Mở khoá người dùng thành công')
     }
   } catch (error) {
-    console.error('Error:', error);
-    toast.error('Có lỗi xảy ra');
+    console.error('Error:', error)
+    toast.error('Có lỗi xảy ra')
   }
-};
+}
 
 const handleSearch = () => {
   currentPage.value = 1
@@ -127,6 +127,13 @@ onMounted(async () => {
                       />
                     </div>
                   </form>
+                </div>
+                <div class="mr-3">
+                  <select class="form-control select-status" v-model="searchStatus" @change="handleSearch">
+                    <option value="">Lọc trạng thái</option>
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">In Active</option>
+                  </select>
                 </div>
                 <router-link
                   :to="'/admin/users/add'"
@@ -187,5 +194,11 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
   padding: 0.5rem 1rem;
+}
+
+.select-status {
+  width: 100%;
+  cursor: pointer;
+  padding: 0 10px;
 }
 </style>

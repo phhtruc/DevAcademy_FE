@@ -2,78 +2,114 @@
   <div id="content-page" class="content-page">
     <div class="container-fluid">
       <button class="btn btn-light mb-3" @click="goBack">← Trở về</button>
-      <div class="iq-card">
-        <div class="iq-card-header d-flex justify-content-between">
-          <div class="iq-header-title">
-            <h4 class="card-title">
-              {{ isUpdate ? 'Cập nhật người dùng' : 'Thêm mới người dùng' }}
-            </h4>
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="iq-card">
+            <div class="iq-card-header d-flex justify-content-between">
+              <div class="iq-header-title">
+                <h4 class="card-title">
+                  {{ isUpdate ? 'Cập nhật người dùng' : 'Thêm mới người dùng' }}
+                </h4>
+              </div>
+            </div>
+            <div class="iq-card-body">
+              <div class="form-group">
+                <div class="add-img-user profile-img-edit">
+                  <img
+                    class="profile-pic img-fluid"
+                    :src="previewAvatar || defaultAvatar"
+                    alt="profile-pic"
+                  />
+                  <div class="p-image">
+                    <label for="avatarUpload" class="upload-button btn iq-bg-primary"
+                      >Tải lên</label
+                    >
+                    <input
+                      id="avatarUpload"
+                      class="file-upload"
+                      type="file"
+                      accept="image/*"
+                      @change="handleAvatarChange"
+                      hidden
+                    />
+                  </div>
+                </div>
+                <div class="img-extension mt-3">
+                  <div class="d-inline-block align-items-center">
+                    <span>Chỉ chấp nhận</span>
+                    <a href="javascript:void();">.jpg</a>
+                    <a href="javascript:void();">.png</a>
+                    <a href="javascript:void();">.jpeg</a>
+                    <span>định dạng</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="iq-card-body">
-          <form @submit.prevent="addUser">
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="fullName">Họ và tên</label>
-                <input
-                  id="fullName"
-                  v-model="user.fullName"
-                  placeholder="Nhập họ và tên"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.fullName }"
-                />
-                <div class="invalid-feedback" v-if="errors.fullName">{{ errors.fullName }}</div>
-              </div>
-              <div class="form-group col-md-6">
-                <label for="email">Email</label>
-                <input
-                  id="email"
-                  type="email"
-                  v-model="user.email"
-                  placeholder="Nhập email"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.email }"
-                />
-                <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
+        <div class="col-lg-9">
+          <div class="iq-card">
+            <div class="iq-card-header d-flex justify-content-between">
+              <div class="iq-header-title">
+                <h4 class="card-title">Thông tin tài khoản</h4>
               </div>
             </div>
-            <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="password">Mật khẩu</label>
-                <input
-                  id="password"
-                  type="password"
-                  v-model="user.password"
-                  placeholder="Nhập mật khẩu"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.password }"
-                />
-                <div class="invalid-feedback" v-if="errors.password">{{ errors.password }}</div>
-              </div>
-              <div class="form-group col-md-6">
-                <label for="role">Vai trò</label>
-                <select
-                  id="role"
-                  v-model="user.role"
-                  class="form-control"
-                  :class="{ 'is-invalid': errors.roles }"
-                >
-                  <option value="">Chọn vai trò</option>
-                  <option value="Admin">Admin</option>
-                  <option value="Teacher">Teacher</option>
-                  <option value="Student">Student</option>
-                </select>
-                <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
+            <div class="iq-card-body">
+              <div class="new-user-info">
+                <form @submit.prevent="addUser">
+                  <div class="row">
+                    <div class="form-group col-md-6">
+                      <label for="fullName">Họ và tên</label>
+                      <input
+                        id="fullName"
+                        v-model="user.fullName"
+                        placeholder="Nhập họ và tên"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.fullName }"
+                      />
+                      <div class="invalid-feedback" v-if="errors.fullName">
+                        {{ errors.fullName }}
+                      </div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="email">Email</label>
+                      <input
+                        id="email"
+                        type="email"
+                        v-model="user.email"
+                        placeholder="Nhập email"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.email }"
+                      />
+                      <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="role">Vai trò</label>
+                      <select
+                        id="role"
+                        v-model="user.roles"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.roles }"
+                      >
+                        <option value="">Chọn vai trò</option>
+                        <option value="ADMIN">Admin</option>
+                        <option value="TEACHER">Teacher</option>
+                        <option value="USER">Student</option>
+                      </select>
+                      <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <button class="btn btn-primary" :disabled="isLoading">
+                      <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
+                      <span v-else>{{ isUpdate ? 'Cập nhật' : 'Lưu' }}</span>
+                    </button>
+                    <button type="button" class="btn iq-bg-danger ml-2" @click="cancel">Hủy</button>
+                  </div>
+                </form>
               </div>
             </div>
-            <div class="text-right">
-              <button class="btn btn-primary" :disabled="isLoading">
-                <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
-                <span v-else>Lưu</span>
-              </button>
-              <button type="button" class="btn iq-bg-danger ml-2" @click="cancel">Hủy</button>
-            </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -85,12 +121,14 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
+import defaultAvatar from '@/assets/images/user/11.png'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
-
 const isLoading = ref(false)
 const isUpdate = ref(false)
+const avatar = ref(null)
+const previewAvatar = ref('')
 
 const props = defineProps({
   idUser: {
@@ -133,13 +171,13 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!user.value.password.trim()) {
-    errors.value.password = 'Mật khẩu không được để trống'
-    isValid = false
-  } else if (user.value.password.length < 6) {
-    errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
-    isValid = false
-  }
+  // if (!user.value.password.trim()) {
+  //   errors.value.password = 'Mật khẩu không được để trống'
+  //   isValid = false
+  // } else if (user.value.password.length < 6) {
+  //   errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+  //   isValid = false
+  // }
 
   if (!user.value.roles) {
     errors.value.roles = 'Vai trò không được để trống'
@@ -147,6 +185,14 @@ const validateForm = () => {
   }
 
   return isValid
+}
+
+const handleAvatarChange = (event) => {
+  const file = event.target.files[0]
+  if (file) {
+    avatar.value = file
+    previewAvatar.value = URL.createObjectURL(file)
+  }
 }
 
 const addUser = async () => {
@@ -157,19 +203,26 @@ const addUser = async () => {
   isLoading.value = true
 
   try {
-    const payload = { ...user.value }
-    if (payload.roles === 'User') {
-      delete payload.roles
+    const formData = new FormData()
+    formData.append('fullName', user.value.fullName)
+    formData.append('email', user.value.email)
+    formData.append('password', 123)
+
+    if (user.value.roles !== 'USER') {
+      formData.append('roles', user.value.roles)
+    }
+    if (avatar.value) {
+      formData.append('avatar', avatar.value)
     }
 
     if (isUpdate.value) {
-      await axios.put(`${rootAPI}/users/${props.idUser}`, payload)
+      await axios.put(`${rootAPI}/users/${props.idUser}`, formData)
       toast.success('Cập nhật người dùng thành công', {
         position: 'top-right',
         autoClose: 1000,
       })
     } else {
-      await axios.post(`${rootAPI}/users`, payload)
+      await axios.post(`${rootAPI}/users`, formData)
       toast.success('Thêm người dùng thành công', {
         position: 'top-right',
         autoClose: 1000,

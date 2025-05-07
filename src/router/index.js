@@ -46,6 +46,13 @@ const router = createRouter({
       component: UserForm,
       meta: { requiresAuth: true, roles: ['ADMIN'] }
     },
+    {
+      path: '/admin/users/:idUser/edit',
+      name: 'admin-user-edit',
+      component: UserForm,
+      meta: { requiresAuth: true, roles: ['ADMIN'] },
+      props: true
+    },
     // Teacher routes
     // Teacher courses
     {
