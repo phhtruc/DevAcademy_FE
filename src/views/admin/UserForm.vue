@@ -83,6 +83,20 @@
                       />
                       <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
                     </div>
+                    <div class="form-group col-md-6" v-if="!isUpdate">
+                      <label for="password">Mật khẩu</label>
+                      <input
+                        id="password"
+                        type="password"
+                        v-model="user.password"
+                        placeholder="Nhập mật khẩu"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.password }"
+                      />
+                      <div class="invalid-feedback" v-if="errors.password">
+                        {{ errors.password }}
+                      </div>
+                    </div>
                     <div class="form-group col-md-6">
                       <label for="role">Vai trò</label>
                       <select
@@ -98,14 +112,49 @@
                       </select>
                       <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
                     </div>
+                    <div class="form-group col-md-6" v-if="isUpdate">
+                      <label for="role">Trạng thái</label>
+                      <select
+                        id="role"
+                        v-model="user.status"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.roles }"
+                      >
+                        <option value="">Trạng thái</option>
+                        <option value="ACTIVE">Active</option>
+                        <option value="INACTIVE">In Active</option>
+                      </select>
+                      <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
+                    </div>
                   </div>
-                  <div class="text-right">
-                    <button class="btn btn-primary" :disabled="isLoading">
-                      <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
-                      <span v-else>{{ isUpdate ? 'Cập nhật' : 'Lưu' }}</span>
-                    </button>
-                    <button type="button" class="btn iq-bg-danger ml-2" @click="cancel">Hủy</button>
+                  <div class="d-flex justify-content-between">
+                    <div v-if="isUpdate">
+                      <button type="button" class="btn btn-danger" @click="confirmDelete">
+                        <i class="ri-delete-bin-line mr-1"></i>
+                        Xóa
+                      </button>
+                    </div>
+                    <div v-else></div>
+                    <div>
+                      <button class="btn btn-primary" :disabled="isLoading">
+                        <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
+                        <span v-else>{{ isUpdate ? 'Cập nhật' : 'Lưu' }}</span>
+                      </button>
+                      <button type="button" class="btn iq-bg-danger ml-2" @click="cancel">
+                        Hủy
+                      </button>
+                    </div>
                   </div>
+                  <b-modal
+                  v-model="isModalVisible"
+                  title="Xác nhận xóa"
+                  ok-title="Xóa"
+                  cancel-title="Đóng"
+                  ok-variant="danger"
+                  @ok="handleDelete"
+                >
+                  <p>Bạn có chắc chắn xóa tài khoản này không?</p>
+                </b-modal>
                 </form>
               </div>
             </div>
@@ -129,6 +178,7 @@ const isLoading = ref(false)
 const isUpdate = ref(false)
 const avatar = ref(null)
 const previewAvatar = ref('')
+const isModalVisible = ref(false)
 
 const props = defineProps({
   idUser: {
@@ -142,6 +192,7 @@ const user = ref({
   email: '',
   password: '',
   roles: '',
+  status: '',
 })
 
 const errors = ref({
@@ -149,6 +200,7 @@ const errors = ref({
   email: '',
   password: '',
   roles: '',
+  status: '',
 })
 
 const validateForm = () => {
@@ -171,13 +223,15 @@ const validateForm = () => {
     isValid = false
   }
 
-  // if (!user.value.password.trim()) {
-  //   errors.value.password = 'Mật khẩu không được để trống'
-  //   isValid = false
-  // } else if (user.value.password.length < 6) {
-  //   errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
-  //   isValid = false
-  // }
+  if(!isUpdate.value){
+    if (!user.value.password.trim()) {
+    errors.value.password = 'Mật khẩu không được để trống'
+    isValid = false
+  } else if (user.value.password.length < 6 && !isUpdate.value) {
+    errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
+    isValid = false
+  }
+  }
 
   if (!user.value.roles) {
     errors.value.roles = 'Vai trò không được để trống'
@@ -206,7 +260,6 @@ const addUser = async () => {
     const formData = new FormData()
     formData.append('fullName', user.value.fullName)
     formData.append('email', user.value.email)
-    formData.append('password', 123)
 
     if (user.value.roles !== 'USER') {
       formData.append('roles', user.value.roles)
@@ -214,8 +267,12 @@ const addUser = async () => {
     if (avatar.value) {
       formData.append('avatar', avatar.value)
     }
+    if (!isUpdate.value) {
+      formData.append('password', user.value.password)
+    }
 
     if (isUpdate.value) {
+      formData.append('status', user.value.status)
       await axios.put(`${rootAPI}/users/${props.idUser}`, formData)
       toast.success('Cập nhật người dùng thành công', {
         position: 'top-right',
@@ -242,10 +299,40 @@ const addUser = async () => {
   }
 }
 
+const confirmDelete = () => {
+  isModalVisible.value = true;
+};
+
+const handleDelete = async () => {
+  try {
+    await axios.delete(`${rootAPI}/users/${props.idUser}`);
+    toast.success('Xóa tài khoản thành công', {
+      position: 'top-right',
+      autoClose: 1000,
+    });
+    isModalVisible.value = false;
+    setTimeout(() => {
+      router.push('/admin/users');
+    }, 1000);
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    toast.error('Có lỗi xảy ra khi xóa tài khoản', {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+  }
+};
+
 const fetchUser = async (id) => {
   try {
     const response = await axios.get(`${rootAPI}/users/${id}`)
-    user.value = response.data.data
+    const userData = response.data.data
+
+    if (userData.roles) {
+      userData.roles = userData.roles.replace(/[\[\]"]/g, '') // Loại bỏ dấu [], và dấu "
+    }
+    previewAvatar.value = userData.avatar
+    user.value = userData
   } catch (error) {
     console.error('Error fetching user:', error)
   }
