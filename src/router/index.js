@@ -16,6 +16,7 @@ import TechStack from '@/views/teacher/techStack/TechStack.vue'
 import TechStackForm from '@/views/teacher/techStack/TechStackForm.vue'
 import UserManager from '@/views/admin/UserManager.vue'
 import UserForm from '@/views/admin/UserForm.vue'
+import PromptManager from '@/views/teacher/course/PromptManager.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -173,6 +174,14 @@ const router = createRouter({
       path: '/teacher/tech-stacks/:idTechStack/edit',
       name: 'teacher-tech-stacks-edit',
       component: TechStackForm,
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
+    },
+    // Teacher tech stacks
+    {
+      path: '/teacher/courses/:idCourse/prompts',
+      name: 'teacher-course-prompts',
+      component: PromptManager,
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
