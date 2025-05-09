@@ -7,7 +7,10 @@ const userRole = ref(localStorage.getItem('roles'))
 <template>
   <div class="iq-sidebar">
     <div class="iq-sidebar-logo d-flex justify-content-between">
-      <router-link :to="'/teacher/courses'">
+      <router-link v-if="userRole === '[TEACHER]'" :to="'/teacher/courses'">
+        <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
+      </router-link>
+      <router-link v-if="userRole === '[ADMIN]'" :to="'/admin/users'">
         <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
       </router-link>
       <div class="iq-menu-bt align-self-center">

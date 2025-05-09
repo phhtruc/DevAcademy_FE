@@ -3,7 +3,10 @@
     <div class="iq-navbar-custom">
       <div class="iq-sidebar-logo">
         <div class="top-logo">
-          <router-link :to="'teacher/courses'" href="" class="logo">
+          <router-link v-if="userRole === '[TEACHER]'" :to="'/teacher/courses'">
+            <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
+          </router-link>
+          <router-link v-if="userRole === '[ADMIN]'" :to="'/admin/users'">
             <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
           </router-link>
         </div>
