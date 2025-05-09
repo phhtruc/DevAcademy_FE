@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '@/views/Authentication/Login.vue'
-import Register from '@/views/Authentication/Register.vue'
-import AdminDashboard from '@/views/admin/AdminDashboard.vue'
+import Login from '@/views/authentication/Login.vue'
+import Register from '@/views/authentication/Register.vue'
 import UserPage from '@/views/user/UserPage.vue'
 import CourseForm from '@/views/teacher/course/CourseForm.vue'
 import Course from '../views/teacher/course/Course.vue'
@@ -15,6 +14,8 @@ import Category from '@/views/teacher/category/Category.vue'
 import CategoryForm from '@/views/teacher/category/CategoryForm.vue'
 import TechStack from '@/views/teacher/techStack/TechStack.vue'
 import TechStackForm from '@/views/teacher/techStack/TechStackForm.vue'
+import UserManager from '@/views/admin/UserManager.vue'
+import UserForm from '@/views/admin/UserForm.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -34,10 +35,23 @@ const router = createRouter({
     },
     // Admin routes
     {
-      path: '/admin',
-      name: 'admin',
-      component: AdminDashboard,
+      path: '/admin/users',
+      name: 'admin-user',
+      component: UserManager,
       meta: { requiresAuth: true, roles: ['ADMIN'] }
+    },
+    {
+      path: '/admin/users/add',
+      name: 'admin-user-add',
+      component: UserForm,
+      meta: { requiresAuth: true, roles: ['ADMIN'] }
+    },
+    {
+      path: '/admin/users/:idUser/edit',
+      name: 'admin-user-edit',
+      component: UserForm,
+      meta: { requiresAuth: true, roles: ['ADMIN'] },
+      props: true
     },
     // Teacher routes
     // Teacher courses

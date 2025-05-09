@@ -317,7 +317,7 @@ img {
 }
 
 .form-control {
-  height: 38px; /* Chiều cao phù hợp với nút */
+  height: 34px; /* Chiều cao phù hợp với nút */
   border-radius: 5px; /* Bo góc nhẹ */
 }
 

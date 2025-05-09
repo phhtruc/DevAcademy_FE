@@ -114,7 +114,7 @@ const handleLogin = async (e) => {
 
     // Điều hướng theo role
     if (roles.includes('ADMIN')) {
-      router.push('/admin')
+      router.push('/admin/users')
     } else if (roles.includes('TEACHER')) {
       router.push('/teacher/courses')
     } else {
