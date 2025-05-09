@@ -202,6 +202,12 @@
             >
               <i :class="item.status === 'INACTIVE' ? 'fas fa-lock' : 'fas fa-lock-open'"></i>
             </button>
+            <router-link v-if="props.prompts"
+              :to="props.actions.managePrompts(item)"
+              class="btn btn-success btn-sm btn-action"
+            >
+              <i class="fas fa-cog"></i>
+            </router-link>
           </td>
         </tr>
       </tbody>
@@ -266,6 +272,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  prompts: {
+    type: Boolean,
+    default: false,
+  },
   type: {
     type: String,
     default: 'course',
@@ -325,11 +335,11 @@ const getColumnClass = (key) => {
     'd-none': widthScreen.value < 1000 && (key === 'price' || key === 'isPublic'),
     'table-price': key === 'price',
     'text-center': ['price', 'isPublic', 'type', 'status', 'roles'].includes(key),
-  };
-};
+  }
+}
 const parseRoles = (roles) => {
-  return roles.replace(/[\[\]"]/g, '');
-};
+  return roles.replace(/[\[\]"]/g, '')
+}
 </script>
 
 <style scoped>

@@ -23,6 +23,7 @@ const actions = {
   view: (item) => `/teacher/courses/${item.id}/chapters`,
   edit: (item) => `/teacher/courses/${item.id}/edit`,
   delete: (item) => `/courses/${item.id}`,
+  managePrompts: (item) => `/teacher/courses/${item.id}/prompts`
 }
 
 const fetchCourses = async () => {
@@ -149,6 +150,7 @@ onMounted(async () => {
                   @deleteItem="deleteCourse"
                   @pageChange="handlePageChange"
                   @sortPrice="handleSort"
+                  :prompts="true"
                 ></Table>
                 <b-modal
                   v-model="isModalVisible"
