@@ -86,7 +86,6 @@ const handleLogin = async (e) => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  // ✅ Validate client-side
   if (!email.value) {
     emailError.value = 'Vui lòng nhập email'
   } else if (!emailRegex.test(email.value)) {
@@ -97,7 +96,6 @@ const handleLogin = async (e) => {
     passwordError.value = 'Vui lòng nhập mật khẩu'
   }
 
-  // Nếu có lỗi, không gọi API
   if (emailError.value || passwordError.value) return
 
   try {
@@ -118,7 +116,7 @@ const handleLogin = async (e) => {
     } else if (roles.includes('TEACHER')) {
       router.push('/teacher/courses')
     } else {
-      router.push('/user')
+      router.push('/')
     }
   } catch (error) {
     if (error.response && error.response.status === 403) {

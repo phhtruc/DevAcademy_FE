@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/authentication/Login.vue'
 import Register from '@/views/authentication/Register.vue'
-import UserPage from '@/views/user/UserPage.vue'
 import CourseForm from '@/views/teacher/course/CourseForm.vue'
 import Course from '../views/teacher/course/Course.vue'
 import Chapter from '@/views/teacher/chapter/Chapter.vue'
@@ -19,6 +18,7 @@ import UserForm from '@/views/admin/UserForm.vue'
 import PromptManager from '@/views/teacher/course/PromptManager.vue'
 import ResetPassword from '@/views/authentication/ResetPassword.vue'
 import UserDetails from '@/views/admin/UserDetails.vue'
+import HomePage from '@/views/user/HomePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -211,9 +211,10 @@ const router = createRouter({
 
     // User routes
     {
-      path: '/user',
-      name: 'user',
-      component: UserPage,
+      path: '/',
+      name: 'home-page',
+      component: HomePage,
+      meta: {hideNavbar: true}
     }
   ],
 })
@@ -221,10 +222,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('accessToken')
   const role = localStorage.getItem('roles')
-
-  if (to.path === '/' && !token) {
-    return next('/login')
-  }
 
   if (to.meta.requiresAuth) {
     if (!token) {
