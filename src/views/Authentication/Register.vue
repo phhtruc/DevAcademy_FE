@@ -99,7 +99,6 @@ const handleRegister = async () => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  // ✅ Validate
   if (!fullName.value) {
     nameError.value = 'Vui lòng nhập họ và tên'
   }

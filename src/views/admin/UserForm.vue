@@ -83,20 +83,6 @@
                       />
                       <div class="invalid-feedback" v-if="errors.email">{{ errors.email }}</div>
                     </div>
-                    <div class="form-group col-md-6" v-if="!isUpdate">
-                      <label for="password">Mật khẩu</label>
-                      <input
-                        id="password"
-                        type="password"
-                        v-model="user.password"
-                        placeholder="Nhập mật khẩu"
-                        class="form-control"
-                        :class="{ 'is-invalid': errors.password }"
-                      />
-                      <div class="invalid-feedback" v-if="errors.password">
-                        {{ errors.password }}
-                      </div>
-                    </div>
                     <div class="form-group col-md-6">
                       <label for="role">Vai trò</label>
                       <select
@@ -190,7 +176,6 @@ const props = defineProps({
 const user = ref({
   fullName: '',
   email: '',
-  password: '',
   roles: '',
   status: '',
 })
@@ -198,7 +183,6 @@ const user = ref({
 const errors = ref({
   fullName: '',
   email: '',
-  password: '',
   roles: '',
   status: '',
 })
@@ -221,16 +205,6 @@ const validateForm = () => {
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(user.value.email)) {
     errors.value.email = 'Email không hợp lệ'
     isValid = false
-  }
-
-  if(!isUpdate.value){
-    if (!user.value.password.trim()) {
-    errors.value.password = 'Mật khẩu không được để trống'
-    isValid = false
-  } else if (user.value.password.length < 6 && !isUpdate.value) {
-    errors.value.password = 'Mật khẩu phải có ít nhất 6 ký tự'
-    isValid = false
-  }
   }
 
   if (!user.value.roles) {
@@ -267,9 +241,6 @@ const addUser = async () => {
     if (avatar.value) {
       formData.append('avatar', avatar.value)
     }
-    if (!isUpdate.value) {
-      formData.append('password', user.value.password)
-    }
 
     if (isUpdate.value) {
       formData.append('status', user.value.status)
@@ -289,10 +260,7 @@ const addUser = async () => {
       router.push('/admin/users')
     }, 1100)
   } catch (error) {
-    toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
-      position: 'top-right',
-      autoClose: 3000,
-    })
+    errors.value.email = "Email đã tồn tại"
     console.error('Error creating/updating user:', error)
   } finally {
     isLoading.value = false
