@@ -16,24 +16,20 @@ const props = defineProps({
 const router = useRouter()
 const route = useRoute()
 
-// Tạo computed property để xác định route hiện tại
 const currentRoutePath = computed(() => route.path)
 
-// Kiểm tra xem một route có active không
 const isActive = (path) => {
   if (path === '/') {
-    // Nếu là trang chủ, chỉ active khi route chính xác là "/"
     return currentRoutePath.value === '/'
   }
-  // Với các route khác, kiểm tra xem route hiện tại có bắt đầu bằng path không
   return currentRoutePath.value.startsWith(path)
 }
 
 const logout = () => {
-  // Implement your logout logic here
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  router.push('/login')
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+  localStorage.removeItem('roles')
+  router.push('/')
 }
 </script>
 
@@ -64,46 +60,46 @@ const logout = () => {
             </li>
           </ul>
 
-          <!-- Authentication Buttons -->
           <div class="navbar-nav">
             <template v-if="!props.isLoggedIn">
               <router-link to="/login" class="btn btn-outline-primary me-2">Đăng nhập</router-link>
               <router-link to="/register" class="btn btn-primary">Đăng ký</router-link>
             </template>
             <template v-else>
-              <div class="dropdown">
-                <button
-                  class="btn btn-link dropdown-toggle user-dropdown"
-                  type="button"
-                  id="userDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <img
-                    v-if="props.userData.avatar"
-                    :src="props.userData.avatar"
-                    class="avatar rounded-circle"
-                    alt="User Avatar"
-                  />
-                  <span v-else class="avatar-placeholder rounded-circle">
-                    {{
-                      props.userData.fullName
-                        ? props.userData.fullName.charAt(0).toUpperCase()
-                        : 'U'
-                    }}
-                  </span>
-                  <span class="ms-2">{{ props.userData.fullName || 'User' }}</span>
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                  <li><router-link to="/profile" class="dropdown-item">Hồ sơ</router-link></li>
-                  <li>
-                    <router-link to="/my-courses" class="dropdown-item"
-                      >Khóa học của tôi</router-link
-                    >
-                  </li>
-                  <li><hr class="dropdown-divider" /></li>
-                  <li><button class="dropdown-item" @click="logout">Đăng xuất</button></li>
-                </ul>
+              <div class="d-flex align-items-center">
+                <router-link to="/khoa-hoc-cua-toi" class="btn-outline-secondary me-3 mr-3">
+                  Khóa học của tôi
+                </router-link>
+
+                <div class="dropdown">
+                  <button
+                    class="btn btn-link dropdown-toggle user-dropdown p-0"
+                    type="button"
+                    id="userDropdown"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    <img
+                      v-if="props.userData.avatar"
+                      :src="props.userData.avatar"
+                      class="avatar rounded-circle"
+                      alt="User Avatar"
+                    />
+                    <span v-else class="avatar-placeholder rounded-circle">
+                      <i class="fas fa-user"></i>
+                    </span>
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><router-link to="/profile" class="dropdown-item">Hồ sơ</router-link></li>
+                    <li>
+                      <router-link to="/my-courses" class="dropdown-item">
+                        Khóa học của tôi
+                      </router-link>
+                    </li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><button class="dropdown-item" @click="logout">Đăng xuất</button></li>
+                  </ul>
+                </div>
               </div>
             </template>
           </div>
@@ -141,7 +137,6 @@ const logout = () => {
   color: #0084ff !important;
   font-weight: 700;
   position: relative;
-
 }
 
 .navbar-nav .nav-link:hover {
@@ -193,5 +188,90 @@ const logout = () => {
 
 .ms-2 {
   margin-left: 0.5rem;
+}
+
+.position-relative {
+  position: relative !important;
+}
+
+.dropdown-menu-custom {
+  width: auto;
+  min-width: 200px;
+  max-width: 280px;
+  right: 0;
+  left: auto !important;
+}
+
+/* Fix dropdown position in normal view */
+.dropdown {
+  position: relative;
+}
+
+.dropdown-menu-end {
+  right: 0;
+  left: auto;
+}
+
+/* Đảm bảo thẻ li không bị tràn */
+.dropdown-menu-custom li {
+  white-space: normal; /* Cho phép text wrap trong các mục */
+}
+
+.dropdown-menu-custom .dropdown-item {
+  padding: 0.5rem 1rem;
+  white-space: normal; /* Cho phép text wrap */
+}
+
+/* Style cho avatar */
+.avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  background-color: #3f6ad8;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Fix user dropdown button */
+.user-dropdown {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  text-decoration: none;
+  color: #333;
+  border: none;
+}
+
+.user-dropdown:hover,
+.user-dropdown:focus {
+  color: #3f6ad8;
+  background-color: rgba(0, 0, 0, 0.04);
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+/* Tránh dropdown bị ẩn */
+.dropdown:hover .dropdown-menu-custom,
+.dropdown:focus-within .dropdown-menu-custom {
+  display: block;
+}
+
+.btn-outline-secondary {
+  border-color: #dee2e6;
+  color: #6c757d;
+}
+
+.btn-outline-secondary:hover {
+  background-color:white;
+  color: #127be4;
 }
 </style>

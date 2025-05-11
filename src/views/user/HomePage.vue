@@ -5,6 +5,7 @@ import axios from '@/plugins/axios'
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const featuredCourses = ref([])
 const categories = ref([])
+const isActive = ref(false)
 
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
@@ -80,6 +81,9 @@ const fetchCategory = async () => {
 onMounted(() => {
   fetchCourses()
   fetchCategory()
+  if (localStorage.getItem('roles') === '[USER]') {
+    isActive.value = true
+  }
 })
 </script>
 
@@ -98,7 +102,7 @@ onMounted(() => {
               chóng
             </p>
             <div class="hero-buttons">
-              <router-link to="/register" class="btn btn-primary btn-lg mr-3"
+              <router-link v-if="!isActive" to="/register" class="btn btn-primary btn-lg mr-3"
                 >Đăng ký ngay</router-link
               >
               <router-link to="/courses" class="btn btn-outline-primary btn-lg"
@@ -262,7 +266,7 @@ onMounted(() => {
                 </p>
               </div>
               <div class="col-lg-4 text-lg-right mt-3 mt-lg-0">
-                <router-link to="/register" class="btn btn-light btn-lg"
+                <router-link v-if="!isActive" to="/register" class="btn btn-light btn-lg"
                   >Đăng ký miễn phí</router-link
                 >
               </div>

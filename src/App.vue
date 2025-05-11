@@ -19,7 +19,7 @@ const isAdminPage = computed(() => {
 
 // Xử lý trạng thái đăng nhập
 const checkAuth = () => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('accessToken');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   
   if (token) {
