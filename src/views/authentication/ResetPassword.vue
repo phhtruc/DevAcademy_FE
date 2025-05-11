@@ -8,19 +8,16 @@ const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const route = useRoute()
 const router = useRouter()
 
-// Lấy token từ URL
 const token = route.params.token
 const isValidToken = ref(true)
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 
-// Form data
 const password = ref('')
 const confirmPassword = ref('')
 const passwordVisible = ref(false)
 const confirmPasswordVisible = ref(false)
 
-// Validation
 const errors = ref({
   password: '',
   confirmPassword: ''
@@ -41,7 +38,6 @@ onMounted(async () => {
   }
 })
 
-// Validate form
 const validateForm = () => {
   let isValid = true
   errors.value = {
@@ -49,7 +45,6 @@ const validateForm = () => {
     confirmPassword: ''
   }
 
-  // Validate password
   if (!password.value) {
     errors.value.password = 'Vui lòng nhập mật khẩu'
     isValid = false
@@ -58,7 +53,6 @@ const validateForm = () => {
     isValid = false
   }
 
-  // Validate confirm password
   if (!confirmPassword.value) {
     errors.value.confirmPassword = 'Vui lòng xác nhận mật khẩu'
     isValid = false
@@ -70,7 +64,6 @@ const validateForm = () => {
   return isValid
 }
 
-// Submit form
 const submitForm = async () => {
   if (!validateForm()) return
 
@@ -101,7 +94,6 @@ const submitForm = async () => {
   }
 }
 
-// Toggle password visibility
 const togglePasswordVisibility = () => {
   passwordVisible.value = !passwordVisible.value
 }

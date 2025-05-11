@@ -18,6 +18,7 @@ import UserManager from '@/views/admin/UserManager.vue'
 import UserForm from '@/views/admin/UserForm.vue'
 import PromptManager from '@/views/teacher/course/PromptManager.vue'
 import ResetPassword from '@/views/authentication/ResetPassword.vue'
+import UserDetails from '@/views/admin/UserDetails.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,13 +46,8 @@ const router = createRouter({
         hideNavbar: true
       }
     },
+
     // Admin routes
-    {
-      path: '/admin/users',
-      name: 'admin-user',
-      component: UserManager,
-      meta: { requiresAuth: true, roles: ['ADMIN'] }
-    },
     {
       path: '/admin/users/add',
       name: 'admin-user-add',
@@ -65,6 +61,20 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['ADMIN'] },
       props: true
     },
+    {
+      path: '/admin/users/:idUser',
+      name: 'admin-user-details',
+      component: UserDetails,
+      meta: { requiresAuth: true, roles: ['ADMIN'] },
+      props: true
+    },
+    {
+      path: '/admin/users',
+      name: 'admin-user',
+      component: UserManager,
+      meta: { requiresAuth: true, roles: ['ADMIN'] }
+    },
+
     // Teacher routes
     // Teacher courses
     {
@@ -166,6 +176,7 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
+
     // Teacher tech stacks
     {
       path: '/teacher/tech-stacks',
@@ -188,7 +199,8 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
-    // Teacher tech stacks
+
+    // Teacher prompts
     {
       path: '/teacher/courses/:idCourse/prompts',
       name: 'teacher-course-prompts',
@@ -196,6 +208,8 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'] },
       props: true
     },
+
+    // User routes
     {
       path: '/user',
       name: 'user',
@@ -208,9 +222,9 @@ router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('accessToken')
   const role = localStorage.getItem('roles')
 
-  // if (to.path === '/' && !token) {
-  //   return next('/login')
-  // }
+  if (to.path === '/' && !token) {
+    return next('/login')
+  }
 
   if (to.meta.requiresAuth) {
     if (!token) {
