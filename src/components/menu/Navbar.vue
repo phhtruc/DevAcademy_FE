@@ -1,6 +1,7 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
   isLoggedIn: {
@@ -15,6 +16,11 @@ const props = defineProps({
 
 const router = useRouter()
 const route = useRoute()
+const authStore = useAuthStore()
+
+// Sử dụng authStore trực tiếp thay vì props để đồng bộ trạng thái
+const isLoggedIn = computed(() => authStore.isLoggedIn)
+const userData = computed(() => authStore.userData)
 
 const currentRoutePath = computed(() => route.path)
 
@@ -26,10 +32,8 @@ const isActive = (path) => {
 }
 
 const logout = () => {
-  localStorage.removeItem('accessToken')
-  localStorage.removeItem('refreshToken')
-  localStorage.removeItem('roles')
-  router.push('/')
+  authStore.logout()
+  // Không cần router.push vì đã xử lý trong authStore.logout()
 }
 </script>
 
@@ -40,6 +44,19 @@ const logout = () => {
         <router-link to="/" class="navbar-brand">
           <img src="@/assets/images/logo-name.jpg" alt="Logo" height="40" class="logo-img" />
         </router-link>
+
+        <!-- Toggler for mobile -->
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarContent"
+          aria-controls="navbarContent"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
         <div class="collapse navbar-collapse" id="navbarContent">
           <ul class="navbar-nav mx-auto">
@@ -61,13 +78,14 @@ const logout = () => {
           </ul>
 
           <div class="navbar-nav">
-            <template v-if="!props.isLoggedIn">
+            <!-- Sử dụng isLoggedIn computed từ authStore -->
+            <template v-if="!isLoggedIn">
               <router-link to="/login" class="btn btn-outline-primary me-2">Đăng nhập</router-link>
               <router-link to="/register" class="btn btn-primary">Đăng ký</router-link>
             </template>
             <template v-else>
               <div class="d-flex align-items-center">
-                <router-link to="/khoa-hoc-cua-toi" class="btn-outline-secondary me-3 mr-3">
+                <router-link to="/khoa-hoc-cua-toi" class="btn-outline-secondari me-3 mr-3">
                   Khóa học của tôi
                 </router-link>
 
@@ -80,8 +98,8 @@ const logout = () => {
                     aria-expanded="false"
                   >
                     <img
-                      v-if="props.userData.avatar"
-                      :src="props.userData.avatar"
+                      v-if="userData.avatar"
+                      :src="userData.avatar"
                       class="avatar rounded-circle"
                       alt="User Avatar"
                     />
@@ -265,13 +283,13 @@ const logout = () => {
   display: block;
 }
 
-.btn-outline-secondary {
+.btn-outline-secondari {
   border-color: #dee2e6;
   color: #6c757d;
 }
 
-.btn-outline-secondary:hover {
-  background-color:white;
+.btn-outline-secondari:hover {
+  background-color: white;
   color: #127be4;
 }
 </style>

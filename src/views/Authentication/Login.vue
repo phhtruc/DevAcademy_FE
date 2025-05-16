@@ -104,11 +104,21 @@ const handleLogin = async (e) => {
       password: password.value,
     })
 
-    const { accessToken, refreshToken, roles } = res.data.data
+    const {id, roles, accessToken, refreshToken } = res.data.data
 
+    // Lưu token vào localStorage
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
     localStorage.setItem('roles', roles)
+
+    // Tạo đối tượng user để lưu vào localStorage
+    const userData = {
+      id,
+      roles,
+    }
+
+    // Chuyển đối tượng userData thành chuỗi JSON và lưu vào localStorage
+    localStorage.setItem('user', JSON.stringify(userData))
 
     // Điều hướng theo role
     if (roles.includes('ADMIN')) {

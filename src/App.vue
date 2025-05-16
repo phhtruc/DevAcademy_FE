@@ -1,48 +1,52 @@
 <script setup>
 import NavbarComponent from './components/NavbarComponent.vue'
 import SidebarComponent from './components/SidebarComponent.vue'
-import { ref, computed, watch } from 'vue';
-import { useRoute } from 'vue-router';
-import Navbar from '@/components/menu/Navbar.vue';
+import { computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import Navbar from '@/components/menu/Navbar.vue'
+import { useAuthStore } from '@/stores/auth'
 
-const route = useRoute();
-const isLoggedIn = ref(false);
-const userData = ref({});
+const route = useRoute()
+const authStore = useAuthStore()
 
 const isAuthPage = computed(() => {
-  return route.path.includes('/login') || route.path.includes('/register');
-});
+  return route.path.includes('/login') || route.path.includes('/register')
+})
 
 const isAdminPage = computed(() => {
-  return route.path.includes('/admin') || route.path.includes('/teacher');
-});
+  return route.path.includes('/admin') || route.path.includes('/teacher')
+})
 
-// Xử lý trạng thái đăng nhập
-const checkAuth = () => {
-  const token = localStorage.getItem('accessToken');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  
-  if (token) {
-    isLoggedIn.value = true;
-    userData.value = user;
-  } else {
-    isLoggedIn.value = false;
-    userData.value = {};
+// Thêm logging để debug
+console.log('Current route:', route.path)
+console.log('isAuthPage:', isAuthPage.value)
+console.log('isAdminPage:', isAdminPage.value)
+
+watch(
+  () => route.path,
+  () => {
+    console.log('Route changed, checking auth...')
+    authStore.checkAuth()
   }
-};
+)
 
-// Chạy checkAuth mỗi khi route thay đổi
-watch(() => route.path, checkAuth);
-
-// Khởi tạo
-checkAuth();
+onMounted(() => {
+  console.log('App mounted, checking auth...')
+  authStore.checkAuth()
+})
 </script>
 
 <template>
   <div class="wrapper">
-    <NavbarComponent v-if="!route.meta.hideNavbar && isAdminPage" />
-    <SidebarComponent v-if="!route.meta.hideNavbar && isAdminPage" />
-    <Navbar v-if="!isAuthPage && !isAdminPage" :isLoggedIn="isLoggedIn" :userData="userData" />
+    <!-- Hiển thị NavbarComponent và SidebarComponent cho admin & teacher -->
+    <template v-if="!route.meta.hideNavbar && isAdminPage">
+      <NavbarComponent />
+      <SidebarComponent />
+    </template>
+
+    <!-- Navbar thông thường cho người dùng và khách -->
+    <Navbar v-if="!isAuthPage && !isAdminPage" />
+
     <router-view />
   </div>
 </template>
@@ -51,7 +55,8 @@ checkAuth();
 html {
   scroll-behavior: smooth;
 }
-.vue-devtools__panel, .vue-devtools__anchor-btn {
+.vue-devtools__panel,
+.vue-devtools__anchor-btn {
   display: none !important;
 }
 </style>
