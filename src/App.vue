@@ -17,34 +17,26 @@ const isAdminPage = computed(() => {
   return route.path.includes('/admin') || route.path.includes('/teacher')
 })
 
-// Thêm logging để debug
-console.log('Current route:', route.path)
-console.log('isAuthPage:', isAuthPage.value)
-console.log('isAdminPage:', isAdminPage.value)
-
 watch(
   () => route.path,
   () => {
-    console.log('Route changed, checking auth...')
     authStore.checkAuth()
   }
 )
 
 onMounted(() => {
-  console.log('App mounted, checking auth...')
   authStore.checkAuth()
 })
 </script>
 
 <template>
   <div class="wrapper">
-    <!-- Hiển thị NavbarComponent và SidebarComponent cho admin & teacher -->
+    
     <template v-if="!route.meta.hideNavbar && isAdminPage">
       <NavbarComponent />
       <SidebarComponent />
     </template>
 
-    <!-- Navbar thông thường cho người dùng và khách -->
     <Navbar v-if="!isAuthPage && !isAdminPage" />
 
     <router-view />

@@ -19,6 +19,7 @@ import PromptManager from '@/views/teacher/course/PromptManager.vue'
 import ResetPassword from '@/views/authentication/ResetPassword.vue'
 import UserDetails from '@/views/admin/UserDetails.vue'
 import HomePage from '@/views/user/HomePage.vue'
+import CoursePage from '@/views/user/CoursePage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -214,6 +215,12 @@ const router = createRouter({
       path: '/',
       name: 'home-page',
       component: HomePage,
+      meta: {hideNavbar: true}
+    },
+    {
+      path: '/khoa-hoc',
+      name: 'khoa-hoc',
+      component: CoursePage,
       meta: {hideNavbar: true}
     }
   ],

@@ -14,11 +14,9 @@ const props = defineProps({
   },
 })
 
-const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// Sử dụng authStore trực tiếp thay vì props để đồng bộ trạng thái
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 const userData = computed(() => authStore.userData)
 
@@ -33,7 +31,6 @@ const isActive = (path) => {
 
 const logout = () => {
   authStore.logout()
-  // Không cần router.push vì đã xử lý trong authStore.logout()
 }
 </script>
 
@@ -66,19 +63,18 @@ const logout = () => {
               >
             </li>
             <li class="nav-item">
-              <router-link to="/courses" class="nav-link" :class="{ active: isActive('/courses') }"
+              <router-link to="/khoa-hoc" class="nav-link" :class="{ active: isActive('/khoa-hoc') }"
                 >KHOÁ HỌC</router-link
               >
             </li>
             <li class="nav-item">
-              <router-link to="/about" class="nav-link" :class="{ active: isActive('/about') }"
+              <router-link to="/ve-chung-toi" class="nav-link" :class="{ active: isActive('/ve-chung-toi') }"
                 >VỀ CHÚNG TÔI</router-link
               >
             </li>
           </ul>
 
           <div class="navbar-nav">
-            <!-- Sử dụng isLoggedIn computed từ authStore -->
             <template v-if="!isLoggedIn">
               <router-link to="/login" class="btn btn-outline-primary me-2">Đăng nhập</router-link>
               <router-link to="/register" class="btn btn-primary">Đăng ký</router-link>

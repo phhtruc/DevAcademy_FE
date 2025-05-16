@@ -105,7 +105,7 @@ onMounted(() => {
               <router-link v-if="!isActive" to="/register" class="btn btn-primary btn-lg mr-3"
                 >Đăng ký ngay</router-link
               >
-              <router-link to="/courses" class="btn btn-outline-primary btn-lg"
+              <router-link to="/khoa-hoc" class="btn btn-outline-primary btn-lg"
                 >Xem khóa học</router-link
               >
             </div>
@@ -152,9 +152,10 @@ onMounted(() => {
                 <h5 class="course-title">{{ course.name }}</h5>
                 <p class="course-description flex-grow-1">{{ course.description }}</p>
 
-                <div class="mt-auto pt-3">
+                <div class="mt-auto">
                   <div class="d-flex align-items-center justify-content-between">
                     <div class="course-meta">
+                      <span><i class="fas fa-book"></i> {{ course.lessonCount || 0 }} bài học</span>
                       <span
                         ><i class="fas fa-clock"></i>Thời hạn
                         {{ course.duration || 'N/A' }} tháng</span
@@ -177,7 +178,7 @@ onMounted(() => {
         </div>
 
         <div class="text-center mt-4">
-          <router-link to="/courses" class="btn btn-primary">Xem tất cả khóa học</router-link>
+          <router-link to="/khoa-hoc" class="btn btn-primary">Xem tất cả khóa học</router-link>
         </div>
       </div>
     </section>
@@ -424,6 +425,8 @@ onMounted(() => {
 .course-meta {
   color: #6c757d;
   font-size: 0.85rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .course-meta i {

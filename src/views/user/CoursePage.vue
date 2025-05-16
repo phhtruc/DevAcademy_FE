@@ -2,76 +2,49 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
-import Navbar from '@/components/Navbar.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
 
-// State for courses
 const courses = ref([])
 const isLoading = ref(true)
 const error = ref(null)
 
-// Pagination
 const currentPage = ref(1)
 const totalPages = ref(1)
-const perPage = ref(9)
+const perPage = ref(12)
 
-// Filters
 const searchQuery = ref('')
-const selectedCategory = ref('all')
-const selectedLevel = ref('all')
-const selectedSort = ref('newest')
+const selectedCategory = ref('')
 
-// Categories and levels for filters
-const categories = ref([
-  { id: 'all', name: 'Tất cả' },
-  { id: 'frontend', name: 'Frontend' },
-  { id: 'backend', name: 'Backend' },
-  { id: 'mobile', name: 'Mobile' },
-  { id: 'devops', name: 'DevOps' },
-  { id: 'database', name: 'Database' },
-  { id: 'datascience', name: 'Data Science' },
-])
+const categories = ref([])
 
-const levels = ref([
-  { id: 'all', name: 'Tất cả' },
-  { id: 'beginner', name: 'Cơ bản' },
-  { id: 'intermediate', name: 'Trung cấp' },
-  { id: 'advanced', name: 'Nâng cao' },
-])
-
-const sortOptions = ref([
-  { id: 'newest', name: 'Mới nhất' },
-  { id: 'oldest', name: 'Cũ nhất' },
-  { id: 'price-asc', name: 'Giá thấp đến cao' },
-  { id: 'price-desc', name: 'Giá cao đến thấp' },
-  { id: 'popular', name: 'Phổ biến nhất' },
-])
-
-// Fetch courses based on filters and pagination
 const fetchCourses = async () => {
   isLoading.value = true
   error.value = null
 
   try {
-    const params = {
-      page: currentPage.value,
-      pageSize: perPage.value,
-      search: searchQuery.value || undefined,
-      category: selectedCategory.value !== 'all' ? selectedCategory.value : undefined,
-      level: selectedLevel.value !== 'all' ? selectedLevel.value : undefined,
-      sort: selectedSort.value || undefined,
-    }
+    let response = null
 
-    const response = await axios.get(`${rootAPI}/courses`, { params })
-
-    if (response.data && response.data.data) {
-      courses.value = response.data.data.items
-      totalPages.value = response.data.data.totalPage
+    if (searchQuery.value || selectedCategory.value) {
+      response = await axios.get(`${rootAPI}/courses/search`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+          name: searchQuery.value || undefined,
+          categoryId: selectedCategory.value || undefined,
+        },
+      })
     } else {
-      throw new Error('Invalid response format')
+      response = await axios.get(`${rootAPI}/courses/user`, {
+        params: {
+          page: currentPage.value,
+          pageSize: perPage.value,
+        },
+      })
     }
+    courses.value = response.data.data.items
+    totalPages.value = response.data.data.totalPage
   } catch (err) {
     console.error('Failed to fetch courses:', err)
     error.value = 'Không thể tải danh sách khóa học. Vui lòng thử lại sau.'
@@ -80,33 +53,35 @@ const fetchCourses = async () => {
   }
 }
 
-// Apply filters and reset to page 1
+const fetchCategory = async () => {
+  try {
+    const response = await axios.get(`${rootAPI}/categories`)
+    categories.value = response.data.data.items
+  } catch (error) {
+    console.error('Error fetching', error)
+  }
+}
+
 const applyFilters = () => {
   currentPage.value = 1
   fetchCourses()
 }
 
-// Reset all filters
 const resetFilters = () => {
   searchQuery.value = ''
-  selectedCategory.value = 'all'
-  selectedLevel.value = 'all'
-  selectedSort.value = 'newest'
+  selectedCategory.value = ''
   currentPage.value = 1
   fetchCourses()
 }
 
-// Navigate to specific course
 const viewCourse = (courseId) => {
-  router.push(`/course/${courseId}`)
+  router.push(`/khoa-hoc/${courseId}`)
 }
 
-// Format price
 const formatPrice = (price) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
 }
 
-// Generate pagination array
 const paginationArray = computed(() => {
   const result = []
   const maxVisiblePages = 5
@@ -156,10 +131,11 @@ const paginationArray = computed(() => {
 // Initial fetch on component mount
 onMounted(() => {
   fetchCourses()
+  fetchCategory()
 })
 
 // Watch for changes in filters to fetch courses
-watch([selectedCategory, selectedLevel, selectedSort], () => {
+watch([selectedCategory], () => {
   applyFilters()
 })
 </script>
@@ -171,7 +147,7 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
     <!-- Page Title Banner -->
     <section class="page-title-section">
       <div class="container">
-        <h1 class="page-title">Danh sách khóa học</h1>
+        <h1 class="page-title">Tất cả khóa học</h1>
         <p class="page-description">
           Khám phá các khóa học chất lượng cao từ các giảng viên hàng đầu
         </p>
@@ -204,28 +180,6 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
                   <select class="form-select" v-model="selectedCategory">
                     <option v-for="category in categories" :key="category.id" :value="category.id">
                       {{ category.name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="filter-group">
-                <h5>Cấp độ</h5>
-                <div class="form-group">
-                  <select class="form-select" v-model="selectedLevel">
-                    <option v-for="level in levels" :key="level.id" :value="level.id">
-                      {{ level.name }}
-                    </option>
-                  </select>
-                </div>
-              </div>
-
-              <div class="filter-group">
-                <h5>Sắp xếp theo</h5>
-                <div class="form-group">
-                  <select class="form-select" v-model="selectedSort">
-                    <option v-for="option in sortOptions" :key="option.id" :value="option.id">
-                      {{ option.name }}
                     </option>
                   </select>
                 </div>
@@ -274,41 +228,31 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
                   <div class="course-card" @click="viewCourse(course.id)">
                     <div class="course-image">
                       <img
-                        :src="course.thumbnail || '/placeholder-course.jpg'"
+                        :src="course.thumbnailUrl || '/placeholder-course.jpg'"
                         :alt="course.name"
                         class="img-fluid rounded"
                       />
-                      <div class="course-badge" :class="`level-${course.level || 'beginner'}`">
+                      <!-- <div class="course-badge" :class="`level-${course.level || 'beginner'}`">
                         {{
                           levels.find((l) => l.id === (course.level || 'beginner'))?.name ||
                           'Cơ bản'
                         }}
-                      </div>
+                      </div> -->
                     </div>
                     <div class="course-content">
                       <span class="course-category">{{
                         course.category?.name || 'Lập trình'
                       }}</span>
                       <h5 class="course-title">{{ course.name }}</h5>
-                      <div class="course-rating">
-                        <span class="stars">
-                          <i
-                            v-for="star in 5"
-                            :key="star"
-                            class="fas fa-star"
-                            :class="star <= (course.rating || 0) ? 'text-warning' : 'text-muted'"
-                          ></i>
-                        </span>
-                        <span class="rating-count"
-                          >{{ course.rating || 0 }} ({{ course.reviewCount || 0 }})</span
-                        >
-                      </div>
                       <div class="course-details">
                         <div class="course-meta">
                           <span
                             ><i class="fas fa-book"></i> {{ course.lessonCount || 0 }} bài học</span
                           >
-                          <span><i class="fas fa-clock"></i> {{ course.duration || '0h' }}</span>
+                          <span
+                            ><i class="fas fa-clock"></i> Thời hạn
+                            {{ course.duration || '0h' }} tháng</span
+                          >
                         </div>
                         <div class="course-price">
                           <span v-if="course.price > 0">{{ formatPrice(course.price) }}</span>
@@ -347,10 +291,7 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
                       v-if="page !== '...'"
                       class="page-link"
                       href="#"
-                      @click.prevent="
-                        currentPage = page
-                        fetchCourses()
-                      "
+                      @click.prevent=";(currentPage = page), fetchCourses()"
                     >
                       {{ page }}
                     </a>
@@ -381,7 +322,7 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
 /* Page Title Section */
 .page-title-section {
   background: linear-gradient(135deg, #3f6ad8 0%, #0a2463 100%);
-  padding: 60px 0;
+  padding: 30px 0;
   color: white;
   text-align: center;
   margin-bottom: 40px;
@@ -390,6 +331,7 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
 .page-title {
   font-size: 2.5rem;
   font-weight: 700;
+  color: white;
   margin-bottom: 10px;
 }
 
@@ -505,7 +447,6 @@ watch([selectedCategory, selectedLevel, selectedSort], () => {
   margin-bottom: 8px;
   font-weight: 600;
   font-size: 1rem;
-  height: 40px;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
