@@ -86,7 +86,6 @@ const handleLogin = async (e) => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-  // ✅ Validate client-side
   if (!email.value) {
     emailError.value = 'Vui lòng nhập email'
   } else if (!emailRegex.test(email.value)) {
@@ -97,7 +96,6 @@ const handleLogin = async (e) => {
     passwordError.value = 'Vui lòng nhập mật khẩu'
   }
 
-  // Nếu có lỗi, không gọi API
   if (emailError.value || passwordError.value) return
 
   try {
@@ -106,11 +104,21 @@ const handleLogin = async (e) => {
       password: password.value,
     })
 
-    const { accessToken, refreshToken, roles } = res.data.data
+    const {id, roles, accessToken, refreshToken } = res.data.data
 
+    // Lưu token vào localStorage
     localStorage.setItem('accessToken', accessToken)
     localStorage.setItem('refreshToken', refreshToken)
     localStorage.setItem('roles', roles)
+
+    // Tạo đối tượng user để lưu vào localStorage
+    const userData = {
+      id,
+      roles,
+    }
+
+    // Chuyển đối tượng userData thành chuỗi JSON và lưu vào localStorage
+    localStorage.setItem('user', JSON.stringify(userData))
 
     // Điều hướng theo role
     if (roles.includes('ADMIN')) {
@@ -118,7 +126,7 @@ const handleLogin = async (e) => {
     } else if (roles.includes('TEACHER')) {
       router.push('/teacher/courses')
     } else {
-      router.push('/user')
+      router.push('/')
     }
   } catch (error) {
     if (error.response && error.response.status === 403) {
