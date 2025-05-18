@@ -39,7 +39,7 @@
   <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
@@ -99,6 +99,9 @@ const addChapter = async () => {
         position: 'top-right',
         autoClose: 1000,
       })
+      setTimeout(() => {
+        router.push(`/teacher/courses/${props.idCourse}/chapters`)
+      }, 1000)
     } else {
       await axios.post(`${rootAPI}/chapters`, {
         name: chapter.value.name,
