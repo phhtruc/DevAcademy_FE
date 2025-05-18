@@ -31,7 +31,6 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('vi-VN')
 }
 
-
 const toggleChapterSidebar = async (chapterId) => {
   expandedChaptersSidebar[chapterId] = !expandedChaptersSidebar[chapterId]
 
@@ -50,11 +49,8 @@ const setActiveLesson = (lessonId) => {
 }
 
 const handleLessonClick = (lesson) => {
-  if (isEnrolled.value || lesson.preview) {
-    setActiveLesson(lesson.id)
+  if (lesson.isPublic || isEnrolled.value) {
     router.push(`/course/${courseId}/lesson/${lesson.id}`)
-  } else {
-    enrollCourse()
   }
 }
 
@@ -144,13 +140,13 @@ onMounted(fetchCourseDetails)
 <template>
   <div class="course-details-page">
     <div class="course-container">
-        <section
+      <section
         class="course-header"
         :style="{
           backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url(${course.thumbnailUrl})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center center',
-          backgroundRepeat: 'no-repeat'
+          backgroundRepeat: 'no-repeat',
         }"
       >
         <div class="container">
@@ -257,9 +253,9 @@ onMounted(fetchCourseDetails)
                           :class="[
                             'sidebar-lesson',
                             activeLesson === lesson.id ? 'active' : '',
-                            !isEnrolled && !lesson.preview ? 'locked' : '',
+                            !isEnrolled && !lesson.isPublic ? 'locked' : '',
                           ]"
-                          @click="handleLessonClick(lesson)"
+                          @click="lesson.isPublic || isEnrolled ? handleLessonClick(lesson) : null"
                         >
                           <div class="d-flex align-items-center">
                             <span class="lesson-icon">
@@ -274,12 +270,11 @@ onMounted(fetchCourseDetails)
                               ></i>
                             </span>
                             <span class="lesson-title">{{ lesson.name || lesson.title }}</span>
-                            <span v-if="lesson.preview" class="lesson-preview">Xem thử</span>
                           </div>
-                          <span v-if="!isEnrolled && !lesson.preview" class="lesson-lock">
+                          <span v-if="!isEnrolled && !lesson.isPublic" class="lesson-lock">
                             <i class="fas fa-lock"></i>
                           </span>
-                          <span v-else class="lesson-duration">{{ lesson.duration || 'N/A' }}</span>
+                          <span v-else class="lesson-duration">{{ lesson.duration }}</span>
                         </li>
                       </ul>
 

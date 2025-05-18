@@ -165,7 +165,7 @@ onMounted(() => {
                   </div>
                   <div class="mt-3">
                     <router-link
-                      :to="`/course/${course.id}`"
+                      :to="`/khoa-hoc/${course.id}`"
                       class="btn btn-outline-primary btn-sm w-100"
                     >
                       Xem chi tiết
