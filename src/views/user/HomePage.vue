@@ -199,7 +199,7 @@ onMounted(() => {
                 <h5 class="category-title">{{ category.name }}</h5>
                 <p class="category-count">{{ category.courseCount }} khóa học</p>
                 <router-link
-                  :to="`/courses?category=${category.id}`"
+                  :to="{ path: '/khoa-hoc', query: { categoryId: category.id } }"
                   class="stretched-link"
                 ></router-link>
               </div>

@@ -1,14 +1,13 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
+const route = useRoute()
 
 const courses = ref([])
-const isLoading = ref(true)
-const error = ref(null)
 
 const currentPage = ref(1)
 const totalPages = ref(1)
@@ -20,9 +19,6 @@ const selectedCategory = ref('')
 const categories = ref([])
 
 const fetchCourses = async () => {
-  isLoading.value = true
-  error.value = null
-
   try {
     let response = null
 
@@ -47,9 +43,6 @@ const fetchCourses = async () => {
     totalPages.value = response.data.data.totalPage
   } catch (err) {
     console.error('Failed to fetch courses:', err)
-    error.value = 'Không thể tải danh sách khóa học. Vui lòng thử lại sau.'
-  } finally {
-    isLoading.value = false
   }
 }
 
@@ -123,18 +116,31 @@ const paginationArray = computed(() => {
 onMounted(() => {
   fetchCourses()
   fetchCategory()
+
+  if (route.query.categoryId) {
+    selectedCategory.value = route.query.categoryId
+    applyFilters()
+  }
 })
 
 watch([selectedCategory], () => {
   applyFilters()
 })
+
+watch(
+  () => route.query.categoryId,
+  (newCategoryId) => {
+    if (newCategoryId) {
+      selectedCategory.value = newCategoryId
+      applyFilters()
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <template>
   <div>
-    <Navbar :isLoggedIn="false" />
-
-    <!-- Page Title Banner -->
     <section class="page-title-section">
       <div class="container">
         <h1 class="page-title">Tất cả khóa học</h1>
@@ -144,11 +150,9 @@ watch([selectedCategory], () => {
       </div>
     </section>
 
-    <!-- Course Listing Section -->
     <section class="courses-section">
       <div class="container">
         <div class="row">
-          <!-- Filters Sidebar -->
           <div class="col-lg-3">
             <div class="filters-sidebar">
               <div class="search-box mb-4">
@@ -167,7 +171,8 @@ watch([selectedCategory], () => {
               <div class="filter-group">
                 <h5>Danh mục</h5>
                 <div class="form-group">
-                  <select class="form-select" v-model="selectedCategory">
+                  <select class="form-control" v-model="selectedCategory">
+                    <option value="">Tất cả</option>
                     <option v-for="category in categories" :key="category.id" :value="category.id">
                       {{ category.name }}
                     </option>

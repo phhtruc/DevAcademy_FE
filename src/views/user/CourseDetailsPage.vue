@@ -277,8 +277,7 @@ onMounted(fetchCourseDetails)
                           <span v-else class="lesson-duration">{{ lesson.duration }}</span>
                         </li>
                       </ul>
-
-                      <!-- No Lessons -->
+                      
                       <div v-else class="sidebar-empty">Không có bài học nào.</div>
                     </div>
                   </div>

@@ -21,6 +21,7 @@ import UserDetails from '@/views/admin/UserDetails.vue'
 import HomePage from '@/views/user/HomePage.vue'
 import CoursePage from '@/views/user/CoursePage.vue'
 import CourseDetailsPage from '@/views/user/CourseDetailsPage.vue'
+import AboutUs from '@/views/user/AboutUs.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -229,8 +230,22 @@ const router = createRouter({
       name: 'chi-tiet-khoa-hoc',
       component: CourseDetailsPage,
       meta: {hideNavbar: true}
-    }
+    },
+    {
+      path: '/ve-chung-toi',
+      name: 've-chung-toi',
+      component: AboutUs,
+      meta: {hideNavbar: true}
+    },
   ],
+
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  },
 })
 
 router.beforeEach((to, from, next) => {
