@@ -21,8 +21,8 @@ const data = reactive({
   lessons: [],
 })
 
-const header = ['STT', 'Tên bài học', 'Loại bài học', 'Hành động']
-const keys = ['name', 'type']
+const header = ['STT', 'Tên bài học', 'Loại bài học', 'Trạng thái', 'Hành động']
+const keys = ['name', 'type', 'isPublic']
 
 const formatLessonType = (type) => {
   const types = {

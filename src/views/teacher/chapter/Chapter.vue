@@ -184,8 +184,8 @@ const dataCourse = reactive({
   course: {},
 })
 
-const header = ['STT', 'Tên chương', 'Trạng thái', 'Hành động']
-const keys = ['name', 'isPublic']
+const header = ['STT', 'Tên chương', 'Hành động']
+const keys = ['name']
 
 const actions = {
   view: (item) => `/teacher/courses/${props.idCourse}/chapters/${item.id}/lessons`,

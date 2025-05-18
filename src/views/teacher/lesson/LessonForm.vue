@@ -21,9 +21,8 @@
               />
               <div class="invalid-feedback" v-if="errors.name">{{ errors.name }}</div>
             </div>
-
             <div class="row">
-              <div class="col-md-4">
+              <div class="col-md-6">
                 <div class="form-group">
                   <label for="lessonType">Loại bài học</label>
                   <select
@@ -40,20 +39,45 @@
                   <div class="invalid-feedback" v-if="errors.type">{{ errors.type }}</div>
                 </div>
               </div>
-              <div class="col-md-8">
+              <div class="col-md-6">
                 <div class="form-group">
-                  <label for="videoUrl">URL Video (nếu có)</label>
-                  <input
-                    id="videoUrl"
-                    v-model="lesson.videoUrl"
-                    placeholder="Nhập URL video"
-                    class="form-control"
-                    :class="{ 'is-invalid': errors.videoUrl }"
-                    :disabled="lesson.type == 'EXERCISES'"
-                  />
-                  <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
+                  <label class="d-block">Trạng thái</label>
+                  <div class="custom-control custom-radio custom-control-inline">
+                    <input
+                      type="radio"
+                      id="active"
+                      name="status"
+                      value="true"
+                      v-model="lesson.isPublic"
+                      class="custom-control-input"
+                    />
+                    <label class="custom-control-label" for="active">Học thử</label>
+                  </div>
+                  <div class="custom-control custom-radio custom-control-inline">
+                    <input
+                      type="radio"
+                      id="inactive"
+                      name="status"
+                      value="false"
+                      v-model="lesson.isPublic"
+                      class="custom-control-input"
+                    />
+                    <label class="custom-control-label" for="inactive">Khoá</label>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div class="form-group">
+              <label for="videoUrl">URL Video (nếu có)</label>
+              <input
+                id="videoUrl"
+                v-model="lesson.videoUrl"
+                placeholder="Nhập URL video"
+                class="form-control"
+                :class="{ 'is-invalid': errors.videoUrl }"
+                :disabled="lesson.type == 'EXERCISES'"
+              />
+              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
             </div>
             <!-- <div class="col-md-12 mt-3">
               <iframe
@@ -129,7 +153,7 @@
   <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
@@ -154,9 +178,10 @@ const lesson = ref({
   name: '',
   type: '',
   lessonOrder: '',
-  content: '',
+  content: 'j',
   videoUrl: '',
-  contentRefer: '',
+  isPublic: false,
+  contentRefer: 'j',
   files: [],
 })
 
@@ -167,6 +192,7 @@ const errors = ref({
   content: '',
   videoUrl: '',
   contentRefer: '',
+  isPublic: false,
   files: '',
 })
 
@@ -178,15 +204,15 @@ const errors = ref({
 const getLessonTypeName = (type) => {
   switch (type) {
     case 'LECTURES':
-      return 'Bài giảng';
+      return 'Bài giảng'
     case 'READINGS':
-      return 'Bài đọc';
+      return 'Bài đọc'
     case 'EXERCISES':
-      return 'Bài tập';
+      return 'Bài tập'
     default:
-      return '';
+      return ''
   }
-};
+}
 
 // Xử lý upload file bằng FilePond
 const FilePond = vueFilePond(FilePondPluginFileValidateType)
@@ -218,7 +244,8 @@ const validateForm = () => {
   }
 
   if (
-    (lesson.value.type === 'LECTURES' && !lesson.value.videoUrl.trim()) &&
+    lesson.value.type === 'LECTURES' &&
+    !lesson.value.videoUrl.trim() &&
     !lesson.value.files.length
   ) {
     errors.value.videoUrl = 'Vui lòng thêm url video hoặc tải lên video'
@@ -289,6 +316,7 @@ const addLesson = async () => {
     formData.append('videoUrl', lesson.value.videoUrl || '')
     formData.append('contentRefer', lesson.value.contentRefer || '')
     formData.append('chapterId', idChapter)
+    formData.append('isPublic', lesson.value.isPublic)
 
     if (lesson.value.files.length > 0) {
       lesson.value.files.forEach((file) => {
@@ -317,6 +345,7 @@ const addLesson = async () => {
         lesson.value[key] = ''
       })
       filePondFiles.value = []
+      lesson.value.isPublic = false
       toast.success('Quá trình thêm đang được hoàn tất', {
         position: 'top-right',
         autoClose: 2000,
@@ -344,7 +373,6 @@ const fetchLesson = async (id) => {
     lesson.value.content = lessonData.content
     lesson.value.contentRefer = lessonData.contentRefer || ''
     lesson.value.videoUrl = lessonData.videoUrl || ''
-    
   } catch (error) {
     console.error('Error fetching lesson:', error)
     toast.error('Không thể tải thông tin bài học', {

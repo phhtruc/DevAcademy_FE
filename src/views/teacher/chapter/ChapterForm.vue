@@ -22,32 +22,6 @@
               <div class="invalid-feedback" v-if="errors.name">{{ errors.name }}</div>
             </div>
 
-            <div class="form-group">
-              <label class="d-block">Trạng thái</label>
-              <div class="custom-control custom-radio custom-control-inline">
-                <input
-                  type="radio"
-                  id="active"
-                  name="status"
-                  value="true"
-                  v-model="chapter.isPublic"
-                  class="custom-control-input"
-                />
-                <label class="custom-control-label" for="active">Học thử</label>
-              </div>
-              <div class="custom-control custom-radio custom-control-inline">
-                <input
-                  type="radio"
-                  id="inactive"
-                  name="status"
-                  value="false"
-                  v-model="chapter.isPublic"
-                  class="custom-control-input"
-                />
-                <label class="custom-control-label" for="inactive">Khoá</label>
-              </div>
-            </div>
-
             <div class="text-right">
               <button class="btn btn-primary" :disabled="isLoading">
                 <span v-if="isLoading" class="spinner-border spinner-border-sm"></span>
@@ -87,7 +61,6 @@ const props = defineProps({
 
 const chapter = ref({
   name: '',
-  isPublic: true,
   courseId: props.idCourse,
 })
 
@@ -119,7 +92,6 @@ const addChapter = async () => {
     if (isUpdate.value) {
       await axios.put(`${rootAPI}/chapters/${props.idChapter}`, {
         name: chapter.value.name,
-        isPublic: chapter.value.isPublic === 'true' || chapter.value.isPublic === true,
         courseId: props.idCourse,
       })
 
@@ -130,7 +102,6 @@ const addChapter = async () => {
     } else {
       await axios.post(`${rootAPI}/chapters`, {
         name: chapter.value.name,
-        isPublic: chapter.value.isPublic === 'true' || chapter.value.isPublic === true,
         courseId: props.idCourse,
       })
 
