@@ -20,6 +20,7 @@ import ResetPassword from '@/views/authentication/ResetPassword.vue'
 import UserDetails from '@/views/admin/UserDetails.vue'
 import HomePage from '@/views/user/HomePage.vue'
 import CoursePage from '@/views/user/CoursePage.vue'
+import CourseDetailsPage from '@/views/user/CourseDetailsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -221,6 +222,12 @@ const router = createRouter({
       path: '/khoa-hoc',
       name: 'khoa-hoc',
       component: CoursePage,
+      meta: {hideNavbar: true}
+    },
+    {
+      path: '/khoa-hoc/:idCourse',
+      name: 'chi-tiet-khoa-hoc',
+      component: CourseDetailsPage,
       meta: {hideNavbar: true}
     }
   ],

@@ -87,54 +87,44 @@ const paginationArray = computed(() => {
   const maxVisiblePages = 5
 
   if (totalPages.value <= maxVisiblePages) {
-    // Show all pages if total is less than max visible
     for (let i = 1; i <= totalPages.value; i++) {
       result.push(i)
     }
   } else {
-    // Always include first page
     result.push(1)
 
-    // Calculate start and end of middle section
     let start = Math.max(2, currentPage.value - 1)
     let end = Math.min(totalPages.value - 1, currentPage.value + 1)
 
-    // Adjust if we're near the edges
     if (currentPage.value <= 2) {
       end = 4
     } else if (currentPage.value >= totalPages.value - 2) {
       start = totalPages.value - 3
     }
 
-    // Add ellipsis after first page if needed
     if (start > 2) {
       result.push('...')
     }
 
-    // Add middle pages
     for (let i = start; i <= end; i++) {
       result.push(i)
     }
 
-    // Add ellipsis before last page if needed
     if (end < totalPages.value - 1) {
       result.push('...')
     }
 
-    // Always include last page
     result.push(totalPages.value)
   }
 
   return result
 })
 
-// Initial fetch on component mount
 onMounted(() => {
   fetchCourses()
   fetchCategory()
 })
 
-// Watch for changes in filters to fetch courses
 watch([selectedCategory], () => {
   applyFilters()
 })

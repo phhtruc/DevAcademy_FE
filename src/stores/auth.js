@@ -25,7 +25,6 @@ export const useAuthStore = defineStore('auth', {
           this.userData = JSON.parse(userStr);
           this.isLoggedIn = true;
           this.userRole = roles || 'USER';
-          console.log('Auth state updated:', this.isLoggedIn, this.userRole);
         } catch (err) {
           console.error('Error parsing user data', err);
           this.logout();
