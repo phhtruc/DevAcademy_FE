@@ -68,7 +68,9 @@
               </div>
             </div>
             <div class="form-group">
-              <label for="videoUrl">URL Video (nếu có)</label>
+              <label for="videoUrl" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
+                >URL Video (nếu có)</label
+              >
               <input
                 id="videoUrl"
                 v-model="lesson.videoUrl"
@@ -93,7 +95,9 @@
               ></iframe>
             </div> -->
             <div class="form-group">
-              <label class="d-block">Hoặc tải lên video tại đây</label>
+              <label class="d-block" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
+                >Hoặc tải lên video tại đây</label
+              >
               <file-pond
                 name="attachments"
                 label-idle="Kéo thả hoặc chọn tệp đính kèm"
@@ -108,7 +112,9 @@
                   video/x-matroska,
                   video/quicktime"
                 :files="filePondFiles"
+                :class="{ 'disabled-field': lesson.type == 'EXERCISES' }"
                 @updatefiles="handleUpload"
+                :disabled="lesson.type == 'EXERCISES'"
               />
               <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
             </div>
@@ -131,7 +137,7 @@
             </div>
             <div class="form-group">
               <label for="contentRefer">Tài liệu tham khảo</label>
-              <ToastEditorComponent v-model="lesson.contentRefer" :key="editorKey"/>
+              <ToastEditorComponent v-model="lesson.contentRefer" :key="editorKey" />
               <div class="invalid-feedback" v-if="errors.contentRefer">
                 {{ errors.contentRefer }}
               </div>
@@ -159,7 +165,6 @@ import 'filepond/dist/filepond.min.css'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
-import useWebSocket from '@/composables/useWebSocket'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
@@ -312,15 +317,17 @@ const addLesson = async () => {
     formData.append('name', lesson.value.name)
     formData.append('type', lesson.value.type)
     formData.append('content', lesson.value.content)
-    formData.append('videoUrl', lesson.value.videoUrl || '')
     formData.append('contentRefer', lesson.value.contentRefer || '')
     formData.append('chapterId', idChapter)
     formData.append('isPublic', lesson.value.isPublic)
 
-    if (lesson.value.files.length > 0) {
-      lesson.value.files.forEach((file) => {
-        formData.append('files', file)
-      })
+    if (lesson.value.type != 'EXERCISES') {
+      if (lesson.value.files.length > 0) {
+        lesson.value.files.forEach((file) => {
+          formData.append('files', file)
+        })
+      }
+      formData.append('videoUrl', lesson.value.videoUrl || '')
     }
 
     if (isUpdate.value) {
@@ -335,8 +342,8 @@ const addLesson = async () => {
         autoClose: 1000,
       })
       setTimeout(() => {
-      router.push(`/teacher/courses/${idCourse}/chapters/${idChapter}/lessons`)
-    }, 1100)
+        router.push(`/teacher/courses/${idCourse}/chapters/${idChapter}/lessons`)
+      }, 1100)
     } else {
       response = await axios.post(`${rootAPI}/lessons`, formData, {
         headers: {
@@ -348,6 +355,8 @@ const addLesson = async () => {
       })
       filePondFiles.value = []
       lesson.value.isPublic = false
+      editorKey.value++
+
       toast.success('Quá trình thêm đang được hoàn tất', {
         position: 'top-right',
         autoClose: 2000,
@@ -394,7 +403,7 @@ const goBack = () => {
   router.go(-1)
 }
 
-const { isConnected, subscribe } = useWebSocket()
+// const { isConnected, subscribe } = useWebSocket()
 
 onMounted(async () => {
   if (idLesson) {
@@ -402,10 +411,10 @@ onMounted(async () => {
     await fetchLesson(idLesson)
   }
 
-  subscribe('/topic/progress', (message) => {
-    updateLessonStatus(message.status)
-    console.log('Received message:', message)
-  })
+  // subscribe('/topic/progress', (message) => {
+  //   updateLessonStatus(message.status)
+  //   console.log('Received message:', message)
+  // })
 })
 </script>
   
@@ -422,5 +431,12 @@ onMounted(async () => {
   margin-top: 0.25rem;
   font-size: 80%;
   color: #dc3545;
+}
+.disabled-field {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.disabled-label {
+  color: #9eacb8;
 }
 </style>

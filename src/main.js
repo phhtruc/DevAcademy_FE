@@ -22,13 +22,13 @@ import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
 import { loadExternalScripts } from './loadScripts.js'
 
 // Kết nối WebSocket khi ứng dụng khởi động
-const wsService = new WebSocketService()
+// const wsService = new WebSocketService()
 
-wsService.connect().then(() => {
-  console.log('🔌 WebSocket connected on app start')
-}).catch(err => {
-  console.error('❌ WebSocket connection failed:', err)
-})
+// wsService.connect().then(() => {
+//   console.log('🔌 WebSocket connected on app start')
+// }).catch(err => {
+//   console.error('❌ WebSocket connection failed:', err)
+// })
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -36,7 +36,7 @@ const app = createApp(App)
 app.use(router)
 app.use(BootstrapVue3)
 app.use(pinia)
-app.config.globalProperties.$wsService = wsService
+// app.config.globalProperties.$wsService = wsService
 
 app.mount('#app')
 
