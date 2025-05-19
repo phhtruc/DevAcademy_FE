@@ -157,7 +157,7 @@
 </template>
       
   <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import vueFilePond from 'vue-filepond'
@@ -166,6 +166,7 @@ import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
+import webSocketService from '@/services/WebSocketService'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
@@ -403,19 +404,20 @@ const goBack = () => {
   router.go(-1)
 }
 
-// const { isConnected, subscribe } = useWebSocket()
-
 onMounted(async () => {
   if (idLesson) {
     isUpdate.value = true
     await fetchLesson(idLesson)
   }
 
-  // subscribe('/topic/progress', (message) => {
-  //   updateLessonStatus(message.status)
-  //   console.log('Received message:', message)
-  // })
+  webSocketService.subscribe('/topic/progress', (message) => {
+    updateLessonStatus(message.status);
+    console.log('Received message:', message);
+  });
 })
+onBeforeUnmount(() => {
+  webSocketService.unsubscribe('/topic/progress');
+});
 </script>
   
   <style scoped>
