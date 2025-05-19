@@ -117,10 +117,10 @@ onMounted(async () => {
   <div class="lesson-details-page">
     <div class="container">
       <div class="row">
-        <!-- Collapsible Sidebar -->
+        <!-- Sidebar -->
         <div class="sidebar-container" :style="{ width: isSidebarOpen ? '30%' : '4%' }">
-          <div class="course-sidebar mr-3">
-            <!-- Toggle button inside sidebar -->
+          <div class="course-sidebar">
+            <!-- Toggle button -->
             <div class="sidebar-toggle" @click="toggleSidebar">
               <i :class="['fas', isSidebarOpen ? 'fa-chevron-left' : 'fa-chevron-right']"></i>
             </div>
@@ -219,23 +219,22 @@ onMounted(async () => {
         </div>
 
         <!-- Lesson Content -->
-        <div class="lesson-content" :style="{ width: isSidebarOpen ? '68%' : '95%' }">
+        <div class="content-container ml-3" :style="{ width: isSidebarOpen ? '68%' : '94%' }">
           <div class="lesson-header d-flex align-items-center mb-3">
             <button class="back-btn me-3 mr-4 ml-3" @click="goBack">
               <i class="fas fa-arrow-left"></i>
             </button>
             <h3 class="lesson-title-goback mb-0 text-white">{{ lesson.name }}</h3>
           </div>
-          <!-- <h1 class="lesson-title">{{ lesson.name }}</h1> -->
 
           <div class="lesson-content">
             <!-- Type: READINGS -->
             <div v-if="lesson.type === 'READINGS'">
               <div class="ml-3" v-html="lesson.content"></div>
-              <button class="btn btn-primary mt-1" @click="showReferContent = !showReferContent">
+              <button class="btn btn-primary" @click="showReferContent = !showReferContent">
                 Tham khảo
               </button>
-              <div v-if="showReferContent" class="mt-1" v-html="lesson.contentRefer"></div>
+              <div v-if="showReferContent" v-html="lesson.contentRefer"></div>
             </div>
 
             <!-- Type: LECTURES -->
@@ -261,11 +260,44 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
 <style scoped>
+.lesson-details-page {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container,
+.row,
+.sidebar-container,
+.content-container {
+  height: 100%;
+}
+
+.sidebar-container {
+  overflow-y: auto;
+  background-color: #f8f9fa;
+  border-right: 1px solid #ddd;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.content-container {
+  overflow-y: auto;
+  background-color: #fff;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
 .lesson-header {
+  position: sticky;
+  top: 0;
   background-color: #0084ff;
-  border-radius: 0.5rem;
+  z-index: 10;
   padding: 5px;
+  border-bottom: 1px solid #ddd;
+  border-radius: 0.5rem;
 }
 
 .back-btn {
@@ -279,22 +311,23 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .back-btn:hover {
   background-color: rgba(255, 255, 255, 0.25);
-  cursor: pointer;
-}
-
-.lesson-details-page {
-  background-color: #f8f9fa;
-  padding: 20px 0;
 }
 
 .lesson-title {
   font-size: 2rem;
   word-wrap: break-word !important;
   white-space: normal !important;
+}
+
+.lesson-content {
+  padding: 20px;
+  overflow-y: auto;
 }
 
 .video-container {
@@ -310,11 +343,6 @@ onMounted(async () => {
   left: 0;
   width: 100%;
   height: 100%;
-}
-
-.sidebar-container, .lesson-content{
-  transition: all 0.3s ease;
-  position: relative;
 }
 
 .course-sidebar {
@@ -347,10 +375,6 @@ onMounted(async () => {
 
 .sidebar-toggle:hover {
   background-color: #f8f9fa;
-}
-
-.sidebar-content {
-  transition: all 0.3s ease;
 }
 
 .sidebar-header {
@@ -386,6 +410,7 @@ onMounted(async () => {
   padding: 15px 20px;
   cursor: pointer;
   background-color: white;
+  transition: background-color 0.3s ease;
 }
 
 .sidebar-chapter-header:hover {
@@ -394,8 +419,8 @@ onMounted(async () => {
 
 .sidebar-chapter-title {
   font-weight: 600;
-  display: block;
   margin-bottom: 5px;
+  display: block;
 }
 
 .sidebar-chapter-info {
@@ -419,8 +444,8 @@ onMounted(async () => {
   align-items: center;
   padding: 12px 20px 12px 10px;
   cursor: pointer;
-  transition: all 0.15s ease;
   border-bottom: 1px solid #eee;
+  transition: all 0.15s ease;
   position: relative;
 }
 
@@ -454,16 +479,12 @@ onMounted(async () => {
   font-size: 0.9rem;
 }
 
-.sidebar-lesson .lesson-type {
-  font-size: 0.8rem;
-  color: #6c757d;
-  margin-right: 5px;
-}
-
+.sidebar-lesson .lesson-type,
 .sidebar-lesson .lesson-lock,
 .sidebar-lesson .lesson-duration {
   font-size: 0.8rem;
   color: #6c757d;
+  margin-right: 5px;
 }
 
 .sidebar-loading,

@@ -255,8 +255,6 @@ const validateForm = () => {
 
   return isValid
 }
-// WebSocket integration
-const { isConnected, subscribe } = useWebSocket()
 
 const updateLessonStatus = (status) => {
   if (!toastId) {
@@ -395,6 +393,8 @@ const cancel = () => {
 const goBack = () => {
   router.go(-1)
 }
+
+const { isConnected, subscribe } = useWebSocket()
 
 onMounted(async () => {
   if (idLesson) {

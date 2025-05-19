@@ -4,9 +4,9 @@ import router from "./router";
 import Vue3Toastify from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { createPinia } from 'pinia'
-import '@toast-ui/editor/dist/toastui-editor.css';
+import '@toast-ui/editor/dist/toastui-editor.css'; 
+import WebSocketService from './services/WebSocketService'
 
-// import webSocketService from './services/WebSocketService';  
 
 // Import CSS files
 import './assets/images/favicon.ico'
@@ -22,11 +22,13 @@ import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
 import { loadExternalScripts } from './loadScripts.js'
 
 // Kết nối WebSocket khi ứng dụng khởi động
-// webSocketService.connect(
-//     import.meta.env.VITE_APP_WEBSOCKET_URL,
-//     () => console.log('WebSocket Connected Successfully'),
-//     (error) => console.error('WebSocket Connection Error:', error)
-//   );
+const wsService = new WebSocketService()
+
+wsService.connect().then(() => {
+  console.log('🔌 WebSocket connected on app start')
+}).catch(err => {
+  console.error('❌ WebSocket connection failed:', err)
+})
 
 const pinia = createPinia()
 const app = createApp(App)
@@ -34,6 +36,7 @@ const app = createApp(App)
 app.use(router)
 app.use(BootstrapVue3)
 app.use(pinia)
+app.config.globalProperties.$wsService = wsService
 
 app.mount('#app')
 
