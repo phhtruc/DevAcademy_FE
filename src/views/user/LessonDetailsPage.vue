@@ -19,6 +19,11 @@ const chapterLessons = reactive({})
 const loadingChapter = reactive({})
 const expandedChaptersSidebar = reactive({})
 const showReferContent = ref(false)
+const isSidebarOpen = ref(true)
+
+const toggleSidebar = () => {
+  isSidebarOpen.value = !isSidebarOpen.value
+}
 
 const fetchLessonDetails = async (id) => {
   try {
@@ -41,15 +46,12 @@ const fetchChapters = async () => {
       loadingChapter[chapter.id] = false
     })
 
-    // Tìm chapter chứa lesson hiện tại
     const currentLessonChapter = await findLessonChapter()
 
     if (currentLessonChapter) {
-      // Mở rộng chapter chứa lesson hiện tại
       expandedChaptersSidebar[currentLessonChapter] = true
       await fetchChapterLessons(currentLessonChapter)
     } else if (chapters.value.length > 0) {
-      // Mở rộng chapter đầu tiên nếu không tìm thấy chapter chứa lesson hiện tại
       expandedChaptersSidebar[chapters.value[0].id] = true
       await fetchChapterLessons(chapters.value[0].id)
     }
@@ -116,92 +118,101 @@ onMounted(async () => {
   <div class="lesson-details-page">
     <div class="container">
       <div class="row">
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-          <div class="course-sidebar">
-            <div class="sidebar-header">
-              <h4>Nội dung khóa học</h4>
-              <p>{{ chapters.length }} chương</p>
+        <!-- Collapsible Sidebar -->
+        <div class="sidebar-container" :style="{ width: isSidebarOpen ? '30%' : '4%' }">
+          <div class="course-sidebar mr-3">
+            <!-- Toggle button inside sidebar -->
+            <div class="sidebar-toggle" @click="toggleSidebar">
+              <i :class="['fas', isSidebarOpen ? 'fa-chevron-left' : 'fa-chevron-right']"></i>
             </div>
 
-            <div class="sidebar-chapters">
-              <div
-                v-for="chapter in chapters"
-                :key="`sidebar-${chapter.id}`"
-                class="sidebar-chapter"
-              >
-                <div class="sidebar-chapter-header" @click="toggleChapterSidebar(chapter.id)">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <span class="sidebar-chapter-title">
-                      <span class="chapter-number">{{ chapters.indexOf(chapter) + 1 }}.</span>
-                      {{ chapter.name }}
-                    </span>
-                    <i
-                      class="fas"
-                      :class="
-                        isChapterExpandedSidebar(chapter.id) ? 'fa-chevron-up' : 'fa-chevron-down'
-                      "
-                    ></i>
-                  </div>
-                </div>
+            <div :class="['sidebar-content', { 'd-none': !isSidebarOpen }]">
+              <div class="sidebar-header">
+                <h4>Nội dung khóa học</h4>
+                <p>{{ chapters.length }} chương</p>
+              </div>
 
-                <div v-if="isChapterExpandedSidebar(chapter.id)" class="sidebar-chapter-content">
-                  <div v-if="loadingChapter[chapter.id]" class="sidebar-loading">
-                    <div class="spinner-border spinner-border-sm" role="status"></div>
-                    <span>Đang tải...</span>
-                  </div>
-
-                  <ul v-else-if="chapterLessons[chapter.id]?.length" class="sidebar-lessons">
-                    <li
-                      v-for="lessonItem in chapterLessons[chapter.id]"
-                      :key="`sidebar-lesson-${lessonItem.id}`"
-                      :class="[
-                        'sidebar-lesson',
-                        parseInt(lessonItem.id) === parseInt(route.params.idLesson) ? 'active' : '',
-                        !isEnrolled && !lessonItem.isPublic ? 'locked' : '',
-                      ]"
-                      @click="
-                        lessonItem.isPublic || isEnrolled ? handleLessonClick(lessonItem) : null
-                      "
-                    >
-                      <div class="d-flex align-items-start">
-                        <span class="lesson-icon">
-                          <i
-                            class="fas"
-                            :class="{
-                              'fa-play-circle': lessonItem.type === 'LECTURES',
-                              'fa-chalkboard-teacher': lessonItem.type === 'READINGS',
-                              'fa-tasks': lessonItem.type === 'EXERCISES',
-                            }"
-                          ></i>
-                        </span>
-                        <span
-                          class="lesson-type mr-1"
-                          :style="{
-                            color:
-                              parseInt(lessonItem.id) === parseInt(route.params.idLesson)
-                                ? '#3f6ad8'
-                                : '#6c757d',
-                          }"
-                        >
-                          [
-                          <span v-if="lessonItem.type === 'READINGS'">Bài đọc</span>
-                          <span v-else-if="lessonItem.type === 'LECTURES'">Bài giảng</span>
-                          <span v-else-if="lessonItem.type === 'EXERCISES'">Bài tập</span>
-                          ]
-                        </span>
-                        <span class="lesson-title">
-                          {{ lessonItem.name || lessonItem.title }}
-                        </span>
-                      </div>
-                      <span v-if="!isEnrolled && !lessonItem.isPublic" class="lesson-lock">
-                        <i class="fas fa-lock"></i>
+              <div class="sidebar-chapters">
+                <div
+                  v-for="chapter in chapters"
+                  :key="`sidebar-${chapter.id}`"
+                  class="sidebar-chapter"
+                >
+                  <div class="sidebar-chapter-header" @click="toggleChapterSidebar(chapter.id)">
+                    <div class="d-flex align-items-center justify-content-between">
+                      <span class="sidebar-chapter-title">
+                        <span class="chapter-number">{{ chapters.indexOf(chapter) + 1 }}.</span>
+                        {{ chapter.name }}
                       </span>
-                      <span v-else class="lesson-duration">{{ lessonItem.duration }}</span>
-                    </li>
-                  </ul>
+                      <i
+                        class="fas"
+                        :class="
+                          isChapterExpandedSidebar(chapter.id) ? 'fa-chevron-up' : 'fa-chevron-down'
+                        "
+                      ></i>
+                    </div>
+                  </div>
 
-                  <div v-else class="sidebar-empty">Không có bài học nào.</div>
+                  <div v-if="isChapterExpandedSidebar(chapter.id)" class="sidebar-chapter-content">
+                    <div v-if="loadingChapter[chapter.id]" class="sidebar-loading">
+                      <div class="spinner-border spinner-border-sm" role="status"></div>
+                      <span>Đang tải...</span>
+                    </div>
+
+                    <ul v-else-if="chapterLessons[chapter.id]?.length" class="sidebar-lessons">
+                      <li
+                        v-for="lessonItem in chapterLessons[chapter.id]"
+                        :key="`sidebar-lesson-${lessonItem.id}`"
+                        :class="[
+                          'sidebar-lesson',
+                          parseInt(lessonItem.id) === parseInt(route.params.idLesson)
+                            ? 'active'
+                            : '',
+                          !isEnrolled && !lessonItem.isPublic ? 'locked' : '',
+                        ]"
+                        @click="
+                          lessonItem.isPublic || isEnrolled ? handleLessonClick(lessonItem) : null
+                        "
+                      >
+                        <div class="d-flex align-items-start">
+                          <span class="lesson-icon">
+                            <i
+                              class="fas"
+                              :class="{
+                                'fa-play-circle': lessonItem.type === 'LECTURES',
+                                'fa-chalkboard-teacher': lessonItem.type === 'READINGS',
+                                'fa-tasks': lessonItem.type === 'EXERCISES',
+                              }"
+                            ></i>
+                          </span>
+                          <span
+                            class="lesson-type mr-1"
+                            :style="{
+                              color:
+                                parseInt(lessonItem.id) === parseInt(route.params.idLesson)
+                                  ? '#3f6ad8'
+                                  : '#6c757d',
+                            }"
+                          >
+                            [
+                            <span v-if="lessonItem.type === 'READINGS'">Bài đọc</span>
+                            <span v-else-if="lessonItem.type === 'LECTURES'">Bài giảng</span>
+                            <span v-else-if="lessonItem.type === 'EXERCISES'">Bài tập</span>
+                            ]
+                          </span>
+                          <span class="lesson-title">
+                            {{ lessonItem.name || lessonItem.title }}
+                          </span>
+                        </div>
+                        <span v-if="!isEnrolled && !lessonItem.isPublic" class="lesson-lock">
+                          <i class="fas fa-lock"></i>
+                        </span>
+                        <span v-else class="lesson-duration">{{ lessonItem.duration }}</span>
+                      </li>
+                    </ul>
+
+                    <div v-else class="sidebar-empty">Không có bài học nào.</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -209,7 +220,7 @@ onMounted(async () => {
         </div>
 
         <!-- Lesson Content -->
-        <div class="col-lg-8">
+        <div class="lesson-content" :style="{ width: isSidebarOpen ? '68%' : '95%' }">
           <div class="lesson-header d-flex align-items-center mb-3">
             <button class="back-btn me-3 mr-4 ml-3" @click="goBack">
               <i class="fas fa-arrow-left"></i>
@@ -245,11 +256,6 @@ onMounted(async () => {
             <div v-else-if="lesson.type === 'EXERCISES'">
               <p>Phần bài tập hiện đang được cập nhật.</p>
             </div>
-
-            <!-- Default Case -->
-            <div v-else>
-              <p>Loại bài học không xác định.</p>
-            </div>
           </div>
         </div>
       </div>
@@ -258,7 +264,7 @@ onMounted(async () => {
 </template>
 <style scoped>
 .lesson-header {
-  background-color: #0084ff; /* Màu xanh tương tự ảnh */
+  background-color: #0084ff;
   border-radius: 0.5rem;
   padding: 5px;
 }
@@ -294,7 +300,7 @@ onMounted(async () => {
 
 .video-container {
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 56.25%;
   height: 0;
   overflow: hidden;
 }
@@ -307,7 +313,11 @@ onMounted(async () => {
   height: 100%;
 }
 
-/* Sidebar styles copied from CourseDetailsPage.vue */
+.sidebar-container, .lesson-content{
+  transition: all 0.3s ease;
+  position: relative;
+}
+
 .course-sidebar {
   background: white;
   border-radius: 8px;
@@ -315,6 +325,33 @@ onMounted(async () => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 90px;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle {
+  position: absolute;
+  top: 20px;
+  right: 5px;
+  z-index: 100;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  height: 30px;
+  width: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.sidebar-toggle:hover {
+  background-color: #f8f9fa;
+}
+
+.sidebar-content {
+  transition: all 0.3s ease;
 }
 
 .sidebar-header {
