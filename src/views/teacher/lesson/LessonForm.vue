@@ -47,7 +47,7 @@
                       type="radio"
                       id="active"
                       name="status"
-                      value="true"
+                      :value="true"
                       v-model="lesson.isPublic"
                       class="custom-control-input"
                     />
@@ -58,7 +58,7 @@
                       type="radio"
                       id="inactive"
                       name="status"
-                      value="false"
+                      :value="false"
                       v-model="lesson.isPublic"
                       class="custom-control-input"
                     />
@@ -126,12 +126,12 @@
             </div>
             <div class="form-group">
               <label for="content">Nội dung bài học</label>
-              <CKEditorComponent v-model="lesson.content" />
+              <ToastEditorComponent v-model="lesson.content" :key="editorKey" />
               <div class="invalid-feedback" v-if="errors.content">{{ errors.content }}</div>
             </div>
             <div class="form-group">
               <label for="contentRefer">Tài liệu tham khảo</label>
-              <CKEditorComponent v-model="lesson.contentRefer" />
+              <ToastEditorComponent v-model="lesson.contentRefer" :key="editorKey"/>
               <div class="invalid-feedback" v-if="errors.contentRefer">
                 {{ errors.contentRefer }}
               </div>
@@ -159,8 +159,8 @@ import 'filepond/dist/filepond.min.css'
 import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
-import CKEditorComponent from '@/components/CKEditorComponent.vue'
 import useWebSocket from '@/composables/useWebSocket'
+import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
@@ -174,14 +174,16 @@ const filePondFiles = ref([])
 let toastId = null
 const linkYoutubeEmbed = 'https://www.youtube.com/embed/'
 
+const editorKey = ref(0)
+
 const lesson = ref({
   name: '',
   type: '',
   lessonOrder: '',
-  content: 'j',
+  content: '',
   videoUrl: '',
   isPublic: false,
-  contentRefer: 'j',
+  contentRefer: '',
   files: [],
 })
 
@@ -192,7 +194,6 @@ const errors = ref({
   content: '',
   videoUrl: '',
   contentRefer: '',
-  isPublic: '',
   files: '',
 })
 
@@ -335,6 +336,9 @@ const addLesson = async () => {
         position: 'top-right',
         autoClose: 1000,
       })
+      setTimeout(() => {
+      router.push(`/teacher/courses/${idCourse}/chapters/${idChapter}/lessons`)
+    }, 1100)
     } else {
       response = await axios.post(`${rootAPI}/lessons`, formData, {
         headers: {
@@ -370,10 +374,11 @@ const fetchLesson = async (id) => {
     lesson.value.name = lessonData.name
     lesson.value.type = lessonData.type
     lesson.value.lessonOrder = lessonData.lessonOrder
-    lesson.value.content = lessonData.content
+    lesson.value.content = lessonData.content || ''
     lesson.value.contentRefer = lessonData.contentRefer || ''
     lesson.value.videoUrl = lessonData.videoUrl || ''
-    lesson.value.isPublic = lessonData.isPublic || ''
+    lesson.value.isPublic = Boolean(lessonData.isPublic)
+    editorKey.value++
   } catch (error) {
     console.error('Error fetching lesson:', error)
     toast.error('Không thể tải thông tin bài học', {
@@ -396,6 +401,7 @@ onMounted(async () => {
     isUpdate.value = true
     await fetchLesson(idLesson)
   }
+
   subscribe('/topic/progress', (message) => {
     updateLessonStatus(message.status)
     console.log('Received message:', message)

@@ -2,7 +2,6 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
-import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const route = useRoute()
@@ -227,16 +226,16 @@ onMounted(async () => {
             </button>
             <h3 class="lesson-title-goback mb-0 text-white">{{ lesson.name }}</h3>
           </div>
-          <h1 class="lesson-title">{{ lesson.name }}</h1>
+          <!-- <h1 class="lesson-title">{{ lesson.name }}</h1> -->
 
           <div class="lesson-content">
             <!-- Type: READINGS -->
             <div v-if="lesson.type === 'READINGS'">
-              <div v-html="lesson.content"></div>
-              <button class="btn btn-primary mt-3" @click="showReferContent = !showReferContent">
+              <div class="ml-3" v-html="lesson.content"></div>
+              <button class="btn btn-primary mt-1" @click="showReferContent = !showReferContent">
                 Tham khảo
               </button>
-              <div v-if="showReferContent" class="mt-3" v-html="lesson.contentRefer"></div>
+              <div v-if="showReferContent" class="mt-1" v-html="lesson.contentRefer"></div>
             </div>
 
             <!-- Type: LECTURES -->
