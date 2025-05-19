@@ -50,7 +50,7 @@
       <template #item="{ element, index }">
         <tr :key="element.id" class="w-100 drag-item">
           <th scope="row" class="text-center">
-            {{ (currentPage - 1) * props.perPage + index + 1 }}
+            {{ (internalCurrentPage - 1) * props.perPage + index + 1 }}
           </th>
           <td
             v-for="(key, keyIndex) in props.keys"
@@ -88,12 +88,12 @@
       <tbody>
         <tr v-for="(item, index) in props.data" :key="item.id">
           <th scope="row" class="text-center">
-            {{ (currentPage - 1) * props.perPage + index + 1 }}
+            {{ (internalCurrentPage - 1) * props.perPage + index + 1 }}
           </th>
           <td v-for="(key, keyIndex) in props.keys" :key="keyIndex" :class="getColumnClass(key)">
             <template v-if="key === 'name'">
-              <router-link :to="props.actions.view(item)" class="course-name-link">
-                {{ item[key] || 'N/A' }}
+              <router-link :to="props.actions.view(item)" class="course-name-link text-wrap">
+                <div class="name-cell">{{ item[key] || 'N/A' }}</div>
               </router-link>
             </template>
             <template v-else-if="key === 'roles'">
@@ -216,7 +216,7 @@
   <b-pagination
     v-if="props.totalRows > 0"
     class="pagination mt-3 justify-content-center"
-    v-model="currentPage"
+    v-model="internalCurrentPage"
     :total-rows="props.totalRows"
     :per-page="props.perPage"
     aria-controls="datatable"
@@ -260,6 +260,10 @@ const props = defineProps({
     type: Number,
     default: 10,
   },
+  currentPage: {
+    type: Number,
+    default: 1
+  },
   viewPublic: {
     type: Boolean,
     default: true,
@@ -278,7 +282,7 @@ const props = defineProps({
   },
   type: {
     type: String,
-    default: 'course',
+    default: '',
   },
   sortOrder: {
     type: String,
@@ -292,8 +296,6 @@ window.addEventListener('resize', function () {
   widthScreen.value = window.innerWidth || document.documentElement.clientWidth
 })
 
-const currentPage = ref(1)
-
 const emit = defineEmits(['updateOrder', 'deleteItem', 'pageChange', 'sortPrice', 'toggleStatus'])
 const enabled = true
 const dragging = ref(false)
@@ -306,12 +308,22 @@ const confirmDelete = (item) => {
   emit('deleteItem', item)
 }
 
-watch(currentPage, (newPage) => {
-  pageChanged()
-})
+const internalCurrentPage = ref(props.currentPage);
 
-const pageChanged = () => {
-  emit('pageChange', currentPage.value)
+watch(() => props.currentPage, (newValue) => {
+  if (newValue !== internalCurrentPage.value) {
+    internalCurrentPage.value = newValue;
+  }
+}, { immediate: true });
+
+watch(internalCurrentPage, (newValue) => {
+  if (newValue !== props.currentPage) {
+    emit('pageChange', newValue);
+  }
+});
+
+const pageChanged = (newPage) => {
+  emit('pageChange', newPage)
 }
 
 const formatPrice = (value) => {
@@ -324,7 +336,7 @@ const formatPrice = (value) => {
 const getStatusLabel = (type, value) => {
   if (type === 'course') {
     return value ? 'Công khai' : 'Ẩn'
-  } else if (type === 'chapter') {
+  } else if (type === 'lesson') {
     return value ? 'Học thử' : 'Khoá'
   }
   return 'N/A'

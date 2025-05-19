@@ -13,13 +13,6 @@ const userRole = ref(localStorage.getItem('roles'))
       <router-link v-if="userRole === '[ADMIN]'" :to="'/admin/users'">
         <img src="@/assets/images/logo-name.jpg" class="img-fluid w-150" alt="" />
       </router-link>
-      <div class="iq-menu-bt align-self-center">
-        <div class="wrapper-menu">
-          <div class="line-menu half start"></div>
-          <div class="line-menu"></div>
-          <div class="line-menu half end"></div>
-        </div>
-      </div>
     </div>
     <div id="sidebar-scrollbar">
       <nav class="iq-sidebar-menu">

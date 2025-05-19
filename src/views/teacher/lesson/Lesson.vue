@@ -80,7 +80,6 @@ const fetchLessons = async () => {
 
 const handlePageChange = (page) => {
   currentPage.value = page
-  console.log('Page changed to:', currentPage.value)
   fetchLessons()
 }
 
@@ -193,7 +192,9 @@ onMounted(async () => {
                 :keys="keys"
                 :actions="actions"
                 :totalRows="totalRows"
+                type="lesson"
                 :perPage="perPage"
+                :currentPage="currentPage" 
                 @deleteItem="deleteLesson"
                 @pageChange="handlePageChange"
               ></Table>

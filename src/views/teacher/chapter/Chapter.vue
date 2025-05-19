@@ -126,6 +126,7 @@
                         :actions="actions"
                         :totalRows="totalRows"
                         type="chapter"
+                        :currentPage="currentPage" 
                         :perPage="perPage"
                         @delete-item="deleteChapter"
                         @pageChange="handlePageChange"

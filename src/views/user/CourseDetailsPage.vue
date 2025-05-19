@@ -50,7 +50,7 @@ const setActiveLesson = (lessonId) => {
 
 const handleLessonClick = (lesson) => {
   if (lesson.isPublic || isEnrolled.value) {
-    router.push(`/course/${courseId}/lesson/${lesson.id}`)
+    router.push(`/khoa-hoc/${courseId}/noi-dung/${lesson.id}`)
   }
 }
 
@@ -207,6 +207,7 @@ onMounted(fetchCourseDetails)
       <section class="course-content-section">
         <div class="container">
           <div class="row">
+            <!-- Sidebar -->
             <div class="col-lg-12">
               <div class="course-sidebar">
                 <div class="sidebar-header">
@@ -222,7 +223,10 @@ onMounted(fetchCourseDetails)
                   >
                     <div class="sidebar-chapter-header" @click="toggleChapterSidebar(chapter.id)">
                       <div class="d-flex align-items-center justify-content-between">
-                        <span class="sidebar-chapter-title">{{ chapter.name }}</span>
+                        <h4 class="sidebar-chapter-title">
+                          <span class="chapter-number">{{ chapters.indexOf(chapter) + 1 }}.</span>
+                          {{ chapter.name }}
+                        </h4>
                         <i
                           class="fas"
                           :class="
@@ -233,7 +237,7 @@ onMounted(fetchCourseDetails)
                         ></i>
                       </div>
                       <div class="sidebar-chapter-info">
-                        <small>{{ chapter.lessonCount || 0 }} bài học</small>
+                        <span>{{ chapter.lessonCount || 0 }} bài học</span>
                       </div>
                     </div>
 
@@ -262,12 +266,18 @@ onMounted(fetchCourseDetails)
                               <i
                                 class="fas"
                                 :class="{
-                                  'fa-play-circle': lesson.type === 'VIDEO',
-                                  'fa-question-circle': lesson.type === 'QUIZ',
-                                  'fa-tasks': lesson.type === 'ASSIGNMENT',
-                                  'fa-file-alt': !lesson.type || lesson.type === 'TEXT',
+                                  'fa-play-circle': lesson.type === 'LECTURES',
+                                  'fa-chalkboard-teacher': lesson.type === 'READINGS',
+                                  'fa-tasks': lesson.type === 'EXERCISES',
                                 }"
                               ></i>
+                            </span>
+                            <span class="lesson-type mr-1">
+                              [
+                              <span v-if="lesson.type === 'READINGS'">Bài đọc</span>
+                              <span v-else-if="lesson.type === 'LECTURES'">Bài giảng</span>
+                              <span v-else-if="lesson.type === 'EXERCISES'">Bài tập</span>
+                              ]
                             </span>
                             <span class="lesson-title">{{ lesson.name || lesson.title }}</span>
                           </div>
@@ -277,7 +287,7 @@ onMounted(fetchCourseDetails)
                           <span v-else class="lesson-duration">{{ lesson.duration }}</span>
                         </li>
                       </ul>
-                      
+
                       <div v-else class="sidebar-empty">Không có bài học nào.</div>
                     </div>
                   </div>

@@ -22,6 +22,7 @@ import HomePage from '@/views/user/HomePage.vue'
 import CoursePage from '@/views/user/CoursePage.vue'
 import CourseDetailsPage from '@/views/user/CourseDetailsPage.vue'
 import AboutUs from '@/views/user/AboutUs.vue'
+import LessonDetailsPage from '@/views/user/LessonDetailsPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -235,6 +236,12 @@ const router = createRouter({
       path: '/ve-chung-toi',
       name: 've-chung-toi',
       component: AboutUs,
+      meta: {hideNavbar: true}
+    },
+    {
+      path: '/khoa-hoc/:idCourse/noi-dung/:idLesson',
+      name: 'chi-tiet-bai-hoc',
+      component: LessonDetailsPage,
       meta: {hideNavbar: true}
     },
   ],

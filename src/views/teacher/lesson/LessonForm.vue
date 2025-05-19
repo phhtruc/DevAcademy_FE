@@ -192,7 +192,7 @@ const errors = ref({
   content: '',
   videoUrl: '',
   contentRefer: '',
-  isPublic: false,
+  isPublic: '',
   files: '',
 })
 
@@ -373,6 +373,7 @@ const fetchLesson = async (id) => {
     lesson.value.content = lessonData.content
     lesson.value.contentRefer = lessonData.contentRefer || ''
     lesson.value.videoUrl = lessonData.videoUrl || ''
+    lesson.value.isPublic = lessonData.isPublic || ''
   } catch (error) {
     console.error('Error fetching lesson:', error)
     toast.error('Không thể tải thông tin bài học', {

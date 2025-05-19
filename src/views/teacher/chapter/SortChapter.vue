@@ -31,6 +31,7 @@
                   :keys="keys"
                   :actions="actions"
                   :isDraggable="true"
+                  :viewPublic="false"
                   @updateOrder="handleDragUpdate"
                 >
                 </Table>
@@ -71,7 +72,7 @@ const actions = reactive({
 const currentPage = ref(1)
 const perPage = ref(50)
 
-const header = ['STT', 'Tên chương', 'Trạng thái']
+const header = ['STT', 'Tên chương']
 const keys = ['name']
 
 function handleDragUpdate(updatedData) {
