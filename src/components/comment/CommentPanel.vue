@@ -1,0 +1,725 @@
+<template>
+  <div class="comment-panel" :class="{ 'comment-panel-open': isOpen }">
+    <div class="comment-panel-header">
+      <h4>Hỏi Đáp</h4>
+      <button class="close-btn" @click="$emit('close')">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div class="comment-panel-content">
+      <div class="comment-form mb-4">
+        <div v-if="!editorVisible" class="placeholder-box" @click="editorVisible = true">
+          <img src="https://www.gravatar.com/avatar/?d=mp" class="avatar" />
+          <div class="fake-input">Nhập bình luận mới của bạn</div>
+        </div>
+        <div v-else class="d-flex align-items-start">
+          <img src="https://www.gravatar.com/avatar/?d=mp" class="avatar" />
+          <div class="editor-wrapper w-100">
+            <div class="editor-toolbar">
+              <button
+                @click="editor.chain().focus().toggleBold().run()"
+                :class="{ 'is-active': editor?.isActive('bold') }"
+                title="Đậm (Ctrl+B)"
+              >
+                <i class="fas fa-bold"></i>
+              </button>
+              <button
+                @click="editor.chain().focus().toggleItalic().run()"
+                :class="{ 'is-active': editor?.isActive('italic') }"
+                title="Nghiêng (Ctrl+I)"
+              >
+                <i class="fas fa-italic"></i>
+              </button>
+              <button
+                @click="editor.chain().focus().toggleCodeBlock().run()"
+                :class="{ 'is-active': editor?.isActive('codeBlock') }"
+                title="Khối mã"
+              >
+                <i class="fas fa-code"></i>
+              </button>
+              <button
+                @click="editor.chain().focus().toggleBulletList().run()"
+                :class="{ 'is-active': editor?.isActive('bulletList') }"
+                title="Danh sách"
+              >
+                <i class="fas fa-list-ul"></i>
+              </button>
+            </div>
+            <editor-content :editor="editor" />
+          </div>
+        </div>
+
+        <div v-if="editorVisible" class="d-flex justify-content-end mt-2">
+          <button class="btn btn-light mt-2 mr-2" @click=";(editorVisible = false), clearEditor()">
+            Huỷ
+          </button>
+          <button class="btn btn-primary mt-2" @click="postComment" :disabled="isEditorEmpty">
+            Gửi câu hỏi
+          </button>
+        </div>
+      </div>
+      <span class="font-weight-bold h5">{{ comments.length }} bình luận</span>
+
+      <div class="comment-list mt-2">
+        <div v-if="loading" class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <div v-else-if="comments.length === 0" class="text-center py-4">
+          <p class="text-muted">Chưa có câu hỏi nào. Hãy là người đầu tiên đặt câu hỏi!</p>
+        </div>
+
+        <div v-else class="comment-items">
+          <div class="comment-item" v-for="commentObj in comments" :key="commentObj.comment.id">
+            <div class="comment-header d-flex align-items-center">
+              <div class="avatar">
+                <img
+                  :src="commentObj.comment.userAvatar || 'https://www.gravatar.com/avatar/?d=mp'"
+                  alt="User avatar"
+                />
+              </div>
+              <div class="user-info ml-2">
+                <h6 class="mb-0">{{ commentObj.comment.username }}</h6>
+                <small class="text-muted">{{ formatDate(commentObj.comment.createdAt) }}</small>
+              </div>
+            </div>
+
+            <div class="comment-body mt-2">
+              <div v-html="commentObj.comment.content"></div>
+            </div>
+
+            <div class="comment-actions">
+              <button class="btn btn-sm btn-link" @click="toggleReplyForm(commentObj.comment.id)">
+                Trả lời
+              </button>
+              <button
+                class="btn btn-sm btn-link"
+                @click="likeComment(commentObj.comment.id)"
+                :class="{ 'text-primary': commentObj.comment.isLikedByCurrentUser }"
+              >
+                <i class="fas fa-thumbs-up"></i> {{ commentObj.comment.likeCount || 0 }}
+              </button>
+              <button
+                v-if="canDelete(commentObj.comment)"
+                class="btn btn-sm btn-link text-danger"
+                @click="deleteComment(commentObj.comment.id)"
+              >
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+            <!-- <div class="comment-actions">
+              <button
+                class="btn btn-sm btn-link py-0"
+                @click="likeComment(reply.id)"
+                :class="{ 'text-primary': reply.isLikedByCurrentUser }"
+              >
+                <i class="fas fa-thumbs-up"></i> {{ reply.likeCount || 0 }}
+              </button>
+
+              <div class="dropdown" v-if="canDelete(reply)">
+                <button
+                  class="btn btn-sm btn-link py-0 dropdown-toggle"
+                  type="button"
+                  :id="'dropdownMenu' + reply.id"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false"
+                >
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul
+                  class="dropdown-menu dropdown-menu-end"
+                  :aria-labelledby="'dropdownMenu' + reply.id"
+                >
+                  <li>
+                    <button class="dropdown-item text-danger" @click="deleteComment(reply.id)">
+                      <i class="fas fa-trash me-2"></i> Xóa bình luận
+                    </button>
+                  </li>
+                </ul>
+              </div>
+            </div> -->
+
+            <div v-if="replyFormVisible[commentObj.comment.id]" class="reply-form mt-2">
+              <div class="editor-wrapper w-100">
+                <div class="editor-toolbar">
+                  <button
+                    @click="editorCommands(commentObj.comment.id, 'bold')"
+                    :class="{ 'is-active': isEditorCommandActive(commentObj.comment.id, 'bold') }"
+                    title="Đậm (Ctrl+B)"
+                  >
+                    <i class="fas fa-bold"></i>
+                  </button>
+                  <button
+                    @click="editorCommands(commentObj.comment.id, 'italic')"
+                    :class="{ 'is-active': isEditorCommandActive(commentObj.comment.id, 'italic') }"
+                    title="Nghiêng (Ctrl+I)"
+                  >
+                    <i class="fas fa-italic"></i>
+                  </button>
+                  <button
+                    @click="editorCommands(commentObj.comment.id, 'codeBlock')"
+                    :class="{
+                      'is-active': isEditorCommandActive(commentObj.comment.id, 'codeBlock'),
+                    }"
+                    title="Khối mã"
+                  >
+                    <i class="fas fa-code"></i>
+                  </button>
+                  <button
+                    @click="editorCommands(commentObj.comment.id, 'bulletList')"
+                    :class="{
+                      'is-active': isEditorCommandActive(commentObj.comment.id, 'bulletList'),
+                    }"
+                    title="Danh sách"
+                  >
+                    <i class="fas fa-list-ul"></i>
+                  </button>
+                </div>
+                <editor-content :editor="replyEditors[commentObj.comment.id]" />
+              </div>
+
+              <div class="d-flex mt-2">
+                <button class="btn btn-sm btn-primary" @click="postReply(commentObj.comment.id)">
+                  Trả lời
+                </button>
+                <button
+                  class="btn btn-sm btn-light ml-2"
+                  @click="toggleReplyForm(commentObj.comment.id)"
+                >
+                  Hủy
+                </button>
+              </div>
+            </div>
+
+            <!-- Replies -->
+            <div
+              v-if="commentObj.replies && commentObj.replies.length > 0"
+              class="comment-replies mt-3"
+            >
+              <div class="reply-item" v-for="reply in commentObj.replies" :key="reply.id">
+                <div class="comment-header d-flex align-items-center">
+                  <div class="avatar avatar-sm">
+                    <img
+                      :src="reply.userAvatar || 'https://www.gravatar.com/avatar/?d=mp'"
+                      alt="User avatar"
+                    />
+                  </div>
+                  <div class="user-info ml-2">
+                    <h6 class="mb-0 small">{{ reply.username }}</h6>
+                    <small class="text-muted">{{ formatDate(reply.createdAt) }}</small>
+                  </div>
+                </div>
+
+                <div class="comment-body mt-1">
+                  <div v-html="reply.content" class="mb-1"></div>
+                </div>
+
+                <div class="comment-actions">
+                  <button
+                    class="btn btn-sm btn-link py-0"
+                    @click="likeComment(reply.id)"
+                    :class="{ 'text-primary': reply.isLikedByCurrentUser }"
+                  >
+                    <i class="fas fa-thumbs-up"></i> {{ reply.likeCount || 0 }}
+                  </button>
+                  <button
+                    v-if="canDelete(reply)"
+                    class="btn btn-sm btn-link py-0 text-danger"
+                    @click="deleteComment(reply.id)"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+  
+<script setup>
+import { ref, onMounted, reactive, watch, onBeforeUnmount, shallowRef, computed } from 'vue'
+import axios from '@/plugins/axios'
+import { useAuthStore } from '@/stores/auth'
+import { Editor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder'
+
+const props = defineProps({
+  isOpen: {
+    type: Boolean,
+    required: true,
+  },
+  lessonId: {
+    type: Number,
+    required: true,
+  },
+})
+
+const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const emit = defineEmits(['close'])
+const authStore = useAuthStore()
+
+const comments = ref([])
+const loading = ref(false)
+const replyFormVisible = reactive({})
+const replyContent = reactive({})
+const editor = shallowRef(null)
+const editorVisible = ref(false)
+const replyEditors = reactive({})
+
+const getUserId = () => {
+  try {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      const userData = JSON.parse(userStr)
+      return userData.id
+    }
+  } catch (e) {
+    console.error('Error parsing user data from localStorage:', e)
+  }
+  return null
+}
+
+const currentUserId = ref(getUserId())
+
+const fetchComments = async () => {
+  loading.value = true
+  try {
+    const response = await axios.get(`${rootAPI}/comments/lessons/${props.lessonId}`)
+    comments.value = response.data.data
+  } catch (error) {
+    console.error('Error fetching comments:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
+const isEditorEmpty = computed(() => {
+  if (!editor.value) return true
+  return editor.value.isEmpty
+})
+
+const initEditor = () => {
+  editor.value = new Editor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: 'Nhập câu hỏi hoặc ý kiến của bạn...',
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class: 'tiptap-editor',
+      },
+    },
+  })
+}
+
+const initReplyEditor = (commentId) => {
+  if (replyEditors[commentId]) return
+
+  replyEditors[commentId] = new Editor({
+    extensions: [
+      StarterKit,
+      Placeholder.configure({
+        placeholder: 'Nhập câu trả lời của bạn...',
+      }),
+    ],
+    editorProps: {
+      attributes: {
+        class: 'tiptap-editor reply-editor',
+      },
+    },
+  })
+}
+
+const destroyReplyEditor = (commentId) => {
+  if (replyEditors[commentId]) {
+    replyEditors[commentId].destroy()
+    delete replyEditors[commentId]
+  }
+}
+
+const editorCommands = (commentId, command) => {
+  if (!replyEditors[commentId]) return
+
+  switch (command) {
+    case 'bold':
+      replyEditors[commentId].chain().focus().toggleBold().run()
+      break
+    case 'italic':
+      replyEditors[commentId].chain().focus().toggleItalic().run()
+      break
+    case 'codeBlock':
+      replyEditors[commentId].chain().focus().toggleCodeBlock().run()
+      break
+    case 'bulletList':
+      replyEditors[commentId].chain().focus().toggleBulletList().run()
+      break
+    default:
+      break
+  }
+}
+
+const isEditorCommandActive = (commentId, command) => {
+  if (!replyEditors[commentId]) return false
+
+  return replyEditors[commentId].isActive(command)
+}
+
+const clearEditor = () => {
+  if (editor.value) {
+    editor.value.commands.clearContent()
+  }
+}
+
+const postComment = async () => {
+  if (!editor.value || editor.value.isEmpty) return
+
+  const content = editor.value.getHTML()
+
+  try {
+    await axios.post(`${rootAPI}/comments/lessons/${props.lessonId}`, {
+      content: content,
+    })
+
+    clearEditor()
+    await fetchComments()
+  } catch (error) {
+    console.error('Error posting comment:', error)
+  }
+}
+
+const toggleReplyForm = (commentId) => {
+  if (replyFormVisible[commentId]) {
+    replyFormVisible[commentId] = false
+    destroyReplyEditor(commentId)
+  } else {
+    replyFormVisible[commentId] = true
+    initReplyEditor(commentId)
+  }
+}
+
+const postReply = async (commentId) => {
+  if (!replyEditors[commentId] || replyEditors[commentId].isEmpty) return
+
+  try {
+    const content = replyEditors[commentId].getHTML()
+
+    await axios.post(`${rootAPI}/comments/${commentId}/replies`, {
+      content: content,
+    })
+
+    replyFormVisible[commentId] = false
+    destroyReplyEditor(commentId)
+
+    await fetchComments()
+  } catch (error) {
+    console.error('Error posting reply:', error)
+  }
+}
+
+const likeComment = async (commentId) => {
+  const comment = findComment(commentId)
+  if (!comment) return
+
+  try {
+    if (comment.isLikedByCurrentUser) {
+      await axios.delete(`${rootAPI}/comments/${commentId}/likes`)
+      comment.isLikedByCurrentUser = false
+      comment.likeCount = Math.max(0, (comment.likeCount || 1) - 1)
+    } else {
+      await axios.post(`${rootAPI}/comments/${commentId}/likes`)
+      comment.isLikedByCurrentUser = true
+      comment.likeCount = (comment.likeCount || 0) + 1
+    }
+  } catch (error) {
+    console.error('Error toggling like:', error)
+  }
+}
+
+const deleteComment = async (commentId) => {
+  if (!confirm('Bạn có chắc chắn muốn xóa bình luận này không?')) return
+
+  try {
+    await axios.delete(`${rootAPI}/comments/${commentId}`)
+    await fetchComments()
+  } catch (error) {
+    console.error('Error deleting comment:', error)
+  }
+}
+
+const canDelete = (comment) => {
+  const userId = currentUserId.value
+  if (!userId) return false
+  return (
+    userId === comment.userId ||
+    (authStore.user &&
+      (authStore.user.roles?.includes('ROLE_ADMIN') ||
+        authStore.user.roles?.includes('ROLE_TEACHER')))
+  )
+}
+
+const formatDate = (dateString) => {
+  const options = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }
+  return new Date(dateString).toLocaleDateString('vi-VN', options)
+}
+
+const findComment = (id) => {
+  for (const commentObj of comments.value) {
+    if (commentObj.comment.id === id) return commentObj.comment
+
+    if (commentObj.replies) {
+      const reply = commentObj.replies.find((r) => r.id === id)
+      if (reply) return reply
+    }
+  }
+
+  return null
+}
+
+watch(
+  () => props.lessonId,
+  (newId, oldId) => {
+    if (newId !== oldId) {
+      comments.value = []
+      Object.keys(replyFormVisible).forEach((key) => {
+        delete replyFormVisible[key]
+        destroyReplyEditor(key)
+      })
+      Object.keys(replyContent).forEach((key) => delete replyContent[key])
+
+      if (props.isOpen) {
+        fetchComments()
+      }
+    }
+  },
+  { immediate: false }
+)
+
+onMounted(() => {
+  if (props.isOpen) {
+    fetchComments()
+  }
+  initEditor()
+})
+
+onBeforeUnmount(() => {
+  if (editor.value) {
+    editor.value.destroy()
+  }
+
+  Object.keys(replyEditors).forEach((id) => {
+    if (replyEditors[id]) {
+      replyEditors[id].destroy()
+    }
+  })
+})
+
+watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal) {
+      fetchComments()
+      if (!editor.value) {
+        initEditor()
+      }
+    }
+  }
+)
+</script>
+  
+  <style scoped>
+.comment-panel {
+  position: fixed;
+  top: 0;
+  right: -50%;
+  width: 50%;
+  height: 100vh;
+  background-color: white;
+  box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  transition: right 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.comment-panel-open {
+  right: 0;
+}
+
+.comment-panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #666;
+}
+
+.close-btn:hover {
+  color: #333;
+}
+
+.comment-panel-content {
+  padding: 20px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.comment-form textarea {
+  resize: none;
+  border-radius: 6px;
+}
+
+.comment-item {
+  padding: 16px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-sm {
+  width: 30px;
+  height: 30px;
+}
+
+.comment-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.comment-actions .btn-link {
+  padding: 0;
+  color: #666;
+  text-decoration: none;
+}
+
+.reply-form textarea {
+  resize: none;
+  font-size: 14px;
+}
+
+.comment-replies {
+  margin-left: 20px;
+  padding-left: 15px;
+  border-left: 2px solid #e0e0e0;
+}
+
+.reply-item {
+  padding: 12px;
+  border-radius: 6px;
+  background-color: #f2f2f2;
+  margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.user-info {
+  margin-left: 10px;
+}
+
+.ml-2 {
+  margin-left: 8px;
+}
+/* editor */
+.editor-wrapper {
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  display: flex;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #ddd;
+}
+
+.editor-toolbar button {
+  background: none;
+  border: none;
+  margin-right: 8px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #555;
+}
+
+.editor-toolbar button:hover {
+  background-color: #e0e0e0;
+}
+
+.editor-toolbar button.is-active {
+  background-color: #e0e0e0;
+  color: #0084ff;
+}
+
+:deep(.tiptap-editor) {
+  padding: 12px;
+  min-height: 50px;
+  outline: none;
+}
+
+:deep(.tiptap-editor p) {
+  margin: 0;
+}
+:deep(.tiptap-editor p.is-editor-empty:first-child::before) {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+:deep(.tiptap-editor pre) {
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  padding: 8px;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+:deep(.tiptap-editor ul) {
+  padding-left: 20px;
+}
+
+.placeholder-box {
+  display: flex;
+  align-items: center;
+  background-color: #f0f5fb;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: text;
+}
+</style>
