@@ -110,37 +110,6 @@
                 <i class="fas fa-trash"></i>
               </button>
             </div>
-            <!-- <div class="comment-actions">
-              <button
-                class="btn btn-sm btn-link py-0"
-                @click="likeComment(reply.id)"
-                :class="{ 'text-primary': reply.isLikedByCurrentUser }"
-              >
-                <i class="fas fa-thumbs-up"></i> {{ reply.likeCount || 0 }}
-              </button>
-
-              <div class="dropdown" v-if="canDelete(reply)">
-                <button
-                  class="btn btn-sm btn-link py-0 dropdown-toggle"
-                  type="button"
-                  :id="'dropdownMenu' + reply.id"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                >
-                  <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <ul
-                  class="dropdown-menu dropdown-menu-end"
-                  :aria-labelledby="'dropdownMenu' + reply.id"
-                >
-                  <li>
-                    <button class="dropdown-item text-danger" @click="deleteComment(reply.id)">
-                      <i class="fas fa-trash me-2"></i> Xóa bình luận
-                    </button>
-                  </li>
-                </ul>
-              </div>
-            </div> -->
 
             <div v-if="replyFormVisible[commentObj.comment.id]" class="reply-form mt-2">
               <div class="editor-wrapper w-100">
@@ -245,10 +214,12 @@
 <script setup>
 import { ref, onMounted, reactive, watch, onBeforeUnmount, shallowRef, computed } from 'vue'
 import axios from '@/plugins/axios'
+import { toast } from 'vue3-toastify' // Thêm import này
 import { useAuthStore } from '@/stores/auth'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
+import webSocketService from '@/services/WebSocketService'
 
 const props = defineProps({
   isOpen: {
@@ -272,6 +243,7 @@ const replyContent = reactive({})
 const editor = shallowRef(null)
 const editorVisible = ref(false)
 const replyEditors = reactive({})
+const webSocketSubscription = ref(null)
 
 const getUserId = () => {
   try {
@@ -390,6 +362,7 @@ const postComment = async () => {
     })
 
     clearEditor()
+    editorVisible.value = false
     await fetchComments()
   } catch (error) {
     console.error('Error posting comment:', error)
@@ -418,10 +391,11 @@ const postReply = async (commentId) => {
 
     replyFormVisible[commentId] = false
     destroyReplyEditor(commentId)
-
+    toast.success('Đã trả lời bình luận thành công!')
     await fetchComments()
   } catch (error) {
     console.error('Error posting reply:', error)
+    toast.error('Không thể trả lời bình luận')
   }
 }
 
@@ -441,6 +415,7 @@ const likeComment = async (commentId) => {
     }
   } catch (error) {
     console.error('Error toggling like:', error)
+    toast.error('Không thể thực hiện thao tác này')
   }
 }
 
@@ -449,15 +424,18 @@ const deleteComment = async (commentId) => {
 
   try {
     await axios.delete(`${rootAPI}/comments/${commentId}`)
+    toast.success('Đã xóa bình luận thành công!')
     await fetchComments()
   } catch (error) {
     console.error('Error deleting comment:', error)
+    toast.error('Không thể xóa bình luận')
   }
 }
 
 const canDelete = (comment) => {
   const userId = currentUserId.value
-  if (!userId) return false
+  if (!userId || !comment) return false
+
   return (
     userId === comment.userId ||
     (authStore.user &&
@@ -490,23 +468,254 @@ const findComment = (id) => {
   return null
 }
 
+const handleWebSocketMessage = (message) => {
+  console.log('Received WebSocket message:', message)
+
+  try {
+    // so sánh lessonId để check xử lý trong bài học hiện tại
+    if (message.lessonId && Number(message.lessonId) !== Number(props.lessonId)) {
+      console.log(
+        `Ignoring message for different lesson: ${message.lessonId}, current: ${props.lessonId}`
+      )
+      return
+    }
+
+    if (!Array.isArray(comments.value)) {
+      console.warn('comments.value is not an array. Resetting to empty array.')
+      comments.value = []
+    }
+
+    switch (message.type) {
+      case 'COMMENT':
+        if (message.payload) {
+          handleNewComment(message.payload)
+        }
+        break
+
+      case 'REPLY':
+        if (message.payload) {
+          handleNewReply(message.payload)
+        }
+        break
+
+      case 'LIKE':
+      case 'UNLIKE':
+        if (message.payload) {
+          updateCommentLike(message.payload)
+        }
+        break
+
+      case 'DELETE':
+        if (message.payload && message.payload.id) {
+          handleDeleteComment(message.payload.id)
+        } else if (typeof message.payload === 'number' || typeof message.payload === 'string') {
+          handleDeleteComment(message.payload)
+        }
+        break
+
+      default:
+        console.log('Unknown message type:', message.type)
+    }
+  } catch (error) {
+    console.error('Error processing WebSocket message:', error)
+  }
+}
+
+const updateCommentLike = (likeData) => {
+  console.log('Updating comment like:', likeData)
+
+  if (!likeData || (!likeData.id && !likeData.commentId)) {
+    console.warn('Invalid like data:', likeData)
+    return
+  }
+
+  if (!Array.isArray(comments.value)) {
+    console.warn('comments.value is not an array. Resetting to empty array.')
+    comments.value = []
+    return
+  }
+
+  // Sử dụng commentId từ payload
+  const commentId = likeData.commentId || likeData.id
+
+  // Tìm comment được like
+  const comment = findComment(commentId)
+
+  if (comment) {
+    // Cập nhật thông tin like
+    comment.likeCount = likeData.likeCount !== undefined ? likeData.likeCount : comment.likeCount
+
+    // Cập nhật isLikedByCurrentUser hoặc isLiked tùy thuộc vào cấu trúc dữ liệu
+    if (likeData.isLikedByCurrentUser !== undefined) {
+      comment.isLikedByCurrentUser = likeData.isLikedByCurrentUser
+    } else if (likeData.isLiked !== undefined) {
+      comment.isLikedByCurrentUser = likeData.isLiked
+    }
+  } else {
+    console.warn('Comment not found for like update. CommentId:', commentId)
+  }
+}
+
+const handleNewComment = (commentData) => {
+  if (!commentData || (!commentData.comment && !commentData.id)) {
+    console.warn('Invalid comment data structure:', commentData)
+    return
+  }
+
+  if (!Array.isArray(comments.value)) {
+    console.warn('comments.value is not an array. Resetting to empty array.')
+    comments.value = []
+  }
+
+  // tìm comment với id
+  const existingCommentIndex = comments.value.findIndex(
+    (item) => item.comment && item.comment.id === commentData.id
+  )
+
+  if (existingCommentIndex >= 0) {
+    comments.value[existingCommentIndex].comment = commentData
+  } else {
+    // mới, thêm vô đầu ds
+    comments.value.unshift({
+      comment: commentData,
+      replies: [],
+    })
+  }
+}
+
+// Xử lý khi có reply mới
+const handleNewReply = (replyData) => {
+  console.log('Handling new reply:', replyData)
+
+  if (!replyData || !replyData.id || !replyData.parentId) {
+    console.warn('Invalid reply data:', replyData)
+    return
+  }
+
+  if (!Array.isArray(comments.value)) {
+    console.warn('comments.value is not an array. Resetting to empty array.')
+    comments.value = []
+  }
+
+  // Tìm comment cha
+  const parentCommentIndex = comments.value.findIndex(
+    (item) => item.comment && item.comment.id === replyData.parentId
+  )
+
+  if (parentCommentIndex >= 0) {
+    // Comment cha tồn tại
+    const parentComment = comments.value[parentCommentIndex]
+
+    // Khởi tạo mảng replies nếu chưa có
+    if (!parentComment.replies) {
+      parentComment.replies = []
+    }
+
+    // Tìm reply trong danh sách hiện tại
+    const existingReplyIndex = parentComment.replies.findIndex((r) => r.id === replyData.id)
+
+    if (existingReplyIndex >= 0) {
+      // Reply đã tồn tại, cập nhật
+      parentComment.replies[existingReplyIndex] = replyData
+    } else {
+      // Reply mới, thêm vào cuối danh sách
+      parentComment.replies.push(replyData)
+    }
+  } else {
+    console.warn('Parent comment not found for reply:', replyData)
+  }
+}
+
+const handleDeleteComment = (commentId) => {
+  console.log('Removing comment:', commentId)
+
+  if (!commentId) return
+
+  if (!Array.isArray(comments.value)) {
+    console.warn('comments.value is not an array. Resetting to empty array.')
+    comments.value = []
+  }
+
+  // Tìm và xóa comment chính
+  const mainCommentIndex = comments.value.findIndex(
+    (item) => item.comment && item.comment.id === commentId
+  )
+
+  if (mainCommentIndex >= 0) {
+    // Đây là comment chính, xóa khỏi danh sách
+    comments.value.splice(mainCommentIndex, 1)
+    return
+  }
+
+  // Nếu không phải comment chính, tìm trong replies
+  for (const commentItem of comments.value) {
+    if (!commentItem.replies) continue
+
+    const replyIndex = commentItem.replies.findIndex((r) => r.id === commentId)
+
+    if (replyIndex >= 0) {
+      // Đây là reply, xóa khỏi danh sách replies
+      commentItem.replies.splice(replyIndex, 1)
+      break
+    }
+  }
+}
+
+// Bỏ phiên bản watch đầu tiên và chỉ giữ phiên bản thứ hai đầy đủ hơn
 watch(
   () => props.lessonId,
   (newId, oldId) => {
     if (newId !== oldId) {
       comments.value = []
+      // Cleanup các form và editor khi chuyển bài học
       Object.keys(replyFormVisible).forEach((key) => {
         delete replyFormVisible[key]
         destroyReplyEditor(key)
       })
-      Object.keys(replyContent).forEach((key) => delete replyContent[key])
+
+      // Hủy đăng ký WebSocket cũ
+      if (webSocketSubscription.value) {
+        webSocketSubscription.value.unsubscribe()
+        webSocketSubscription.value = null
+      }
+
+      // Đăng ký WebSocket mới
+      if (newId) {
+        const commentsTopic = `/topic/lesson/${newId}/comments`
+        webSocketSubscription.value = webSocketService.subscribe(
+          commentsTopic,
+          handleWebSocketMessage
+        )
+      }
 
       if (props.isOpen) {
         fetchComments()
       }
     }
   },
-  { immediate: false }
+  { immediate: true } // Thay đổi thành true để áp dụng ngay khi component được tạo
+)
+
+// Thêm lại watch cho props.isOpen đã bị comment
+watch(
+  () => props.isOpen,
+  (newVal) => {
+    if (newVal) {
+      fetchComments()
+      if (!editor.value) {
+        initEditor()
+      }
+
+      // Đk WebSocket khi panel mở
+      if (props.lessonId && !webSocketSubscription.value) {
+        const commentsTopic = `/topic/lesson/${props.lessonId}/comments`
+        webSocketSubscription.value = webSocketService.subscribe(
+          commentsTopic,
+          handleWebSocketMessage
+        )
+      }
+    }
+  }
 )
 
 onMounted(() => {
@@ -514,6 +723,11 @@ onMounted(() => {
     fetchComments()
   }
   initEditor()
+
+  if (props.lessonId) {
+    const commentsTopic = `/topic/lesson/${props.lessonId}/comments`
+    webSocketSubscription.value = webSocketService.subscribe(commentsTopic, handleWebSocketMessage)
+  }
 })
 
 onBeforeUnmount(() => {
@@ -526,19 +740,13 @@ onBeforeUnmount(() => {
       replyEditors[id].destroy()
     }
   })
-})
 
-watch(
-  () => props.isOpen,
-  (newVal) => {
-    if (newVal) {
-      fetchComments()
-      if (!editor.value) {
-        initEditor()
-      }
-    }
+  // Hủy đăng ký WebSocket
+  if (webSocketSubscription.value) {
+    webSocketSubscription.value.unsubscribe()
+    webSocketSubscription.value = null
   }
-)
+})
 </script>
   
   <style scoped>
