@@ -214,7 +214,6 @@
 <script setup>
 import { ref, onMounted, reactive, watch, onBeforeUnmount, shallowRef, computed } from 'vue'
 import axios from '@/plugins/axios'
-import { toast } from 'vue3-toastify' // Thêm import này
 import { useAuthStore } from '@/stores/auth'
 import { Editor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
@@ -239,7 +238,6 @@ const authStore = useAuthStore()
 const comments = ref([])
 const loading = ref(false)
 const replyFormVisible = reactive({})
-const replyContent = reactive({})
 const editor = shallowRef(null)
 const editorVisible = ref(false)
 const replyEditors = reactive({})
@@ -391,11 +389,9 @@ const postReply = async (commentId) => {
 
     replyFormVisible[commentId] = false
     destroyReplyEditor(commentId)
-    toast.success('Đã trả lời bình luận thành công!')
     await fetchComments()
   } catch (error) {
     console.error('Error posting reply:', error)
-    toast.error('Không thể trả lời bình luận')
   }
 }
 
@@ -406,16 +402,11 @@ const likeComment = async (commentId) => {
   try {
     if (comment.isLikedByCurrentUser) {
       await axios.delete(`${rootAPI}/comments/${commentId}/likes`)
-      comment.isLikedByCurrentUser = false
-      comment.likeCount = Math.max(0, (comment.likeCount || 1) - 1)
     } else {
       await axios.post(`${rootAPI}/comments/${commentId}/likes`)
-      comment.isLikedByCurrentUser = true
-      comment.likeCount = (comment.likeCount || 0) + 1
     }
   } catch (error) {
     console.error('Error toggling like:', error)
-    toast.error('Không thể thực hiện thao tác này')
   }
 }
 
@@ -424,11 +415,9 @@ const deleteComment = async (commentId) => {
 
   try {
     await axios.delete(`${rootAPI}/comments/${commentId}`)
-    toast.success('Đã xóa bình luận thành công!')
     await fetchComments()
   } catch (error) {
     console.error('Error deleting comment:', error)
-    toast.error('Không thể xóa bình luận')
   }
 }
 
@@ -436,12 +425,7 @@ const canDelete = (comment) => {
   const userId = currentUserId.value
   if (!userId || !comment) return false
 
-  return (
-    userId === comment.userId ||
-    (authStore.user &&
-      (authStore.user.roles?.includes('ROLE_ADMIN') ||
-        authStore.user.roles?.includes('ROLE_TEACHER')))
-  )
+  return userId === comment.userId || (authStore.user && authStore.user.roles?.includes('AMDIN'))
 }
 
 const formatDate = (dateString) => {
@@ -469,8 +453,6 @@ const findComment = (id) => {
 }
 
 const handleWebSocketMessage = (message) => {
-  console.log('Received WebSocket message:', message)
-
   try {
     // so sánh lessonId để check xử lý trong bài học hiện tại
     if (message.lessonId && Number(message.lessonId) !== Number(props.lessonId)) {
@@ -522,8 +504,6 @@ const handleWebSocketMessage = (message) => {
 }
 
 const updateCommentLike = (likeData) => {
-  console.log('Updating comment like:', likeData)
-
   if (!likeData || (!likeData.id && !likeData.commentId)) {
     console.warn('Invalid like data:', likeData)
     return
@@ -535,20 +515,13 @@ const updateCommentLike = (likeData) => {
     return
   }
 
-  // Sử dụng commentId từ payload
   const commentId = likeData.commentId || likeData.id
 
-  // Tìm comment được like
   const comment = findComment(commentId)
 
   if (comment) {
-    // Cập nhật thông tin like
     comment.likeCount = likeData.likeCount !== undefined ? likeData.likeCount : comment.likeCount
-
-    // Cập nhật isLikedByCurrentUser hoặc isLiked tùy thuộc vào cấu trúc dữ liệu
-    if (likeData.isLikedByCurrentUser !== undefined) {
-      comment.isLikedByCurrentUser = likeData.isLikedByCurrentUser
-    } else if (likeData.isLiked !== undefined) {
+    if (currentUserId.value === likeData.userId && likeData.isLiked !== undefined) {
       comment.isLikedByCurrentUser = likeData.isLiked
     }
   } else {
@@ -583,52 +556,61 @@ const handleNewComment = (commentData) => {
   }
 }
 
-// Xử lý khi có reply mới
 const handleNewReply = (replyData) => {
-  console.log('Handling new reply:', replyData)
-
-  if (!replyData || !replyData.id || !replyData.parentId) {
-    console.warn('Invalid reply data:', replyData)
-    return
-  }
-
-  if (!Array.isArray(comments.value)) {
-    console.warn('comments.value is not an array. Resetting to empty array.')
-    comments.value = []
-  }
-
-  // Tìm comment cha
-  const parentCommentIndex = comments.value.findIndex(
-    (item) => item.comment && item.comment.id === replyData.parentId
-  )
-
-  if (parentCommentIndex >= 0) {
-    // Comment cha tồn tại
-    const parentComment = comments.value[parentCommentIndex]
-
-    // Khởi tạo mảng replies nếu chưa có
-    if (!parentComment.replies) {
-      parentComment.replies = []
+  try {
+    if (!replyData) {
+      console.warn('Reply data is null or undefined')
+      return
     }
 
-    // Tìm reply trong danh sách hiện tại
-    const existingReplyIndex = parentComment.replies.findIndex((r) => r.id === replyData.id)
+    const parentId = replyData.idOriginalComment
 
-    if (existingReplyIndex >= 0) {
-      // Reply đã tồn tại, cập nhật
-      parentComment.replies[existingReplyIndex] = replyData
+    if (!replyData.id || !parentId) {
+      console.warn('Invalid reply data: missing id or parent id', replyData)
+      return
+    }
+
+    // Đảm bảo comments.value là một mảng
+    if (!Array.isArray(comments.value)) {
+      console.warn('comments.value is not an array. Resetting to empty array.')
+      comments.value = []
+      return
+    }
+
+    const parentCommentIndex = comments.value.findIndex(
+      (item) => item.comment && item.comment.id === parentId
+    )
+
+    if (parentCommentIndex >= 0) {
+      // Comment cha tồn tại
+      const parentComment = comments.value[parentCommentIndex]
+
+      // Khởi tạo mảng replies nếu chưa có
+      if (!parentComment.replies) {
+        parentComment.replies = []
+      } else if (!Array.isArray(parentComment.replies)) {
+        // Đảm bảo replies là một mảng
+        parentComment.replies = []
+        console.warn('Reset replies to empty array because it was not an array')
+      }
+      // Tìm reply trong danh sách hiện tại
+      const existingReplyIndex = parentComment.replies.findIndex((r) => r && r.id === replyData.id)
+
+      if (existingReplyIndex >= 0) {
+        parentComment.replies[existingReplyIndex] = replyData
+      } else {
+        parentComment.replies.push(replyData)
+      }
     } else {
-      // Reply mới, thêm vào cuối danh sách
-      parentComment.replies.push(replyData)
+      console.warn('Parent comment not found for reply. Parent ID:', parentId)
+      fetchComments()
     }
-  } else {
-    console.warn('Parent comment not found for reply:', replyData)
+  } catch (error) {
+    console.error('Error processing reply:', error)
   }
 }
 
 const handleDeleteComment = (commentId) => {
-  console.log('Removing comment:', commentId)
-
   if (!commentId) return
 
   if (!Array.isArray(comments.value)) {
@@ -636,32 +618,29 @@ const handleDeleteComment = (commentId) => {
     comments.value = []
   }
 
-  // Tìm và xóa comment chính
+  // tìm và xóa comment chính
   const mainCommentIndex = comments.value.findIndex(
     (item) => item.comment && item.comment.id === commentId
   )
 
   if (mainCommentIndex >= 0) {
-    // Đây là comment chính, xóa khỏi danh sách
     comments.value.splice(mainCommentIndex, 1)
     return
   }
 
-  // Nếu không phải comment chính, tìm trong replies
+  // không phải comment chính, tìm trong replies
   for (const commentItem of comments.value) {
     if (!commentItem.replies) continue
 
     const replyIndex = commentItem.replies.findIndex((r) => r.id === commentId)
 
     if (replyIndex >= 0) {
-      // Đây là reply, xóa khỏi danh sách replies
       commentItem.replies.splice(replyIndex, 1)
       break
     }
   }
 }
 
-// Bỏ phiên bản watch đầu tiên và chỉ giữ phiên bản thứ hai đầy đủ hơn
 watch(
   () => props.lessonId,
   (newId, oldId) => {
@@ -693,7 +672,7 @@ watch(
       }
     }
   },
-  { immediate: true } // Thay đổi thành true để áp dụng ngay khi component được tạo
+  { immediate: true }
 )
 
 // Thêm lại watch cho props.isOpen đã bị comment
