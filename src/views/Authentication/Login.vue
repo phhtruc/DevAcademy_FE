@@ -114,7 +114,6 @@ const handleLogin = async (e) => {
     // Tạo đối tượng user để lưu vào localStorage
     const userData = {
       id,
-      roles,
     }
 
     // Chuyển đối tượng userData thành chuỗi JSON và lưu vào localStorage

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
+import CommentPanel from '@/components/comment/CommentPanel.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -19,6 +20,12 @@ const loadingChapter = reactive({})
 const expandedChaptersSidebar = reactive({})
 const showReferContent = ref(false)
 const isSidebarOpen = ref(true)
+const isCommentPanelOpen = ref(false)
+const currentLessonId = ref(Number(route.params.idLesson))
+
+const toggleCommentPanel = () => {
+  isCommentPanelOpen.value = !isCommentPanelOpen.value
+}
 
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
@@ -107,6 +114,10 @@ const handleLessonClick = (lesson) => {
 const goBack = () => {
   router.push(`/khoa-hoc/${idCourse}`)
 }
+
+watch(() => route.params.idLesson, (newId) => {
+  currentLessonId.value = Number(newId)
+}, { immediate: true })
 
 onMounted(async () => {
   await fetchLessonDetails(lessonId)
@@ -221,11 +232,18 @@ onMounted(async () => {
         <!-- Lesson Content -->
         <div class="content-container ml-3" :style="{ width: isSidebarOpen ? '68%' : '94%' }">
           <div class="lesson-header d-flex align-items-center mb-3">
-            <button class="back-btn me-3 mr-4 ml-3" @click="goBack">
+            <button class="back-btn me-3 ml-3" @click="goBack">
               <i class="fas fa-arrow-left"></i>
             </button>
-            <h3 class="lesson-title-goback mb-0 text-white">{{ lesson.name }}</h3>
+            <h3 class="lesson-title-goback mb-0 ml-2 text-white flex-grow-1">{{ lesson.name }}</h3>
           </div>
+          <button
+            class="comment-btn"
+            @click="toggleCommentPanel"
+            style="position: fixed; bottom: 20px; right: 20px; z-index: 9999"
+          >
+            <i class="fas fa-comments"></i> Hỏi Đáp
+          </button>
 
           <div class="lesson-content">
             <!-- Type: READINGS -->
@@ -258,6 +276,15 @@ onMounted(async () => {
         </div>
       </div>
     </div>
+    <!-- Comment Panel -->
+    <CommentPanel
+      :is-open="isCommentPanelOpen"
+      :lesson-id="currentLessonId"
+      @close="toggleCommentPanel"
+    />
+
+    <!-- Overlay khi mở panel bình luận -->
+    <div v-if="isCommentPanelOpen" class="comment-overlay" @click="toggleCommentPanel"></div>
   </div>
 </template>
 
@@ -510,5 +537,41 @@ onMounted(async () => {
   .sidebar-chapters {
     max-height: none;
   }
+}
+
+.comment-btn {
+  background-color: #fff;
+  color: #0084ff;
+  border: 1px solid #0084ff;
+  border-radius: 4px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+  margin-left: auto;
+}
+
+.comment-btn:hover {
+  background-color: #0084ff;
+  color: #fff;
+}
+
+/* Overlay khi mở panel bình luận */
+.comment-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+/* Điều chỉnh header để chứa nút Hỏi Đáp */
+.lesson-header {
+  display: flex;
+  justify-content: space-between;
 }
 </style>
