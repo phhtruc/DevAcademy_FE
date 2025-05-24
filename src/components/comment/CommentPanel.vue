@@ -59,7 +59,7 @@
           </button>
         </div>
       </div>
-      <span class="font-weight-bold h5">{{ comments.length }} bình luận</span>
+      <span class="font-weight-bold h5">{{ totalCommentsCount }} bình luận</span>
 
       <div class="comment-list mt-2">
         <div v-if="loading" class="text-center py-4">
@@ -73,7 +73,12 @@
         </div>
 
         <div v-else class="comment-items">
-          <div class="comment-item" v-for="commentObj in comments" :key="commentObj.comment.id">
+          <div
+            class="comment-item"
+            :class="{ deleting: commentObj.comment.isDeleting }"
+            v-for="commentObj in comments"
+            :key="commentObj.comment.id"
+          >
             <div class="comment-header d-flex align-items-center">
               <div class="avatar">
                 <img
@@ -102,13 +107,31 @@
               >
                 <i class="fas fa-thumbs-up"></i> {{ commentObj.comment.likeCount || 0 }}
               </button>
-              <button
-                v-if="canDelete(commentObj.comment)"
-                class="btn btn-sm btn-link text-danger"
-                @click="deleteComment(commentObj.comment.id)"
-              >
-                <i class="fas fa-trash"></i>
-              </button>
+
+              <template v-if="canDelete(commentObj.comment)">
+                <button
+                  v-if="!confirmingDelete.has(commentObj.comment.id)"
+                  class="btn btn-sm btn-link text-danger"
+                  @click="toggleDeleteConfirm($event, commentObj.comment.id)"
+                  :disabled="commentObj.comment.isDeleting"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+                <div v-else class="delete-confirm-buttons">
+                  <button
+                    class="btn btn-sm btn-danger"
+                    @click="deleteComment($event, commentObj.comment.id)"
+                  >
+                    Xác nhận
+                  </button>
+                  <button
+                    class="btn btn-sm btn-light ml-1"
+                    @click="cancelDeleteConfirm($event, commentObj.comment.id)"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </template>
             </div>
 
             <div v-if="replyFormVisible[commentObj.comment.id]" class="reply-form mt-2">
@@ -168,7 +191,12 @@
               v-if="commentObj.replies && commentObj.replies.length > 0"
               class="comment-replies mt-3"
             >
-              <div class="reply-item" v-for="reply in commentObj.replies" :key="reply.id">
+              <div
+                class="reply-item"
+                :class="{ deleting: reply.isDeleting }"
+                v-for="reply in commentObj.replies"
+                :key="reply.id"
+              >
                 <div class="comment-header d-flex align-items-center">
                   <div class="avatar avatar-sm">
                     <img
@@ -194,13 +222,34 @@
                   >
                     <i class="fas fa-thumbs-up"></i> {{ reply.likeCount || 0 }}
                   </button>
-                  <button
-                    v-if="canDelete(reply)"
-                    class="btn btn-sm btn-link py-0 text-danger"
-                    @click="deleteComment(reply.id)"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
+
+                  <template v-if="canDelete(reply)">
+                    <button
+                      v-if="!confirmingDelete.has(reply.id)"
+                      class="btn btn-sm btn-link py-0 text-danger"
+                      @click="toggleDeleteConfirm($event, reply.id)"
+                      :disabled="reply.isDeleting"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+
+                    <div v-else class="delete-confirm-buttons">
+                      <button
+                        class="btn btn-sm btn-danger py-0"
+                        style="font-size: 0.8rem"
+                        @click="deleteComment($event, reply.id)"
+                      >
+                        Xác nhận
+                      </button>
+                      <button
+                        class="btn btn-sm btn-light ml-1 py-0"
+                        style="font-size: 0.8rem"
+                        @click="cancelDeleteConfirm($event, reply.id)"
+                      >
+                        <i class="fas fa-times"></i>
+                      </button>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -258,8 +307,28 @@ const getUserId = () => {
 
 const currentUserId = ref(getUserId())
 
+const confirmingDelete = reactive(new Set())
+
+const totalCommentsCount = computed(() => {
+  let total = 0;
+  
+  if (!Array.isArray(comments.value)) {
+    return total;
+  }
+  
+  total += comments.value.length;
+  
+  for (const commentObj of comments.value) {
+    if (Array.isArray(commentObj.replies)) {
+      total += commentObj.replies.length;
+    }
+  }
+  
+  return total;
+});
+
 const fetchComments = async () => {
-  loading.value = true
+  //loading.value = true
   try {
     const response = await axios.get(`${rootAPI}/comments/lessons/${props.lessonId}`)
     comments.value = response.data.data
@@ -354,6 +423,33 @@ const postComment = async () => {
 
   const content = editor.value.getHTML()
 
+  // Tạo comment tạm
+  const tempComment = {
+    id: `temp-${Date.now()}`,
+    content: content,
+    userId: getUserId(),
+    username: authStore.user?.displayName || authStore.user?.username || 'Bạn',
+    userAvatar: authStore.user?.avatar || authStore.user?.profileImage || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    likeCount: 0,
+    isLikedByCurrentUser: false,
+  }
+
+  comments.value.unshift({
+    comment: tempComment,
+    replies: [],
+  })
+
+  clearEditor()
+  editorVisible.value = false
+
+  // Cuộn lên đầu để xem comment mới
+  const contentElement = document.querySelector('.comment-panel-content')
+  if (contentElement) {
+    contentElement.scrollTop = 0
+  }
+
   try {
     await axios.post(`${rootAPI}/comments/lessons/${props.lessonId}`, {
       content: content,
@@ -380,9 +476,47 @@ const toggleReplyForm = (commentId) => {
 const postReply = async (commentId) => {
   if (!replyEditors[commentId] || replyEditors[commentId].isEmpty) return
 
-  try {
-    const content = replyEditors[commentId].getHTML()
+  const content = replyEditors[commentId].getHTML()
 
+  const parentIndex = comments.value.findIndex(
+    (item) => item.comment && item.comment.id === commentId
+  )
+  if (parentIndex < 0) return
+
+  const tempReply = {
+    id: `temp-reply-${Date.now()}`,
+    content: content,
+    userId: getUserId(),
+    username: authStore.user?.displayName || authStore.user?.username || 'Bạn',
+    userAvatar: authStore.user?.avatar || authStore.user?.profileImage || null,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    likeCount: 0,
+    isLikedByCurrentUser: false,
+    idOriginalComment: commentId,
+  }
+
+  const parentComment = comments.value[parentIndex]
+  if (!parentComment.replies) {
+    parentComment.replies = []
+  }
+  parentComment.replies.push(tempReply)
+
+  // Đóng form và hủy editor
+  replyFormVisible[commentId] = false
+  destroyReplyEditor(commentId)
+
+  // Lưu tham chiếu đến phần tử comment
+  const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`)
+
+  // Đảm bảo comment vẫn nhìn thấy được sau khi thêm reply
+  if (commentElement) {
+    setTimeout(() => {
+      commentElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }, 100)
+  }
+
+  try {
     await axios.post(`${rootAPI}/comments/${commentId}/replies`, {
       content: content,
     })
@@ -410,15 +544,53 @@ const likeComment = async (commentId) => {
   }
 }
 
-const deleteComment = async (commentId) => {
-  if (!confirm('Bạn có chắc chắn muốn xóa bình luận này không?')) return
+const toggleDeleteConfirm = (event, commentId) => {
+  event.stopPropagation()
+
+  confirmingDelete.add(commentId)
+}
+
+const deleteComment = async (event, commentId) => {
+  event.stopPropagation()
+
+  confirmingDelete.delete(commentId)
+
+  const comment = findComment(commentId)
+  if (!comment) return
 
   try {
+
     await axios.delete(`${rootAPI}/comments/${commentId}`)
-    await fetchComments()
+
+    if (comment) {
+      // Tìm và xóa comment khỏi danh sách
+      const mainCommentIndex = comments.value.findIndex(
+        (c) => c.comment && c.comment.id === commentId
+      )
+
+      if (mainCommentIndex !== -1) {
+        comments.value.splice(mainCommentIndex, 1)
+      } else {
+        // Nếu không phải comment chính, tìm trong replies
+        for (const commentObj of comments.value) {
+          if (!commentObj.replies) continue
+
+          const replyIndex = commentObj.replies.findIndex((r) => r.id === commentId)
+          if (replyIndex !== -1) {
+            commentObj.replies.splice(replyIndex, 1)
+            break
+          }
+        }
+      }
+    }
   } catch (error) {
     console.error('Error deleting comment:', error)
   }
+}
+
+const cancelDeleteConfirm = (event, commentId) => {
+  event.stopPropagation()
+  confirmingDelete.delete(commentId)
 }
 
 const canDelete = (comment) => {
@@ -908,5 +1080,42 @@ onBeforeUnmount(() => {
   padding: 12px;
   border-radius: 8px;
   cursor: text;
+}
+
+/* xác nhận xóa */
+.delete-confirm-buttons {
+  display: inline-flex;
+  align-items: center;
+}
+
+.delete-confirm-buttons .btn {
+  padding: 0.15rem 0.5rem;
+  font-size: 0.8rem;
+  animation: fadeIn 0.2s;
+}
+
+.delete-confirm-buttons .btn-danger {
+  background-color: #ff4d4f;
+  border: none;
+}
+
+.delete-confirm-buttons .btn-light {
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.comment-item.deleting, .reply-item.deleting {
+  opacity: 0.5;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 </style>
