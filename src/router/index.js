@@ -23,6 +23,8 @@ import CoursePage from '@/views/user/CoursePage.vue'
 import CourseDetailsPage from '@/views/user/CourseDetailsPage.vue'
 import AboutUs from '@/views/user/AboutUs.vue'
 import LessonDetailsPage from '@/views/user/LessonDetailsPage.vue'
+import CheckoutPage from '@/views/user/payment/CheckoutPage.vue'
+import PaymentResultPage from '@/views/user/payment/PaymentResultPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -230,7 +232,8 @@ const router = createRouter({
       path: '/khoa-hoc/:idCourse',
       name: 'chi-tiet-khoa-hoc',
       component: CourseDetailsPage,
-      meta: {hideNavbar: true}
+      meta: {hideNavbar: true},
+      props: true
     },
     {
       path: '/ve-chung-toi',
@@ -243,6 +246,20 @@ const router = createRouter({
       name: 'chi-tiet-bai-hoc',
       component: LessonDetailsPage,
       meta: {hideNavbar: true}
+    },
+    {
+      path: '/dang-ky-khoa-hoc/:courseId',
+      name: 'dang-ky-khoa-hoc',
+      component: CheckoutPage,
+      meta: {hideNavbar: true},
+      props: true
+    },
+    {
+      path: '/thanh-toan',
+      name: 'thanh-toan',
+      component: PaymentResultPage,
+      meta: {hideNavbar: true},
+      props: true
     },
   ],
 
