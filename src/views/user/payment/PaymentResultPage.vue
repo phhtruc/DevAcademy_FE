@@ -6,10 +6,7 @@
           <div class="card shadow">
             <div class="card-body text-center p-5">
               <div v-if="isProcessing" class="py-5">
-                <div class="spinner-border text-primary" role="status">
-                  <span class="visually-hidden">Loading...</span>
-                </div>
-                <h4 class="mt-3">Đang xác thực giao dịch...</h4>
+                <LoadingComponent text="Đang xác thực giao dịch..." />
                 <p class="text-muted">Vui lòng đợi trong giây lát</p>
               </div>
 
@@ -86,7 +83,7 @@
                 <div class="d-grid gap-2">
                   <router-link
                     :to="`/dang-ky-khoa-hoc/${orderDetails.courseId}`"
-                    class="btn btn-primary"
+                    class="btn btn-primary mr-2"
                   >
                     Thử lại
                   </router-link>
@@ -131,6 +128,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -167,7 +165,11 @@ const formatDate = (dateString) => {
 const verifyPaymentViaApi = async () => {
   try {
     const response = await axios.get(`${rootAPI}/payments/payment-return`, {
-      params: route.query,
+      params: {
+        ...route.query,
+        courseId: orderDetails.courseId,
+        courseName: orderDetails.courseName,
+      },
     })
 
     if (response.data) {

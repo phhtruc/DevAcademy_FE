@@ -159,6 +159,7 @@ const proceedToPayment = async () => {
     if (payment.paymentUrl) {
       localStorage.setItem('pendingPayment', JSON.stringify({
         courseId: props.courseId,
+        courseName: course.value.name || 'Khóa học',
         amount: payment.amount,
         txnRef: payment.txnRef || '',
         timestamp: new Date().toISOString()
