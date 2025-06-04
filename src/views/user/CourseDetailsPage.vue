@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import { useAuthStore } from '@/stores/auth'
@@ -58,23 +58,9 @@ const enrollCourse = async () => {
   if (!authStore.isLoggedIn) {
     router.push(`/login?redirect=/course/${courseId}`)
     return
-  }
-
-  try {
-    const response = await axios.post(`${rootAPI}/enrollments`, { courseId })
-    if (response.data.success) {
-      isEnrolled.value = true
-      if (chapters.value.length > 0) {
-        const firstChapter = chapters.value[0]
-        await fetchChapterLessons(firstChapter.id)
-
-        if (chapterLessons[firstChapter.id]?.length > 0) {
-          setActiveLesson(chapterLessons[firstChapter.id][0].id)
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error enrolling in course:', error)
+  } else {
+    router.push(`/dang-ky-khoa-hoc/${courseId}`)
+    return
   }
 }
 
