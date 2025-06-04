@@ -4,8 +4,11 @@
       <div class="row">
         <div class="col-lg-8">
           <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white">
-              <h5 class="mb-0">Thông tin thanh toán</h5>
+            <div class="card-header bg-white d-flex align-items-center mb-">
+              <button class="btn btn-sm" @click="goBack">
+                <i class="fas fa-arrow-left me-1"></i> Trở lại
+              </button>
+              <h5 class="mb-0 ml-2">Thông tin thanh toán</h5>
             </div>
             <div class="card-body">
               <div class="course-info mb-4">
@@ -42,11 +45,7 @@
                     v-model="paymentMethod"
                   />
                   <label class="form-check-label" for="vnpay">
-                    <img
-                      src="@/assets/images/vnpay.png"
-                      alt="VNPay"
-                      height="30"
-                    />
+                    <img src="@/assets/images/vnpay.png" alt="VNPay" height="30" />
                     <span class="ms-2">Thanh toán qua VNPay (ATM/VISA/QR Code)</span>
                   </label>
                 </div>
@@ -120,14 +119,16 @@
 import { ref, onMounted } from 'vue'
 import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
+import { useRouter } from 'vue-router'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const router = useRouter()
 
 const props = defineProps({
   courseId: {
     type: [Number, String],
     required: true,
-  }
+  },
 })
 
 const course = ref({
@@ -144,7 +145,6 @@ const formatCurrency = (amount) => {
 }
 
 const proceedToPayment = async () => {
-
   isProcessing.value = true
 
   try {
@@ -154,26 +154,33 @@ const proceedToPayment = async () => {
       language: 'vn',
     })
 
-    const payment = response.data.data;
+    const payment = response.data.data
 
     if (payment.paymentUrl) {
-      localStorage.setItem('pendingPayment', JSON.stringify({
-        courseId: props.courseId,
-        courseName: course.value.name || 'Khóa học',
-        amount: payment.amount,
-        txnRef: payment.txnRef || '',
-        timestamp: new Date().toISOString()
-      }));
+      localStorage.setItem(
+        'pendingPayment',
+        JSON.stringify({
+          courseId: props.courseId,
+          courseName: course.value.name || 'Khóa học',
+          amount: payment.amount,
+          txnRef: payment.txnRef || '',
+          timestamp: new Date().toISOString(),
+        })
+      )
 
-      window.location.href = payment.paymentUrl;
+      window.location.href = payment.paymentUrl
     } else {
-      throw new Error('Không nhận được URL thanh toán từ server');
+      throw new Error('Không nhận được URL thanh toán từ server')
     }
   } catch (error) {
-    console.error('Payment error:', error);
-    toast.error('Có lỗi xảy ra khi khởi tạo thanh toán. Vui lòng thử lại sau.');
-    isProcessing.value = false;
+    console.error('Payment error:', error)
+    toast.error('Có lỗi xảy ra khi khởi tạo thanh toán. Vui lòng thử lại sau.')
+    isProcessing.value = false
   }
+}
+
+const goBack = () => {
+  router.go(-1)
 }
 
 const fetchCourse = async () => {
