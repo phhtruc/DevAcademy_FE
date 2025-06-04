@@ -81,7 +81,7 @@ const fetchChapterLessons = async (chapterId) => {
     loadingChapter[chapterId] = true
 
     const response = await axios.get(`${rootAPI}/chapters/${chapterId}/lessons`, {
-      params: { page: 1, pageSize: 100 },
+      params: { page: 1, pageSize: 100 , idCourse: idCourse },
     })
 
     chapterLessons[chapterId] = response.data.data.items || []
