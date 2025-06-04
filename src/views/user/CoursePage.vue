@@ -2,6 +2,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
@@ -15,10 +16,11 @@ const perPage = ref(12)
 
 const searchQuery = ref('')
 const selectedCategory = ref('')
-
+const isLoading = ref(true)
 const categories = ref([])
 
 const fetchCourses = async () => {
+  isLoading.value = true
   try {
     let response = null
 
@@ -43,6 +45,8 @@ const fetchCourses = async () => {
     totalPages.value = response.data.data.totalPage
   } catch (err) {
     console.error('Failed to fetch courses:', err)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -189,11 +193,8 @@ watch(
           <!-- Courses Grid -->
           <div class="col-lg-9">
             <!-- Loading State -->
-            <div v-if="isLoading" class="text-center my-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Đang tải...</span>
-              </div>
-              <p class="mt-2">Đang tải danh sách khóa học...</p>
+            <div v-if="isLoading" class="loading-container">
+              <LoadingComponent text="Đang tải danh sách khóa học..." />
             </div>
 
             <!-- Error State -->

@@ -1,8 +1,9 @@
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import { useAuthStore } from '@/stores/auth'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -19,11 +20,33 @@ const chapterLessons = reactive({})
 const loadingChapter = reactive({})
 const expandedChapters = reactive({})
 const expandedChaptersSidebar = reactive({})
+const isLoading = ref(true)
 
 const formatPrice = (price) => {
   if (price === 0 || price === null || price === undefined) return 'Miễn phí'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
 }
+
+const remainingDuration = computed(() => {
+  if (!course.value || !course.value.duration) return 'Không giới hạn'
+
+  const totalDays = parseInt(course.value.duration)
+  if (isNaN(totalDays) || totalDays <= 0) return 'Không giới hạn'
+
+  const months = Math.floor(totalDays / 30)
+  const days = totalDays % 30
+
+  let result = ''
+  if (months > 0) {
+    result += `${months} tháng`
+  }
+  if (days > 0) {
+    if (result) result += ' '
+    result += `${days} ngày`
+  }
+
+  return result || 'Thời hạn học đã hết vui lòng đăng ký lại'
+})
 
 const formatDate = (dateString) => {
   if (!dateString) return 'N/A'
@@ -65,13 +88,17 @@ const enrollCourse = async () => {
 }
 
 const fetchCourseDetails = async () => {
+  isLoading.value = true
   try {
     const response = await axios.get(`${rootAPI}/courses/${courseId}`)
     course.value = response.data.data
+    isEnrolled.value = response.data.data.isPurchased || false
 
     await fetchChapters()
   } catch (err) {
     console.error('Error fetching course details:', err)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -120,11 +147,18 @@ const fetchChapterLessons = async (chapterId) => {
   }
 }
 
-onMounted(fetchCourseDetails)
+onMounted(async () => {
+  isLoading.value = true
+  await fetchCourseDetails()
+  isLoading.value = false
+})
 </script>
 
 <template>
-  <div class="course-details-page">
+  <div v-if="isLoading" class="loading-container">
+    <LoadingComponent text="Đang tải khóa học..." />
+  </div>
+  <div v-else class="course-details-page">
     <div class="course-container">
       <section
         class="course-header"
@@ -144,17 +178,19 @@ onMounted(fetchCourseDetails)
                   {{ course.description }}
                 </p>
                 <div class="course-meta">
-                  <span
-                    ><i class="fas fa-users"></i> {{ course.enrollmentCount || 0 }} học viên</span
-                  >
+                  <span><i class="fas fa-users"></i> {{ course.totalRegister || 0 }} học viên</span>
                   <span
                     ><i class="fas fa-calendar-alt"></i> Cập nhật:
-                    {{ formatDate(course.updatedAt) }}</span
+                    {{ formatDate(course.modifiedDate) }}</span
                   >
+                  <div v-if="isEnrolled" class="meta-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Thời hạn học còn lại: {{ remainingDuration }}</span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div class="col-lg-4">
+            <div v-if="!isEnrolled" class="col-lg-4">
               <div class="course-action-card">
                 <div class="course-price">{{ formatPrice(course.price) }}</div>
                 <button
@@ -171,13 +207,6 @@ onMounted(fetchCourseDetails)
                 >
                   Đăng ký khóa học
                 </button>
-                <router-link
-                  v-else
-                  :to="`/course/${courseId}/learn`"
-                  class="btn btn-success btn-lg w-100 mb-3"
-                >
-                  Tiếp tục học
-                </router-link>
 
                 <ul class="course-features">
                   <li><i class="fas fa-book"></i> {{ chapters.length }} chương</li>
