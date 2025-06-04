@@ -23,10 +23,28 @@ const userData = computed(() => authStore.userData)
 const currentRoutePath = computed(() => route.path)
 
 const isActive = (path) => {
-  if (path === '/') {
-    return currentRoutePath.value === '/'
+  const currentPath = route.path
+
+  if (path === '/' && currentPath === '/') {
+    return true
   }
-  return currentRoutePath.value.startsWith(path)
+
+  if (path === '/khoa-hoc') {
+    return (
+      currentPath === '/khoa-hoc' ||
+      (currentPath.startsWith('/khoa-hoc/') && !currentPath.startsWith('/khoa-hoc-cua-toi'))
+    )
+  }
+
+  if (path === '/khoa-hoc-cua-toi') {
+    return currentPath === '/khoa-hoc-cua-toi'
+  }
+
+  if (path === '/ve-chung-toi') {
+    return currentPath === '/ve-chung-toi'
+  }
+
+  return false
 }
 
 const logout = () => {
@@ -63,12 +81,18 @@ const logout = () => {
               >
             </li>
             <li class="nav-item">
-              <router-link to="/khoa-hoc" class="nav-link" :class="{ active: isActive('/khoa-hoc') }"
+              <router-link
+                to="/khoa-hoc"
+                class="nav-link"
+                :class="{ active: isActive('/khoa-hoc') }"
                 >KHOÁ HỌC</router-link
               >
             </li>
             <li class="nav-item">
-              <router-link to="/ve-chung-toi" class="nav-link" :class="{ active: isActive('/ve-chung-toi') }"
+              <router-link
+                to="/ve-chung-toi"
+                class="nav-link"
+                :class="{ active: isActive('/ve-chung-toi') }"
                 >VỀ CHÚNG TÔI</router-link
               >
             </li>
@@ -81,10 +105,13 @@ const logout = () => {
             </template>
             <template v-else>
               <div class="d-flex align-items-center">
-                <router-link to="/khoa-hoc-cua-toi" class="btn-outline-secondari me-3 mr-3">
+                <router-link
+                  to="/khoa-hoc-cua-toi"
+                  :class="{ active: isActive('/khoa-hoc-cua-toi') }"
+                  class="nav-link me-3"
+                >
                   Khóa học của tôi
                 </router-link>
-
                 <div class="dropdown">
                   <button
                     class="btn btn-link dropdown-toggle user-dropdown p-0"
@@ -104,7 +131,9 @@ const logout = () => {
                     </span>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                    <li><router-link to="/ho-so-cua-nhan" class="dropdown-item">Hồ sơ</router-link></li>
+                    <li>
+                      <router-link to="/ho-so-cua-nhan" class="dropdown-item">Hồ sơ</router-link>
+                    </li>
                     <li>
                       <router-link to="/khoa-hoc-cua-toi" class="dropdown-item">
                         Khóa học của tôi
@@ -146,7 +175,6 @@ const logout = () => {
   transition: all 0.3s ease;
 }
 
-/* Style cho link active */
 .navbar-nav .nav-link.active {
   color: #0084ff !important;
   font-weight: 700;

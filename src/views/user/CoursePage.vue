@@ -193,12 +193,12 @@ watch(
           <!-- Courses Grid -->
           <div class="col-lg-9">
             <!-- Loading State -->
-            <div v-if="isLoading" class="loading-container">
+            <div v-show="isLoading" class="loading-container">
               <LoadingComponent text="Đang tải danh sách khóa học..." />
             </div>
 
             <!-- Error State -->
-            <div v-else-if="error" class="alert alert-danger my-4">
+            <div v-if="error" class="alert alert-danger my-4">
               {{ error }}
               <button class="btn btn-sm btn-outline-danger ms-2" @click="fetchCourses">
                 Thử lại
@@ -206,7 +206,7 @@ watch(
             </div>
 
             <!-- Empty State -->
-            <div v-else-if="courses.length === 0" class="empty-state my-5">
+            <div v-if="courses.length === 0" class="empty-state my-5">
               <div class="empty-state-icon">
                 <i class="fas fa-search fa-3x text-muted"></i>
               </div>
@@ -218,7 +218,7 @@ watch(
             </div>
 
             <!-- Courses Grid -->
-            <div v-else>
+            <div v-show="!isLoading">
               <div class="row">
                 <div v-for="course in courses" :key="course.id" class="col-md-4 mb-4">
                   <div class="course-card" @click="viewCourse(course.id)">

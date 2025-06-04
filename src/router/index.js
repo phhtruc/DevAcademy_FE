@@ -25,6 +25,7 @@ import AboutUs from '@/views/user/AboutUs.vue'
 import LessonDetailsPage from '@/views/user/LessonDetailsPage.vue'
 import CheckoutPage from '@/views/user/payment/CheckoutPage.vue'
 import PaymentResultPage from '@/views/user/payment/PaymentResultPage.vue'
+import MyCourse from '@/views/user/MyCourse.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -258,6 +259,13 @@ const router = createRouter({
       path: '/thanh-toan',
       name: 'thanh-toan',
       component: PaymentResultPage,
+      meta: {hideNavbar: true},
+      props: true
+    },
+    {
+      path: '/khoa-hoc-cua-toi',
+      name: 'khoa-hoc-cua-toi',
+      component: MyCourse,
       meta: {hideNavbar: true},
       props: true
     },
