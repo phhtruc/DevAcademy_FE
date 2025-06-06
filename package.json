@@ -11,8 +11,31 @@
     "format": "prettier --write src/"
   },
   "dependencies": {
+    "@ckeditor/ckeditor5-vue": "^7.3.0",
+    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@stomp/stompjs": "^7.1.1",
+    "@tiptap/extension-image": "^2.12.0",
+    "@tiptap/extension-link": "^2.12.0",
+    "@tiptap/extension-placeholder": "^2.12.0",
+    "@tiptap/starter-kit": "^2.12.0",
+    "@tiptap/vue-3": "^2.12.0",
+    "@toast-ui/editor": "^3.2.2",
+    "axios": "^1.9.0",
+    "bootstrap": "^5.3.5",
+    "bootstrap-vue-3": "^0.5.1",
+    "ckeditor5": "^45.0.0",
+    "filepond-plugin-file-validate-type": "^1.2.9",
+    "filepond-plugin-image-preview": "^4.6.12",
+    "pinia": "^3.0.2",
+    "sockjs-client": "^1.6.1",
+    "stompjs": "^2.3.3",
     "vue": "^3.5.13",
-    "vue-router": "^4.5.0"
+    "vue-draggable-next": "^2.2.1",
+    "vue-filepond": "^7.0.4",
+    "vue-multiselect": "^3.2.0",
+    "vue-router": "^4.5.0",
+    "vue3-toastify": "^0.2.8",
+    "vuedraggable": "^4.1.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.20.0",
