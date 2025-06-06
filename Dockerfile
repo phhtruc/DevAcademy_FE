@@ -1,4 +1,4 @@
-# Multi-stage build cho Vue.js với Vite
+# Multi-stage build cho Vue.js với Vite - fix Rollup issue
 FROM node:18-alpine as build-stage
 
 # Cài đặt git và python (cần thiết cho một số packages native)
@@ -7,16 +7,20 @@ RUN apk add --no-cache git python3 make g++
 # Đặt working directory
 WORKDIR /app
 
-# Copy package files (hỗ trợ cả npm và yarn)
+# Copy package files
 COPY package*.json ./
 COPY yarn.lock* ./
 
-# Cài đặt dependencies và fix lỗi Rollup trên Alpine
-RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci; fi && \
-    # Fix Rollup native binary issue trên Alpine
-    npm rebuild && \
-    # Hoặc cài đặt lại rollup nếu cần
-    npm install --no-save @rollup/rollup-linux-x64-musl
+# Clean npm cache và cài đặt dependencies
+RUN npm cache clean --force && \
+    if [ -f yarn.lock ]; then \
+        yarn install --frozen-lockfile; \
+    else \
+        npm ci && \
+        # Fix Rollup native binary issue
+        rm -rf node_modules/@rollup/rollup-linux-x64-musl && \
+        npm install --no-save @rollup/rollup-linux-x64-musl; \
+    fi
 
 # Copy source code
 COPY . .
