@@ -14,5 +14,11 @@ RUN npm run build
 FROM nginx:stable-alpine as production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
+
+# Thêm script để thay thế biến môi trường runtime
+RUN apk add --no-cache bash
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

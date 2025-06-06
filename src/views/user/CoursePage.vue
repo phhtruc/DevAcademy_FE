@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import LoadingComponent from '@/components/LoadingComponent.vue'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
 const route = useRoute()
 

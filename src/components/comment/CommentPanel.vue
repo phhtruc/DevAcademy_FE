@@ -280,7 +280,7 @@ const props = defineProps({
   },
 })
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API;
 const emit = defineEmits(['close'])
 const authStore = useAuthStore()
 

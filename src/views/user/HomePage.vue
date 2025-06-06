@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import axios from '@/plugins/axios'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const featuredCourses = ref([])
 const categories = ref([])
 const isActive = ref(false)

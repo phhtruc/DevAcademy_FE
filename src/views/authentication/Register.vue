@@ -89,7 +89,7 @@ const errorMessage = ref('')
 const successMessage = ref('')
 
 const router = useRouter()
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 
 const handleRegister = async () => {
   nameError.value = ''

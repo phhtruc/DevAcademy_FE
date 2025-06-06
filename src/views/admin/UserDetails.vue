@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API;
 const router = useRouter()
 const route = useRoute()
 
@@ -92,7 +92,6 @@ onMounted(fetchUserDetails)
 
 <template>
   <div id="content-page" class="content-page">
-    
     <div class="container-fluid">
       <button class="btn btn-light mb-3" @click="goBack">← Trở về</button>
       <div class="row">
@@ -102,8 +101,7 @@ onMounted(fetchUserDetails)
               <div class="iq-header-title">
                 <h4 class="card-title">Thông tin người dùng</h4>
               </div>
-              <div>
-              </div>
+              <div></div>
             </div>
             <div class="iq-card-body">
               <div v-if="isLoading">
@@ -116,17 +114,17 @@ onMounted(fetchUserDetails)
                 <div class="row">
                   <div class="col-md-4 text-center mb-4">
                     <div class="avatar-container">
-                      <img 
-                        v-if="user.avatar" 
-                        :src="user.avatar" 
-                        alt="User avatar" 
+                      <img
+                        v-if="user.avatar"
+                        :src="user.avatar"
+                        alt="User avatar"
                         class="user-avatar"
-                      >
+                      />
                       <div v-else class="user-avatar default-avatar">
                         {{ user.fullName.charAt(0).toUpperCase() }}
                       </div>
                     </div>
-                    
+
                     <h4 class="mt-3">{{ user.fullName }}</h4>
                     <span class="badge" :class="getUserStatusClass(user.status)">
                       {{ user.status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động' }}
@@ -137,7 +135,7 @@ onMounted(fetchUserDetails)
                       </span>
                     </div>
                   </div>
-                  
+
                   <div class="col-md-8">
                     <div class="table-responsive">
                       <table class="table table-striped">
@@ -176,7 +174,9 @@ onMounted(fetchUserDetails)
                           </tr>
                           <tr>
                             <th>Đăng nhập lần cuối</th>
-                            <td>{{ user.lastLogin ? formatDate(user.lastLogin) : 'Chưa đăng nhập' }}</td>
+                            <td>
+                              {{ user.lastLogin ? formatDate(user.lastLogin) : 'Chưa đăng nhập' }}
+                            </td>
                           </tr>
                         </tbody>
                       </table>

@@ -45,11 +45,11 @@
 </template>
 <script setup>
 import Table from '@/components/Table.vue'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import { reactive, onMounted, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 
 const props = defineProps({
   idCourse: {

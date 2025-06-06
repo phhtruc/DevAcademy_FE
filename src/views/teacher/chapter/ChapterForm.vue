@@ -43,7 +43,7 @@ import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
 const isLoading = ref(false)
 const isUpdate = ref(false)

@@ -7,7 +7,7 @@ import CommentPanel from '@/components/comment/CommentPanel.vue'
 const router = useRouter()
 const route = useRoute()
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const lessonId = route.params.idLesson
 const idCourse = route.params.idCourse
 
@@ -81,7 +81,7 @@ const fetchChapterLessons = async (chapterId) => {
     loadingChapter[chapterId] = true
 
     const response = await axios.get(`${rootAPI}/chapters/${chapterId}/lessons`, {
-      params: { page: 1, pageSize: 100 , idCourse: idCourse },
+      params: { page: 1, pageSize: 100, idCourse: idCourse },
     })
 
     chapterLessons[chapterId] = response.data.data.items || []
@@ -115,9 +115,13 @@ const goBack = () => {
   router.push(`/khoa-hoc/${idCourse}`)
 }
 
-watch(() => route.params.idLesson, (newId) => {
-  currentLessonId.value = Number(newId)
-}, { immediate: true })
+watch(
+  () => route.params.idLesson,
+  (newId) => {
+    currentLessonId.value = Number(newId)
+  },
+  { immediate: true }
+)
 
 onMounted(async () => {
   await fetchLessonDetails(lessonId)

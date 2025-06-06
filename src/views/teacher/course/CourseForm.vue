@@ -158,7 +158,7 @@
   <script setup>
 import { onMounted, ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
 import FilePondPluginImagePreview from 'filepond-plugin-image-preview'
@@ -169,7 +169,7 @@ import Multiselect from 'vue-multiselect'
 import 'vue-multiselect/dist/vue-multiselect.min.css'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const router = useRouter()
 const categoris = ref([])
 const isLoading = ref(false)

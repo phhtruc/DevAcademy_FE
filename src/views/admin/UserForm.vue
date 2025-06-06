@@ -132,15 +132,15 @@
                     </div>
                   </div>
                   <b-modal
-                  v-model="isModalVisible"
-                  title="Xác nhận xóa"
-                  ok-title="Xóa"
-                  cancel-title="Đóng"
-                  ok-variant="danger"
-                  @ok="handleDelete"
-                >
-                  <p>Bạn có chắc chắn xóa tài khoản này không?</p>
-                </b-modal>
+                    v-model="isModalVisible"
+                    title="Xác nhận xóa"
+                    ok-title="Xóa"
+                    cancel-title="Đóng"
+                    ok-variant="danger"
+                    @ok="handleDelete"
+                  >
+                    <p>Bạn có chắc chắn xóa tài khoản này không?</p>
+                  </b-modal>
                 </form>
               </div>
             </div>
@@ -158,7 +158,7 @@ import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 import defaultAvatar from '@/assets/images/user/11.png'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API;
 const router = useRouter()
 const isLoading = ref(false)
 const isUpdate = ref(false)

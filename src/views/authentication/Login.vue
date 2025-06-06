@@ -67,7 +67,7 @@ import { ref } from 'vue'
 import axios from '@/plugins/axios'
 import { useRouter } from 'vue-router'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
@@ -104,7 +104,7 @@ const handleLogin = async (e) => {
       password: password.value,
     })
 
-    const {id, roles, accessToken, refreshToken } = res.data.data
+    const { id, roles, accessToken, refreshToken } = res.data.data
 
     // Lưu token vào localStorage
     localStorage.setItem('accessToken', accessToken)
