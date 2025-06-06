@@ -37,17 +37,58 @@
 # # Copy nginx config cho Vue.js SPA
 # COPY nginx.conf /etc/nginx/conf.d/default.conf
 # build stage
-FROM node:16-alpine as build-stage
-WORKDIR /app
-COPY . .
-RUN npm install
-RUN npm run build
-## các bạn có thể dùng yarn install .... tuỳ nhu cầu nhé
+# FROM node:16-alpine as build-stage
+# WORKDIR /app
+# COPY . .
+# RUN npm install
+# RUN npm run build
+# ## các bạn có thể dùng yarn install .... tuỳ nhu cầu nhé
 
-# production stage
-FROM nginx:1.17-alpine as production-stage
-# Expose port 80
-EXPOSE 80
+# # production stage
+# FROM nginx:1.17-alpine as production-stage
+# # Expose port 80
+# EXPOSE 80
 
-# Start nginx
-CMD ["nginx", "-g", "daemon off;"]
+# # Start nginx
+# CMD ["nginx", "-g", "daemon off;"]
+
+# --- Build Stage ---
+    FROM node:16-alpine AS build-stage
+
+    # Set working directory
+    WORKDIR /app
+    
+    # Copy package files and install dependencies
+    COPY package*.json ./
+    RUN npm install
+    
+    # Copy full source code
+    COPY . .
+    
+    # Build Vite app (output to dist/)
+    RUN npm run build
+    
+    # --- Production Stage ---
+    FROM nginx:1.17-alpine AS production-stage
+    
+    # Copy build output from previous stage
+    COPY --from=build-stage /app/dist /usr/share/nginx/html
+    
+    # Optional: Custom nginx.conf (SPA routing support)
+    RUN rm /etc/nginx/conf.d/default.conf
+    RUN echo 'server { \
+      listen 80; \
+      server_name localhost; \
+      root /usr/share/nginx/html; \
+      index index.html; \
+      location / { \
+        try_files $uri $uri/ /index.html; \
+      } \
+    }' > /etc/nginx/conf.d/default.conf
+    
+    # Expose port 80
+    EXPOSE 80
+    
+    # Start nginx
+    CMD ["nginx", "-g", "daemon off;"]
+    
