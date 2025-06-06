@@ -11,8 +11,12 @@ WORKDIR /app
 COPY package*.json ./
 COPY yarn.lock* ./
 
-# Cài đặt dependencies
-RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci; fi
+# Cài đặt dependencies và fix lỗi Rollup trên Alpine
+RUN if [ -f yarn.lock ]; then yarn install --frozen-lockfile; else npm ci; fi && \
+    # Fix Rollup native binary issue trên Alpine
+    npm rebuild && \
+    # Hoặc cài đặt lại rollup nếu cần
+    npm install --no-save @rollup/rollup-linux-x64-musl
 
 # Copy source code
 COPY . .
