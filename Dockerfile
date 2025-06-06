@@ -15,6 +15,15 @@ FROM nginx:stable-alpine as production-stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 
+# Đảm bảo config.js nằm trong thư mục public
+COPY config.js /usr/share/nginx/html/config.js
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Script để thay thế biến môi trường
+RUN apk add --no-cache bash
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
 # Thêm script để thay thế biến môi trường runtime
 RUN apk add --no-cache bash
 COPY docker-entrypoint.sh /docker-entrypoint.sh
