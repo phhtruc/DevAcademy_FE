@@ -1,5 +1,5 @@
 FROM node:18 as build-stage
-# FROM node:16-alpine as build-stage
+
 WORKDIR /app
 COPY package*.json ./
 RUN rm -rf node_modules package-lock.json
