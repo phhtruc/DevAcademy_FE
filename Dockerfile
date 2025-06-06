@@ -1,20 +1,30 @@
 # Build stage
-FROM node:18-bullseye AS build-stage
+FROM node:16-bullseye AS build-stage
 
 # Set working directory
 WORKDIR /app
 
+# Cài đặt các công cụ hỗ trợ debug
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy package files
 COPY package*.json ./
 
-# Cài đặt dependencies
-RUN npm ci
+# Cài đặt dependencies với nhiều thông tin hơn
+RUN npm ci --verbose
 
 # Copy source code
 COPY . .
 
-# Build ứng dụng
-RUN npm run build
+# Hiển thị danh sách file
+RUN ls -la
+
+# Build ứng dụng với nhiều thông tin debug hơn
+RUN npm run build --verbose || (echo "Build failed with error code $?" && cat npm-debug.log 2>/dev/null || true && exit 1)
 
 # Production stage
 FROM nginx:stable-alpine
@@ -31,16 +41,4 @@ RUN echo 'server { \
     } \
 }' > /etc/nginx/conf.d/default.conf
 
-# Tạo cơ chế inject biến môi trường khi runtime
-RUN apk add --no-cache bash
-RUN echo '#!/bin/bash\n\
-echo "window.ENV = {" > /usr/share/nginx/html/env-config.js\n\
-echo "  VITE_APP_ROOT_API: \"$VITE_APP_ROOT_API\"," >> /usr/share/nginx/html/env-config.js\n\
-echo "  VITE_APP_WEBSOCKET_URL: \"$VITE_APP_WEBSOCKET_URL\"" >> /usr/share/nginx/html/env-config.js\n\
-echo "}" >> /usr/share/nginx/html/env-config.js\n\
-nginx -g "daemon off;"\n\
-' > /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 EXPOSE 80
-CMD ["/docker-entrypoint.sh"]
