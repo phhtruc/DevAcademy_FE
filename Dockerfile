@@ -1,5 +1,5 @@
 # Build stage
-FROM node:18-alpine AS build-stage
+FROM node:18-bullseye AS build-stage
 
 # Set working directory
 WORKDIR /app
@@ -13,8 +13,7 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build ứng dụng - KHÔNG cần biến môi trường tại build time
-ENV NODE_ENV=production
+# Build ứng dụng
 RUN npm run build
 
 # Production stage
