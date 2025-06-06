@@ -1,44 +1,32 @@
-# Build stage
-FROM node:16-bullseye AS build-stage
+# Multi-stage build cho Vue.js application
+FROM node:18-alpine as build-stage
 
-# Set working directory
+# Đặt working directory
 WORKDIR /app
 
-# Cài đặt các công cụ hỗ trợ debug
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    make \
-    g++ \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy package files
+# Copy package.json và package-lock.json (nếu có)
 COPY package*.json ./
 
-# Cài đặt dependencies với nhiều thông tin hơn
-RUN npm ci --verbose
+# Cài đặt dependencies
+RUN npm ci --only=production
 
 # Copy source code
 COPY . .
 
-# Hiển thị danh sách file
-RUN ls -la
-
-# Build ứng dụng với nhiều thông tin debug hơn
-RUN npm run build --verbose || (echo "Build failed with error code $?" && cat npm-debug.log 2>/dev/null || true && exit 1)
+# Build ứng dụng
+RUN npm run build
 
 # Production stage
-FROM nginx:stable-alpine
+FROM nginx:stable-alpine as production-stage
+
+# Copy built app từ build stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Tạo nginx config
-RUN echo 'server { \
-    listen 80; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Copy nginx config (tùy chọn)
+# COPY nginx.conf /etc/nginx/nginx.conf
 
+# Expose port 80
 EXPOSE 80
+
+# Start nginx
+CMD ["nginx", "-g", "daemon off;"]
