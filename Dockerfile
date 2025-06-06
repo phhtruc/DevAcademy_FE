@@ -51,44 +51,17 @@
 
 # # Start nginx
 # CMD ["nginx", "-g", "daemon off;"]
+FROM node:latest as build-stage
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY ./ .
+RUN npm run build
 
-# --- Build Stage ---
-    FROM node:16-alpine AS build-stage
+FROM nginx as production-stage
+RUN mkdir /app
+COPY --from=build-stage /app/dist /app
+# COPY --from=build-stage /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/nginx.conf
 
-    # Set working directory
-    WORKDIR /app
-    
-    # Copy package files and install dependencies
-    COPY package*.json ./
-    RUN npm install
-    
-    # Copy full source code
-    COPY . .
-    
-    # Build Vite app (output to dist/)
-    RUN npm run build
-    
-    # --- Production Stage ---
-    FROM nginx:1.17-alpine AS production-stage
-    
-    # Copy build output from previous stage
-    COPY --from=build-stage /app/dist /usr/share/nginx/html
-    
-    # Optional: Custom nginx.conf (SPA routing support)
-    RUN rm /etc/nginx/conf.d/default.conf
-    RUN echo 'server { \
-      listen 80; \
-      server_name localhost; \
-      root /usr/share/nginx/html; \
-      index index.html; \
-      location / { \
-        try_files $uri $uri/ /index.html; \
-      } \
-    }' > /etc/nginx/conf.d/default.conf
-    
-    # Expose port 80
-    EXPOSE 80
-    
-    # Start nginx
-    CMD ["nginx", "-g", "daemon off;"]
     
