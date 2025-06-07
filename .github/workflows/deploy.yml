@@ -71,5 +71,15 @@ jobs:
               -e VITE_APP_WEBSOCKET_URL=${{ secrets.VITE_APP_WEBSOCKET_URL }} \
               --name vuejs-container ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:${{ github.sha }}
             
+            # Cập nhật chứng chỉ SSL nếu chưa có
+            if [ ! -f /etc/letsencrypt/live/phhtruc.id.vn/fullchain.pem ]; then
+              sudo certbot --nginx -d phhtruc.id.vn --non-interactive --agree-tos -m admin@phhtruc.id.vn
+            else
+              sudo certbot renew --quiet
+            fi
+
+            # Reload Nginx sau khi cài hoặc gia hạn SSL
+            sudo systemctl reload nginx
+            
             # Xóa images cũ không được sử dụng để giải phóng không gian
             docker system prune -af
