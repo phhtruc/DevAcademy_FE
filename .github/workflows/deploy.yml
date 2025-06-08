@@ -64,6 +64,8 @@ jobs:
             # Dừng và gỡ bỏ container hiện tại (nếu có)
             docker stop vuejs-container || true
             docker rm vuejs-container || true
+            docker images
+            docker ps -a
 
             # Chạy container mới với image đã pull về và truyền biến môi trường
             docker run -d -p 8080:80 \
