@@ -1,41 +1,7 @@
-# FROM node:18 as build-stage
-
-# WORKDIR /app
-# COPY package*.json ./
-# RUN rm -rf node_modules package-lock.json
-# RUN npm install
-# COPY . .
-# ARG VITE_APP_ROOT_API
-# ARG VITE_APP_WEBSOCKET_URL
-# ENV VITE_APP_ROOT_API=$VITE_APP_ROOT_API
-# ENV VITE_APP_WEBSOCKET_URL=$VITE_APP_WEBSOCKET_URL
-# RUN npm run build
-
-# FROM nginx:stable-alpine as production-stage
-# COPY --from=build-stage /app/dist /usr/share/nginx/html
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# # Đảm bảo config.js nằm trong thư mục public
-# COPY config.js /usr/share/nginx/html/config.js
-# COPY nginx.conf /etc/nginx/nginx.conf
-
-# # Script để thay thế biến môi trường
-# RUN apk add --no-cache bash
-# COPY docker-entrypoint.sh /docker-entrypoint.sh
-# RUN chmod +x /docker-entrypoint.sh
-
-# # Thêm script để thay thế biến môi trường runtime
-# RUN apk add --no-cache bash
-# COPY docker-entrypoint.sh /docker-entrypoint.sh
-# RUN chmod +x /docker-entrypoint.sh
-
-# EXPOSE 80
-# CMD ["nginx", "-g", "daemon off;"]
 FROM node:18 as build-stage
 
 WORKDIR /app
 COPY package*.json ./
-RUN rm -rf node_modules package-lock.json
 RUN npm install
 COPY . .
 ARG VITE_APP_ROOT_API
@@ -48,16 +14,19 @@ FROM nginx:stable-alpine as production-stage
 # Copy các file từ build stage
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Copy nginx config
-COPY nginx.conf /etc/nginx/nginx.conf
-
 # Copy config.js cho runtime environment
 COPY config.js /usr/share/nginx/html/config.js
+
+# Copy nginx config - chú ý vị trí đúng là conf.d/default.conf
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Cài đặt bash và copy script entrypoint
 RUN apk add --no-cache bash
 COPY docker-entrypoint.sh /docker-entrypoint.sh
 RUN chmod +x /docker-entrypoint.sh
+
+# Debug: xem thư mục html và cấu hình nginx
+RUN ls -la /usr/share/nginx/html && cat /etc/nginx/conf.d/default.conf
 
 # Port và entrypoint
 EXPOSE 80
