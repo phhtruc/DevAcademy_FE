@@ -65,3 +65,13 @@ jobs:
             docker stop vuejs-container || true
             docker rm vuejs-container || true
             docker images
+            docker ps -a
+
+            # Chạy container mới với image đã pull về và truyền biến môi trường
+            docker run -d -p 8080:80 \
+              -e VITE_APP_ROOT_API=${{ secrets.VITE_APP_ROOT_API }} \
+              -e VITE_APP_WEBSOCKET_URL=${{ secrets.VITE_APP_WEBSOCKET_URL }} \
+              --name vuejs-container ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:${{ github.sha }}
+            
+            # Xóa images cũ không được sử dụng để giải phóng không gian
+            docker system prune -af
