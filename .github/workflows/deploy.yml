@@ -69,8 +69,8 @@ jobs:
 
             # Chạy container mới với image đã pull về và truyền biến môi trường
             docker run -d -p 8080:80 \
-              -e VITE_APP_ROOT_API=${{ secrets.VITE_APP_ROOT_API }} \
-              -e VITE_APP_WEBSOCKET_URL=${{ secrets.VITE_APP_WEBSOCKET_URL }} \
+              -e VITE_APP_ROOT_API=https://phhtruc.id.vn/api/v1 \
+              -e VITE_APP_WEBSOCKET_URL=https://phhtruc.id.vn/ws \
               --name vuejs-container ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:${{ github.sha }}
             
             # Xóa images cũ không được sử dụng để giải phóng không gian
