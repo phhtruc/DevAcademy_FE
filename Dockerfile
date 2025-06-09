@@ -5,8 +5,8 @@ COPY package*.json ./
 RUN rm -rf node_modules package-lock.json
 RUN npm install
 COPY . .
-# ARG VITE_APP_ROOT_API
-# ARG VITE_APP_WEBSOCKET_URL
+# ARG __VITE_APP_ROOT_API__
+# ARG __VITE_APP_WEBSOCKET_URL__
 # ENV VITE_APP_ROOT_API=$VITE_APP_ROOT_API
 # ENV VITE_APP_WEBSOCKET_URL=$VITE_APP_WEBSOCKET_URL
 RUN npm run build
