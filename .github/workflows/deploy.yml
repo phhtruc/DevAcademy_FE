@@ -38,8 +38,8 @@ jobs:
         with:
           context: .
           build-args: |
-            VITE_APP_ROOT_API=${{ secrets.VITE_APP_ROOT_API }}
-            VITE_APP_WEBSOCKET_URL=${{ secrets.VITE_APP_WEBSOCKET_URL }}
+            VITE_APP_ROOT_API=https://phhtruc.id.vn/api/v1
+            VITE_APP_WEBSOCKET_URL=https://phhtruc.id.vn/ws
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:latest
