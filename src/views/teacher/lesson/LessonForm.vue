@@ -168,7 +168,7 @@ import { toast } from 'vue3-toastify'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 import webSocketService from '@/services/WebSocketService'
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const route = useRoute()
 const idCourse = route.params.idCourse

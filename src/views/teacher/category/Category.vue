@@ -4,7 +4,7 @@ import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
 const perPage = ref(8)
 const totalRows = ref(0)

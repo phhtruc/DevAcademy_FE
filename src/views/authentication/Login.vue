@@ -67,7 +67,7 @@ import { ref } from 'vue'
 import axios from '@/plugins/axios'
 import { useRouter } from 'vue-router'
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)

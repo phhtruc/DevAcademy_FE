@@ -5,7 +5,7 @@ import axios from '@/plugins/axios'
 import LoadingComponent from '@/components/LoadingComponent.vue'
 import { useAuthStore } from '@/stores/auth'
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const authStore = useAuthStore()
 

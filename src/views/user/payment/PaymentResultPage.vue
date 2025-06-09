@@ -132,7 +132,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const route = useRoute()
 const router = useRouter()
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 
 const isProcessing = ref(true)
 const paymentStatus = ref('')

@@ -280,7 +280,7 @@ const props = defineProps({
   },
 })
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API;
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const emit = defineEmits(['close'])
 const authStore = useAuthStore()
 
@@ -310,22 +310,22 @@ const currentUserId = ref(getUserId())
 const confirmingDelete = reactive(new Set())
 
 const totalCommentsCount = computed(() => {
-  let total = 0;
-  
+  let total = 0
+
   if (!Array.isArray(comments.value)) {
-    return total;
+    return total
   }
-  
-  total += comments.value.length;
-  
+
+  total += comments.value.length
+
   for (const commentObj of comments.value) {
     if (Array.isArray(commentObj.replies)) {
-      total += commentObj.replies.length;
+      total += commentObj.replies.length
     }
   }
-  
-  return total;
-});
+
+  return total
+})
 
 const fetchComments = async () => {
   //loading.value = true
@@ -559,7 +559,6 @@ const deleteComment = async (event, commentId) => {
   if (!comment) return
 
   try {
-
     await axios.delete(`${rootAPI}/comments/${commentId}`)
 
     if (comment) {
@@ -1113,7 +1112,8 @@ onBeforeUnmount(() => {
   }
 }
 
-.comment-item.deleting, .reply-item.deleting {
+.comment-item.deleting,
+.reply-item.deleting {
   opacity: 0.5;
   pointer-events: none;
   transition: opacity 0.3s ease;

@@ -7,7 +7,7 @@ import CommentPanel from '@/components/comment/CommentPanel.vue'
 const router = useRouter()
 const route = useRoute()
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const lessonId = route.params.idLesson
 const idCourse = route.params.idCourse
 

@@ -9,7 +9,7 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const rootAPI = window.runtime_config.VITE_APP_ROOT_API || import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const courseId = route.params.idCourse
 
 const course = ref({})
