@@ -171,12 +171,11 @@ const submitExercise = async () => {
       },
     })
 
-    submissionResult.value = response.data.data
+    // submissionResult.value = response.data.data
+    githubLink.value = ''
+    selectedFile.value = null
 
-    if (!response.data.data.includes('PASS')) {
-      githubLink.value = ''
-      selectedFile.value = null
-    }
+    fetchSubmissionHistory(currentLessonId.value)
   } catch (error) {
     if (error.response && error.response.status === 400) {
       window.toast.error(error.response?.data?.message || 'Không thể xử lý yêu cầu', {
@@ -216,8 +215,8 @@ const fetchSubmissionHistory = async (id) => {
   try {
     const response = await axios.get(`${rootAPI}/submissions/lessons/${id}`)
     submissionHistory.value = response.data.data || []
-    console.log('Submission History:', submissionHistory.value)
-    if (submissionHistory.value.length > 0 && !submissionResult.value) {
+
+    if (submissionHistory.value.length > 0) {
       submissionResult.value = submissionHistory.value[0].review
     } else {
       submissionResult.value = null
@@ -470,7 +469,7 @@ onMounted(async () => {
                   <input
                     type="text"
                     class="form-control"
-                    placeholder="Nhập đường dẫn GitHub của bạn"
+                    placeholder="Ví dụ: https://github.com/phhtruc/DevAcademy_FE"
                     v-model="githubLink"
                     :disabled="hasPassedExercise || isSubmitting"
                   />
