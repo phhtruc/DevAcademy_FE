@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import CommentPanel from '@/components/comment/CommentPanel.vue'
@@ -22,9 +22,28 @@ const showReferContent = ref(false)
 const isSidebarOpen = ref(true)
 const isCommentPanelOpen = ref(false)
 const currentLessonId = ref(Number(route.params.idLesson))
+const githubLink = ref('')
+const isSubmitting = ref(false)
+const submissionType = ref('link')
+const selectedFile = ref(null)
+const submissionResult = ref(null)
+const submissionHistory = ref([])
+const showSubmissionHistory = ref(false)
+const hasPassedExercise = computed(() => {
+  return submissionResult.value && submissionResult.value.includes('PASS')
+})
 
 const toggleCommentPanel = () => {
   isCommentPanelOpen.value = !isCommentPanelOpen.value
+}
+
+const showHistory = () => {
+  showSubmissionHistory.value = !showSubmissionHistory.value
+  if (showSubmissionHistory.value === true) {
+    submissionResult.value = null
+  } else {
+    submissionResult.value = submissionHistory.value[0].review
+  }
 }
 
 const toggleSidebar = () => {
@@ -35,6 +54,9 @@ const fetchLessonDetails = async (id) => {
   try {
     const response = await axios.get(`${rootAPI}/lessons/${id}`)
     lesson.value = response.data.data
+    if (lesson.value && lesson.value.type === 'EXERCISES') {
+      fetchSubmissionHistory(id)
+    }
 
     activeLesson.value = parseInt(lessonId)
   } catch (error) {
@@ -108,6 +130,132 @@ const handleLessonClick = (lesson) => {
   if (lesson.isPublic || isEnrolled.value) {
     router.push(`/khoa-hoc/${idCourse}/noi-dung/${lesson.id}`)
     fetchLessonDetails(lesson.id)
+  }
+}
+
+const submitExercise = async () => {
+  if (!githubLink.value && !selectedFile.value && submissionType.value === 'link') {
+    toast.error('Vui lòng nhập đường dẫn GitHub', {
+      position: 'top-right',
+      autoClose: 3000,
+    })
+    return
+  }
+
+  if (!selectedFile.value && submissionType.value === 'file') {
+    toast.error('Vui lòng chọn file để nộp', {
+      position: 'top-right',
+      autoClose: 3000,
+    })
+    return
+  }
+
+  isSubmitting.value = true
+
+  try {
+    const formData = new FormData()
+
+    if (submissionType.value === 'link') {
+      formData.append('githubLink', githubLink.value)
+    } else {
+      formData.append('file', selectedFile.value)
+    }
+
+    formData.append('idExercise', lesson.value.id)
+    formData.append('exerciseTitle', lesson.value.name)
+    formData.append('idCourse', idCourse)
+
+    const response = await axios.post(`${rootAPI}/submissions`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+
+    submissionResult.value = response.data.data
+
+    if (!response.data.data.includes('PASS')) {
+      githubLink.value = ''
+      selectedFile.value = null
+    }
+  } catch (error) {
+    if (error.response && error.response.status === 400) {
+      window.toast.error(error.response?.data?.message || 'Không thể xử lý yêu cầu', {
+        position: 'top-right',
+        autoClose: 5000,
+      })
+    } else {
+      window.toast.error('Có lỗi xảy ra khi nộp bài tập. Vui lòng thử lại sau.', {
+        position: 'top-right',
+        autoClose: 5000,
+      })
+    }
+  } finally {
+    isSubmitting.value = false
+  }
+}
+
+const handleFileChange = (event) => {
+  const files = event.target.files
+  if (files.length > 0) {
+    const file = files[0]
+    if (file.type === 'application/zip' || file.name.endsWith('.zip')) {
+      selectedFile.value = file
+    } else {
+      toast.error('Chỉ chấp nhận file .zip', {
+        position: 'top-right',
+        autoClose: 3000,
+      })
+
+      event.target.value = null
+      selectedFile.value = null
+    }
+  }
+}
+
+const fetchSubmissionHistory = async (id) => {
+  try {
+    const response = await axios.get(`${rootAPI}/submissions/lessons/${id}`)
+    submissionHistory.value = response.data.data || []
+    console.log('Submission History:', submissionHistory.value)
+    if (submissionHistory.value.length > 0 && !submissionResult.value) {
+      submissionResult.value = submissionHistory.value[0].review
+    } else {
+      submissionResult.value = null
+    }
+  } catch (error) {
+    toast.error('Có lỗi xảy ra khi lấy lịch sử nộp bài.', {
+      position: 'top-right',
+      autoClose: 3000,
+    })
+  }
+}
+
+const clearFileInput = () => {
+  selectedFile.value = null
+  const fileInput = document.getElementById('exercise-file-input')
+  if (fileInput) fileInput.value = ''
+}
+
+const formatDate = (dateString) => {
+  if (!dateString) return ''
+
+  try {
+    const date = new Date(dateString)
+
+    if (isNaN(date.getTime())) return dateString
+
+    // Format: HH:MM:SS DD-MM-YYYY
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const seconds = date.getSeconds().toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const year = date.getFullYear()
+
+    return `${hours}:${minutes}:${seconds} ${day}-${month}-${year}`
+  } catch (error) {
+    console.error('Error formatting date:', error)
+    return dateString
   }
 }
 
@@ -273,8 +421,149 @@ onMounted(async () => {
             </div>
 
             <!-- Type: EXERCISES -->
-            <div v-else-if="lesson.type === 'EXERCISES'">
-              <p>Phần bài tập hiện đang được cập nhật.</p>
+            <div v-else-if="lesson.type === 'EXERCISES'" class="exercise-container">
+              <!-- Exercise Content -->
+              <div class="exercise-content mb-4" v-html="lesson.content"></div>
+              <button class="btn btn-primary" @click="showReferContent = !showReferContent">
+                Tham khảo
+              </button>
+              <div v-if="showReferContent" v-html="lesson.contentRefer"></div>
+
+              <!-- Submission Form -->
+              <div class="submission-form card p-3 mb-4">
+                <h4 class="mb-3">Nộp bài tập</h4>
+                <div
+                  class="submission-type-selector mb-3 d-flex justify-content-between align-items-center"
+                >
+                  <div class="submission-options d-flex align-items-center">
+                    <div class="form-check form-check-inline mb-0 me-3">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        id="linkSubmission"
+                        value="link"
+                        v-model="submissionType"
+                      />
+                      <label class="form-check-label" for="linkSubmission">Link GitHub</label>
+                    </div>
+                    <div class="form-check form-check-inline mb-0">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        id="fileSubmission"
+                        value="file"
+                        v-model="submissionType"
+                      />
+                      <label class="form-check-label" for="fileSubmission">File .zip</label>
+                    </div>
+                  </div>
+
+                  <div class="history-button">
+                    <button class="btn btn-outline-primary btn-sm" @click="showHistory">
+                      <i class="fas fa-history me-2"></i>
+                      {{ showSubmissionHistory ? 'Ẩn lịch sử nộp' : 'Xem lịch sử nộp' }}
+                    </button>
+                  </div>
+                </div>
+
+                <div v-if="submissionType === 'link'" class="input-group mb-3">
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Nhập đường dẫn GitHub của bạn"
+                    v-model="githubLink"
+                    :disabled="hasPassedExercise || isSubmitting"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    @click="submitExercise"
+                    :disabled="!githubLink || hasPassedExercise || isSubmitting"
+                  >
+                    <span
+                      v-if="isSubmitting"
+                      class="spinner-border spinner-border-sm me-2"
+                      role="status"
+                      aria-hidden="true"
+                    ></span>
+                    {{ isSubmitting ? 'Đang nộp...' : 'Nộp bài' }}
+                  </button>
+                </div>
+
+                <div v-else class="mb-3">
+                  <div class="input-group">
+                    <input
+                      type="file"
+                      class="form-control"
+                      id="exercise-file-input"
+                      accept=".zip"
+                      @change="handleFileChange"
+                      :disabled="hasPassedExercise || isSubmitting"
+                    />
+                    <button
+                      class="btn btn-primary"
+                      @click="submitExercise"
+                      :disabled="!selectedFile || hasPassedExercise || isSubmitting"
+                    >
+                      <span
+                        v-if="isSubmitting"
+                        class="spinner-border spinner-border-sm me-2"
+                        role="status"
+                        aria-hidden="true"
+                      ></span>
+                      {{ isSubmitting ? 'Đang nộp...' : 'Nộp bài' }}
+                    </button>
+                  </div>
+                  <div v-if="selectedFile" class="selected-file mt-2">
+                    <span>File đã chọn: {{ selectedFile.name }}</span>
+                    <button class="btn btn-link text-danger p-0 ms-2" @click="clearFileInput">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submission Result -->
+              <div v-if="submissionResult" class="submission-result card p-3 mb-4">
+                <h4 class="mb-3">Kết quả đánh giá</h4>
+                <div class="result-content" v-html="submissionResult"></div>
+                <div class="submission-status mt-3">
+                  <div :class="['badge', hasPassedExercise ? 'bg-success' : 'bg-danger']">
+                    {{ hasPassedExercise ? 'ĐẠT' : 'CHƯA ĐẠT' }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submission History -->
+              <div v-if="showSubmissionHistory" class="submission-result card p-3">
+                <h4 class="mb-3">Lịch sử nộp bài</h4>
+                <div v-if="submissionHistory.length > 0" class="history-list">
+                  <div
+                    v-for="(item, index) in submissionHistory"
+                    :key="index"
+                    class="history-item card mb-3"
+                  >
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                      <span>Lần nộp {{ submissionHistory.length - index }}</span>
+                      <span>Thời gian: {{ formatDate(item.createdDate) }}</span>
+                      <div
+                        :class="[
+                          'badge',
+                          item.review && item.review.includes('PASS') ? 'bg-success' : 'bg-danger',
+                        ]"
+                      >
+                        {{ item.review && item.review.includes('PASS') ? 'ĐẠT' : 'CHƯA ĐẠT' }}
+                      </div>
+                    </div>
+                    <div class="card-body">
+                      <div class="result-content" v-html="item.review"></div>
+                    </div>
+                    <hr v-if="index !== submissionHistory.length - 1" />
+                  </div>
+                </div>
+                <div v-else class="text-center py-3">
+                  <p>Chưa có lần nộp bài nào.</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -577,5 +866,12 @@ onMounted(async () => {
 .lesson-header {
   display: flex;
   justify-content: space-between;
+}
+
+.submission-result {
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #fff;
+  transition: all 0.3s ease;
 }
 </style>

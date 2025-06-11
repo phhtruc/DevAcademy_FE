@@ -1,11 +1,11 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from "./router";
-import Vue3Toastify from 'vue3-toastify'
 import 'vue3-toastify/dist/index.css'
 import { createPinia } from 'pinia'
 import '@toast-ui/editor/dist/toastui-editor.css'; 
 import webSocketService from './services/WebSocketService'
+import { toast } from 'vue3-toastify'
 
 
 // Import CSS files
@@ -32,6 +32,7 @@ const app = createApp(App)
 app.use(router)
 app.use(BootstrapVue3)
 app.use(pinia)
+window.toast = toast
 
 app.mount('#app')
 
