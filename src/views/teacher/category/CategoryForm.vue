@@ -38,10 +38,10 @@
   <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const route = useRoute()
 const idCategory = route.params.idCategory
@@ -91,9 +91,11 @@ const saveCategory = async () => {
         position: 'top-right',
         autoClose: 1000,
       })
-      category.value.name = '' // Reset form sau khi thêm mới
+      category.value.name = ''
     }
-    router.push('/categories') // Quay lại danh sách danh mục
+    setTimeout(() => {
+      router.push('/teacher/categories')
+    }, 2000)
   } catch (error) {
     toast.error('Có lỗi xảy ra: ' + (error.response?.data?.message || 'Không thể xử lý yêu cầu'), {
       position: 'top-right',

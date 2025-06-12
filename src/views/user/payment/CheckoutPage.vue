@@ -121,7 +121,7 @@ import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 import { useRouter } from 'vue-router'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 
 const props = defineProps({

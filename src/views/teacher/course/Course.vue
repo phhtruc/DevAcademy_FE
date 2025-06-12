@@ -3,7 +3,7 @@ import { ref, onMounted, reactive } from 'vue'
 import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
 const perPage = ref(7)
 const totalRows = ref(0)
@@ -23,7 +23,7 @@ const actions = {
   view: (item) => `/teacher/courses/${item.id}/chapters`,
   edit: (item) => `/teacher/courses/${item.id}/edit`,
   delete: (item) => `/courses/${item.id}`,
-  managePrompts: (item) => `/teacher/courses/${item.id}/prompts`
+  managePrompts: (item) => `/teacher/courses/${item.id}/prompts`,
 }
 
 const fetchCourses = async () => {
@@ -85,18 +85,18 @@ const handleSearch = () => {
 
 const handleClear = () => {
   if (searchName.value === '') {
-    fetchCourses();
+    fetchCourses()
   }
 }
 
 const handleSort = () => {
   if (sortOrder.value === 'asc') {
-    sortOrder.value = 'desc';
+    sortOrder.value = 'desc'
   } else {
-    sortOrder.value = 'asc';
+    sortOrder.value = 'asc'
   }
-  fetchCourses();
-};
+  fetchCourses()
+}
 
 onMounted(async () => {
   await fetchCourses()
@@ -148,7 +148,7 @@ onMounted(async () => {
                   :actions="actions"
                   :totalRows="totalRows"
                   :perPage="perPage"
-                  :currentPage="currentPage" 
+                  :currentPage="currentPage"
                   @deleteItem="deleteCourse"
                   @pageChange="handlePageChange"
                   @sortPrice="handleSort"

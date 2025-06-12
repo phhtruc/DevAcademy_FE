@@ -5,7 +5,7 @@ import axios from '@/plugins/axios'
 import LoadingComponent from '@/components/LoadingComponent.vue'
 import { useAuthStore } from '@/stores/auth'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -121,7 +121,9 @@ const goBack = () => {
                   <div class="course-details">
                     <div class="course-meta">
                       <span><i class="fas fa-book"></i> {{ course.lessonCount || 0 }} bài học</span>
-                      <span><i class="fas fa-clock"></i>Còn lại {{ formatDuration(course.duration) }} </span>
+                      <span
+                        ><i class="fas fa-clock"></i>Còn lại {{ formatDuration(course.duration) }}
+                      </span>
                     </div>
                   </div>
                 </div>

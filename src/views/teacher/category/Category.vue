@@ -1,10 +1,10 @@
 <script setup>
 import { ref, onMounted, reactive } from 'vue'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
 const perPage = ref(8)
 const totalRows = ref(0)
@@ -103,7 +103,7 @@ onMounted(async () => {
             <div v-if="data.categories.length === 0" class="text-center py-5">
               <i class="ri-file-list-3-line text-muted" style="font-size: 3rem"></i>
               <p class="mt-2">Chưa có danh mục nào</p>
-              <router-link to="/categories/add" class="btn btn-primary mt-2">
+              <router-link to="/teacher/categories/add" class="btn btn-primary mt-2">
                 <i class="ri-add-fill"></i>
                 <span class="pl-1">Thêm danh mục mới</span>
               </router-link>

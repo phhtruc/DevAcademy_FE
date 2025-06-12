@@ -4,7 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const route = useRoute()
 const router = useRouter()
 
@@ -20,7 +20,7 @@ const confirmPasswordVisible = ref(false)
 
 const errors = ref({
   password: '',
-  confirmPassword: ''
+  confirmPassword: '',
 })
 
 onMounted(async () => {
@@ -42,7 +42,7 @@ const validateForm = () => {
   let isValid = true
   errors.value = {
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   }
 
   if (!password.value) {
@@ -72,14 +72,14 @@ const submitForm = async () => {
   try {
     await axios.post(`${rootAPI}/auth/reset-password`, {
       token: token,
-      password: password.value
+      password: password.value,
     })
 
     toast.success('Đặt mật khẩu thành công!', {
       position: 'top-right',
       autoClose: 3000,
     })
-    
+
     setTimeout(() => {
       router.push('/login')
     }, 2000)
@@ -110,32 +110,31 @@ const toggleConfirmPasswordVisibility = () => {
         <div class="auth-logo">
           <img src="@/assets/images/logo-name.jpg" alt="Logo" />
         </div>
-        
+
         <h2 class="auth-title">Tạo mật khẩu mới</h2>
-        
+
         <div v-if="isLoading" class="loading-container">
           <div class="spinner-border text-primary" role="status">
             <span class="sr-only">Đang tải...</span>
           </div>
         </div>
-        
+
         <div v-else-if="!isValidToken" class="error-container">
           <div class="alert alert-danger">
             <i class="fas fa-exclamation-circle mr-2"></i>
-            Liên kết đã hết hạn hoặc không hợp lệ. 
-            Vui lòng liên hệ với quản trị viên để được hỗ trợ.
+            Liên kết đã hết hạn hoặc không hợp lệ. Vui lòng liên hệ với quản trị viên để được hỗ
+            trợ.
           </div>
           <button class="btn btn-primary" @click="router.push('/auth/login')">
             Quay lại đăng nhập
           </button>
         </div>
-        
+
         <form v-else @submit.prevent="submitForm" class="auth-form">
           <p class="form-description">
-            Hãy tạo mật khẩu mới cho tài khoản của bạn. 
-            Mật khẩu phải có ít nhất 8 ký tự.
+            Hãy tạo mật khẩu mới cho tài khoản của bạn. Mật khẩu phải có ít nhất 8 ký tự.
           </p>
-          
+
           <div class="form-group">
             <label for="password">Mật khẩu mới</label>
             <div class="password-input-container">
@@ -147,11 +146,7 @@ const toggleConfirmPasswordVisibility = () => {
                 :class="{ 'is-invalid': errors.password }"
                 placeholder="Nhập mật khẩu mới"
               />
-              <button
-                type="button"
-                class="password-toggle"
-                @click="togglePasswordVisibility"
-              >
+              <button type="button" class="password-toggle" @click="togglePasswordVisibility">
                 <i :class="passwordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
               </button>
             </div>
@@ -159,7 +154,7 @@ const toggleConfirmPasswordVisibility = () => {
               {{ errors.password }}
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="confirmPassword">Xác nhận mật khẩu</label>
             <div class="password-input-container">
@@ -183,13 +178,13 @@ const toggleConfirmPasswordVisibility = () => {
               {{ errors.confirmPassword }}
             </div>
           </div>
-          
-          <button
-            type="submit"
-            class="btn btn-primary btn-block"
-            :disabled="isSubmitting"
-          >
-            <span v-if="isSubmitting" class="spinner-border spinner-border-sm mr-2" role="status"></span>
+
+          <button type="submit" class="btn btn-primary btn-block" :disabled="isSubmitting">
+            <span
+              v-if="isSubmitting"
+              class="spinner-border spinner-border-sm mr-2"
+              role="status"
+            ></span>
             {{ isSubmitting ? 'Đang xử lý...' : 'Xác nhận' }}
           </button>
         </form>

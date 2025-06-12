@@ -132,15 +132,15 @@
                     </div>
                   </div>
                   <b-modal
-                  v-model="isModalVisible"
-                  title="Xác nhận xóa"
-                  ok-title="Xóa"
-                  cancel-title="Đóng"
-                  ok-variant="danger"
-                  @ok="handleDelete"
-                >
-                  <p>Bạn có chắc chắn xóa tài khoản này không?</p>
-                </b-modal>
+                    v-model="isModalVisible"
+                    title="Xác nhận xóa"
+                    ok-title="Xóa"
+                    cancel-title="Đóng"
+                    ok-variant="danger"
+                    @ok="handleDelete"
+                  >
+                    <p>Bạn có chắc chắn xóa tài khoản này không?</p>
+                  </b-modal>
                 </form>
               </div>
             </div>
@@ -158,7 +158,7 @@ import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
 import defaultAvatar from '@/assets/images/user/11.png'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const isLoading = ref(false)
 const isUpdate = ref(false)
@@ -260,7 +260,7 @@ const addUser = async () => {
       router.push('/admin/users')
     }, 1100)
   } catch (error) {
-    errors.value.email = "Email đã tồn tại"
+    errors.value.email = 'Email đã tồn tại'
     console.error('Error creating/updating user:', error)
   } finally {
     isLoading.value = false
@@ -268,28 +268,28 @@ const addUser = async () => {
 }
 
 const confirmDelete = () => {
-  isModalVisible.value = true;
-};
+  isModalVisible.value = true
+}
 
 const handleDelete = async () => {
   try {
-    await axios.delete(`${rootAPI}/users/${props.idUser}`);
+    await axios.delete(`${rootAPI}/users/${props.idUser}`)
     toast.success('Xóa tài khoản thành công', {
       position: 'top-right',
       autoClose: 1000,
-    });
-    isModalVisible.value = false;
+    })
+    isModalVisible.value = false
     setTimeout(() => {
-      router.push('/admin/users');
-    }, 1000);
+      router.push('/admin/users')
+    }, 1000)
   } catch (error) {
-    console.error('Error deleting user:', error);
+    console.error('Error deleting user:', error)
     toast.error('Có lỗi xảy ra khi xóa tài khoản', {
       position: 'top-right',
       autoClose: 3000,
-    });
+    })
   }
-};
+}
 
 const fetchUser = async (id) => {
   try {

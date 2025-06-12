@@ -18,6 +18,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Create entrypoint script
+        run: |
+          echo '#!/bin/bash' > docker-entrypoint.sh
+          echo 'sed -i "s|__VITE_APP_ROOT_API__|$VITE_APP_ROOT_API|g" /usr/share/nginx/html/config.js' >> docker-entrypoint.sh
+          echo 'sed -i "s|__VITE_APP_WEBSOCKET_URL__|$VITE_APP_WEBSOCKET_URL|g" /usr/share/nginx/html/config.js' >> docker-entrypoint.sh
+          echo 'exec nginx -g "daemon off;"' >> docker-entrypoint.sh
+          chmod +x docker-entrypoint.sh
+
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
@@ -29,6 +37,9 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: .
+          build-args: |
+            VITE_APP_ROOT_API=https://phhtruc.id.vn/api/v1
+            VITE_APP_WEBSOCKET_URL=https://phhtruc.id.vn/ws
           push: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:latest
@@ -53,11 +64,13 @@ jobs:
             # Dừng và gỡ bỏ container hiện tại (nếu có)
             docker stop vuejs-container || true
             docker rm vuejs-container || true
+            docker images
+            docker ps -a
 
             # Chạy container mới với image đã pull về và truyền biến môi trường
-            docker run -d -p 80:80 \
-              -e VITE_APP_ROOT_API=${{ secrets.VITE_APP_ROOT_API }} \
-              -e VITE_APP_WEBSOCKET_URL=${{ secrets.VITE_APP_WEBSOCKET_URL }} \
+            docker run -d -p 8080:80 \
+              -e VITE_APP_ROOT_API=https://phhtruc.id.vn/api/v1 \
+              -e VITE_APP_WEBSOCKET_URL=https://phhtruc.id.vn/ws \
               --name vuejs-container ${{ secrets.DOCKERHUB_USERNAME }}/vuejs-app:${{ github.sha }}
             
             # Xóa images cũ không được sử dụng để giải phóng không gian

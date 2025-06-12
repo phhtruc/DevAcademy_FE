@@ -46,12 +46,12 @@
   
   <script setup>
 import Table from '@/components/Table.vue'
-import axios  from '@/plugins/axios'
+import axios from '@/plugins/axios'
 import { reactive, onMounted, ref } from 'vue'
 import { toast } from 'vue3-toastify'
 import { useRoute, useRouter } from 'vue-router'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const route = useRoute()
 const router = useRouter()
 const idCourse = route.params.idCourse
