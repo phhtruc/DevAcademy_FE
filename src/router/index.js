@@ -94,7 +94,8 @@ const router = createRouter({
       path: '/teacher/courses/add',
       name: 'course-add',
       component: CourseForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] }
+      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      props: true
     },
     {
       path: '/teacher/courses/:idCourse/edit',

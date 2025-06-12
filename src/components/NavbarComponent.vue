@@ -126,9 +126,12 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router'
 import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
+const userRole = computed(() => authStore.user?.role || '')
 
 const breadcrumbMap = {
   '/teacher/courses': { title: 'Quản Lý Khoá Học' },
