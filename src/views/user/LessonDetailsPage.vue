@@ -14,7 +14,6 @@ const idCourse = route.params.idCourse
 const lesson = ref({})
 const chapters = ref([])
 const activeLesson = ref(null)
-const isEnrolled = ref(false)
 const chapterLessons = reactive({})
 const loadingChapter = reactive({})
 const expandedChaptersSidebar = reactive({})
@@ -127,7 +126,7 @@ const isChapterExpandedSidebar = (chapterId) => {
 }
 
 const handleLessonClick = (lesson) => {
-  if (lesson.isPublic || isEnrolled.value) {
+  if (lesson.isPublic) {
     router.push(`/khoa-hoc/${idCourse}/noi-dung/${lesson.id}`)
     fetchLessonDetails(lesson.id)
   }
@@ -329,10 +328,10 @@ onMounted(async () => {
                           parseInt(lessonItem.id) === parseInt(route.params.idLesson)
                             ? 'active'
                             : '',
-                          !isEnrolled && !lessonItem.isPublic ? 'locked' : '',
+                          !lessonItem.isPublic ? 'locked' : '',
                         ]"
                         @click="
-                          lessonItem.isPublic || isEnrolled ? handleLessonClick(lessonItem) : null
+                          lessonItem.isPublic ? handleLessonClick(lessonItem) : null
                         "
                       >
                         <div class="d-flex align-items-start">
@@ -365,7 +364,7 @@ onMounted(async () => {
                             {{ lessonItem.name || lessonItem.title }}
                           </span>
                         </div>
-                        <span v-if="!isEnrolled && !lessonItem.isPublic" class="lesson-lock">
+                        <span v-if="!lessonItem.isPublic" class="lesson-lock">
                           <i class="fas fa-lock"></i>
                         </span>
                         <span v-else class="lesson-duration">{{ lessonItem.duration }}</span>
