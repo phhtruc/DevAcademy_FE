@@ -340,7 +340,8 @@ const fetchCourse = async (id) => {
   try {
     const response = await axios.get(`${rootAPI}/courses/${id}`)
     course.value = response.data.data
-    course.value.idCategory = response.data.data.category.id || ''
+    console.log('Fetched course:', course.value)
+    course.value.idCategory = response.data.data.category?.id || ''
     course.value.techStack = response.data.data.techStacks.map((tech) => ({
       id: tech.id,
       name: tech.name,
