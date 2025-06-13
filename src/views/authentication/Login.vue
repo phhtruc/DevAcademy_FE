@@ -25,7 +25,7 @@
               <div class="form-group">
                 <label for="exampleInputPassword1">Mật khẩu</label>
                 <span v-if="passwordError" class="text-danger ml-2">{{ passwordError }}</span>
-                <a href="#" class="float-right">Quên mật khẩu?</a>
+                <router-link to="quen-mat-khau" class="float-right">Quên mật khẩu?</router-link>
                 <input
                   v-model="password"
                   type="password"
