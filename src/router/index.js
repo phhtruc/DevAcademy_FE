@@ -26,6 +26,9 @@ import LessonDetailsPage from '@/views/user/LessonDetailsPage.vue'
 import CheckoutPage from '@/views/user/payment/CheckoutPage.vue'
 import PaymentResultPage from '@/views/user/payment/PaymentResultPage.vue'
 import MyCourse from '@/views/user/MyCourse.vue'
+import LoginCallback from '@/views/authentication/LoginCallback.vue'
+import UserProfilePage from '@/views/user/UserProfilePage.vue'
+import ForgotPasswordPage from '@/views/user/ForgotPasswordPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -38,6 +41,12 @@ const router = createRouter({
       meta: { hideNavbar: true }
     },
     {
+      path: '/login/oauth2/code/google',
+      name: 'login-oauth2-google',
+      component: LoginCallback,
+      meta: { hideNavbar: true }
+    },
+    {
       path: '/register',
       name: 'register',
       component: Register,
@@ -45,7 +54,7 @@ const router = createRouter({
     },
     {
       path: '/auth/create-password/token=:token',
-      name: 'CreatePassword',
+      name: 'ResetPassword',
       component: ResetPassword,
       meta: {
         layout: 'auth',
@@ -269,6 +278,19 @@ const router = createRouter({
       component: MyCourse,
       meta: {hideNavbar: true},
       props: true
+    },
+    {
+      path: '/ho-so-ca-nhan',
+      name: 'ho-so-ca-nhan',
+      component: UserProfilePage,
+      meta: {hideNavbar: true},
+      props: true
+    },
+    {
+      path: '/quen-mat-khau',
+      name: 'quen-mat-khau',
+      component: ForgotPasswordPage,
+      meta: { hideNavbar: true }
     },
   ],
 

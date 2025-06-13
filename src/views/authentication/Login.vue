@@ -25,7 +25,7 @@
               <div class="form-group">
                 <label for="exampleInputPassword1">Mật khẩu</label>
                 <span v-if="passwordError" class="text-danger ml-2">{{ passwordError }}</span>
-                <a href="#" class="float-right">Quên mật khẩu?</a>
+                <router-link to="quen-mat-khau" class="float-right">Quên mật khẩu?</router-link>
                 <input
                   v-model="password"
                   type="password"
@@ -48,7 +48,9 @@
               </div>
               <div class="sign-info">
                 <div class="mt-0">
-                  <button class="btn btn-danger w-100">Đăng nhập với Google</button>
+                  <button @click.prevent="loginWithGoogle" class="btn btn-danger w-100">
+                    <i class="fab fa-google me-2"></i> Đăng nhập với Google
+                  </button>
                 </div>
                 <span class="dark-color d-inline-block line-height-2 mt-3"
                   >Chưa có tài khoản? <router-link :to="`/register`">Đăng ký</router-link></span
@@ -102,6 +104,7 @@ const handleLogin = async (e) => {
     const res = await axios.post(`${rootAPI}/auth/login`, {
       email: email.value,
       password: password.value,
+      rememberMe: rememberMe.value,
     })
 
     const { id, roles, accessToken, refreshToken } = res.data.data
@@ -135,4 +138,17 @@ const handleLogin = async (e) => {
     }
   }
 }
+
+const loginWithGoogle = async () => {
+  try {
+    const res = await axios.get(`${rootAPI}/auth/social-login`);
+
+    window.location.href = res.data.data;
+
+  } catch (error) {
+    console.error('Error during Google login:', error);
+    errorMessage.value = 'Đăng nhập với Google không thành công, vui lòng thử lại.';
+  }
+}
+
 </script>
