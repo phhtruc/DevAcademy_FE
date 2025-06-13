@@ -1,6 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const props = defineProps({
@@ -132,7 +132,7 @@ const logout = () => {
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>
-                      <router-link to="/ho-so-cua-nhan" class="dropdown-item">Hồ sơ</router-link>
+                      <router-link to="/ho-so-ca-nhan" class="dropdown-item">Hồ sơ</router-link>
                     </li>
                     <li>
                       <router-link to="/khoa-hoc-cua-toi" class="dropdown-item">

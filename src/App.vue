@@ -10,7 +10,8 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const isAuthPage = computed(() => {
-  return route.path.includes('/login') || route.path.includes('/register')
+  const authRouteNames = ['login', 'register', 'quen-mat-khau', 'ResetPassword'];
+  return authRouteNames.includes(route.name);
 })
 
 const isAdminPage = computed(() => {
