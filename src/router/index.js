@@ -26,6 +26,7 @@ import LessonDetailsPage from '@/views/user/LessonDetailsPage.vue'
 import CheckoutPage from '@/views/user/payment/CheckoutPage.vue'
 import PaymentResultPage from '@/views/user/payment/PaymentResultPage.vue'
 import MyCourse from '@/views/user/MyCourse.vue'
+import LoginCallback from '@/views/authentication/LoginCallback.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -35,6 +36,12 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login,
+      meta: { hideNavbar: true }
+    },
+    {
+      path: '/login/oauth2/code/google',
+      name: 'login-oauth2-google',
+      component: LoginCallback,
       meta: { hideNavbar: true }
     },
     {
