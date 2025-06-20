@@ -47,6 +47,18 @@ export const useAuthStore = defineStore('auth', {
       this.userRole = null;
       
       router.push('/');
+    },
+    logoutAdim() {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('roles');
+      localStorage.removeItem('user');
+      
+      this.isLoggedIn = false;
+      this.userData = {};
+      this.userRole = null;
+      
+      router.push('/login');
     }
   }
 });

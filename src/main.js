@@ -18,14 +18,10 @@ import './assets/css/responsive.css'
 import BootstrapVue3 from "bootstrap-vue-3";
 import "bootstrap-vue-3/dist/bootstrap-vue-3.css";
 
-// Import JS files
-import { loadExternalScripts } from './loadScripts.js'
-
 const VUE_APP_WEBSOCKET_URL = import.meta.env.VITE_APP_WEBSOCKET_URL || window.runtime_config.VITE_APP_WEBSOCKET_URL;
 // Kết nối WebSocket khi ứng dụng khởi động
 webSocketService.connect(
   VUE_APP_WEBSOCKET_URL,
-  console.log(VUE_APP_WEBSOCKET_URL)
 );
 
 const pinia = createPinia()
@@ -37,6 +33,3 @@ app.use(pinia)
 window.toast = toast
 
 app.mount('#app')
-
-// Load external JS files
-loadExternalScripts()

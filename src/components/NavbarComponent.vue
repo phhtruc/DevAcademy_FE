@@ -24,18 +24,10 @@
           </ul>
         </nav>
       </div>
-      <nav class="navbar navbar-expand-lg navbar-light p-0">
-        <button
-          class="navbar-toggler"
-          type="button"
-          data-toggle="collapse"
-          data-target="#navbarSupportedContent"
-          aria-controls="navbarSupportedContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
+      <b-navbar toggleable="lg" class="p-0">
+        <b-navbar-toggle target="navbarSupportedContent">
           <i class="ri-menu-3-line"></i>
-        </button>
+        </b-navbar-toggle>
         <div class="iq-menu-bt align-self-center">
           <div class="wrapper-menu">
             <div class="line-menu half start"></div>
@@ -43,82 +35,82 @@
             <div class="line-menu half end"></div>
           </div>
         </div>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav ml-auto navbar-list">
-            <li class="nav-item iq-full-screen">
-              <a href="#" class="iq-waves-effect" id="btnFullscreen"
-                ><i class="ri-fullscreen-line"></i
-              ></a>
-            </li>
-          </ul>
-        </div>
-        <ul class="navbar-list">
-          <li>
-            <a href="#" class="search-toggle iq-waves-effect bg-primary text-white"
-              ><img src="@/assets/images/user/1.jpg" class="img-fluid rounded" alt="user"
-            /></a>
-            <div class="iq-sub-dropdown iq-user-dropdown">
-              <div class="iq-card iq-card-block iq-card-stretch iq-card-height shadow-none m-0">
-                <div class="iq-card-body p-0">
-                  <div class="bg-primary p-3">
-                    <h5 class="mb-0 text-white line-height">Hello Nik jone</h5>
-                    <span class="text-white font-size-12">Available</span>
+        <b-collapse id="navbarSupportedContent" class="ml-auto">
+          <b-navbar-nav class="ml-auto">
+            <!-- Các mục menu khác nếu có -->
+          </b-navbar-nav>
+        </b-collapse>
+        
+        <!-- User profile dropdown với Bootstrap Vue -->
+        <!-- <b-nav class="ml-auto">
+          <b-nav-item-dropdown right no-caret class="ml-2">
+            <template #button-content>
+              <img src="@/assets/images/user/1.jpg" class="img-fluid rounded" alt="user" style="width: 40px; height: 40px;" />
+            </template>
+            
+            <div style="width: 320px;">
+              <div class="bg-primary p-3">
+                <h5 class="mb-0 text-white">Hello Nik jone</h5>
+                <span class="text-white small">Available</span>
+              </div>
+              
+              <b-dropdown-item href="#" class="p-0">
+                <div class="d-flex align-items-center p-3 hover-bg-light">
+                  <div class="rounded bg-primary p-2 mr-3 text-center" style="width: 40px; height: 40px;">
+                    <i class="ri-file-user-line text-white"></i>
                   </div>
-                  <a href="profile.html" class="iq-sub-card iq-bg-primary-hover">
-                    <div class="media align-items-center">
-                      <div class="rounded iq-card-icon iq-bg-primary">
-                        <i class="ri-file-user-line"></i>
-                      </div>
-                      <div class="media-body ml-3">
-                        <h6 class="mb-0">My Profile</h6>
-                        <p class="mb-0 font-size-12">View personal profile details.</p>
-                      </div>
-                    </div>
-                  </a>
-                  <a href="profile-edit.html" class="iq-sub-card iq-bg-primary-success-hover">
-                    <div class="media align-items-center">
-                      <div class="rounded iq-card-icon iq-bg-success">
-                        <i class="ri-profile-line"></i>
-                      </div>
-                      <div class="media-body ml-3">
-                        <h6 class="mb-0">Edit Profile</h6>
-                        <p class="mb-0 font-size-12">Modify your personal details.</p>
-                      </div>
-                    </div>
-                  </a>
-                  <a href="account-setting.html" class="iq-sub-card iq-bg-primary-danger-hover">
-                    <div class="media align-items-center">
-                      <div class="rounded iq-card-icon iq-bg-danger">
-                        <i class="ri-account-box-line"></i>
-                      </div>
-                      <div class="media-body ml-3">
-                        <h6 class="mb-0">Account settings</h6>
-                        <p class="mb-0 font-size-12">Manage your account parameters.</p>
-                      </div>
-                    </div>
-                  </a>
-                  <a href="privacy-setting.html" class="iq-sub-card iq-bg-primary-secondary-hover">
-                    <div class="media align-items-center">
-                      <div class="rounded iq-card-icon iq-bg-secondary">
-                        <i class="ri-lock-line"></i>
-                      </div>
-                      <div class="media-body ml-3">
-                        <h6 class="mb-0">Privacy Settings</h6>
-                        <p class="mb-0 font-size-12">Control your privacy parameters.</p>
-                      </div>
-                    </div>
-                  </a>
-                  <div class="d-inline-block w-100 text-center p-3">
-                    <button class="iq-bg-danger iq-sign-btn btn btn-danger" @click="handleLogout">
-                      Đăng xuất <i class="ri-login-box-line ml-2"></i>
-                    </button>
+                  <div>
+                    <h6 class="mb-0">My Profile</h6>
+                    <p class="mb-0 small">View personal profile details.</p>
                   </div>
                 </div>
+              </b-dropdown-item>
+              
+              <b-dropdown-item href="#" class="p-0">
+                <div class="d-flex align-items-center p-3 hover-bg-light">
+                  <div class="rounded bg-success p-2 mr-3 text-center" style="width: 40px; height: 40px;">
+                    <i class="ri-profile-line text-white"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-0">Edit Profile</h6>
+                    <p class="mb-0 small">Modify your personal details.</p>
+                  </div>
+                </div>
+              </b-dropdown-item>
+              
+              <b-dropdown-item href="#" class="p-0">
+                <div class="d-flex align-items-center p-3 hover-bg-light">
+                  <div class="rounded bg-danger p-2 mr-3 text-center" style="width: 40px; height: 40px;">
+                    <i class="ri-account-box-line text-white"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-0">Account settings</h6>
+                    <p class="mb-0 small">Manage your account parameters.</p>
+                  </div>
+                </div>
+              </b-dropdown-item>
+              
+              <b-dropdown-item href="#" class="p-0">
+                <div class="d-flex align-items-center p-3 hover-bg-light">
+                  <div class="rounded bg-secondary p-2 mr-3 text-center" style="width: 40px; height: 40px;">
+                    <i class="ri-lock-line text-white"></i>
+                  </div>
+                  <div>
+                    <h6 class="mb-0">Privacy Settings</h6>
+                    <p class="mb-0 small">Control your privacy parameters.</p>
+                  </div>
+                </div>
+              </b-dropdown-item>
+              
+              <div class="text-center p-3">
+                <b-button variant="danger" class="px-4" @click="handleLogout">
+                  Đăng xuất <i class="ri-login-box-line ml-2"></i>
+                </b-button>
               </div>
             </div>
-          </li>
-        </ul>
-      </nav>
+          </b-nav-item-dropdown>
+        </b-nav> -->
+      </b-navbar>
     </div>
   </div>
 </template>
@@ -150,9 +142,15 @@ function handleLogout() {
   localStorage.removeItem('accessToken')
   localStorage.removeItem('roles')
   localStorage.removeItem('refreshToken')
+  localStorage.removeItem('user')
 
   // Chuyển hướng về trang đăng nhập
   router.push('/login')
 }
 </script>
+<style scoped>
+.hover-bg-light:hover {
+  background-color: #f8f9fa;
+}
+</style>
 
