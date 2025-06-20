@@ -1,7 +1,13 @@
 <script setup>
 import { ref } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 
 const userRole = ref(localStorage.getItem('roles'))
+const authStore = useAuthStore()
+
+const logout = () => {
+  authStore.logoutAdim()
+}
 </script>
 
 <template>
@@ -57,8 +63,51 @@ const userRole = ref(localStorage.getItem('roles'))
               >
             </li>
           </template>
+          <li class="logout-item mt-auto" @click="logout">
+            <a href="#" class="iq-waves-effect">
+              <i class="ri-logout-box-r-line"></i>
+              <i class="ri-logout-box-line text-danger"></i>
+              <span style="color: red;">Đăng xuất</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </div>
   </div>
 </template>
+
+<style scoped>
+.iq-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#sidebar-scrollbar {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.iq-sidebar-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.iq-menu {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.logout-item {
+  margin-top: auto;
+  border-top: 1px solid #eee;
+  padding: 10px 15px;
+}
+</style>

@@ -3,6 +3,7 @@ import { ref, onMounted, reactive } from 'vue'
 import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
@@ -12,6 +13,7 @@ const isModalVisible = ref(false)
 const itemToDelete = ref()
 const searchName = ref('')
 const searchStatus = ref('')
+const isLoading = ref(false)
 
 const data = reactive({
   users: [],
@@ -27,6 +29,7 @@ const actions = {
 }
 
 const fetchUsers = async () => {
+  isLoading.value = true
   try {
     let response = null
 
@@ -54,6 +57,8 @@ const fetchUsers = async () => {
       response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
   } catch (error) {
     console.error('Error fetching users:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -68,6 +73,7 @@ const openModal = (user) => {
 }
 
 const handleDelete = async () => {
+  isLoading.value = true
   try {
     const response = await axios.patch(`${rootAPI}/users/${itemToDelete.value.id}/status`)
     const updatedStatus = response.data.data.status
@@ -83,6 +89,8 @@ const handleDelete = async () => {
   } catch (error) {
     console.error('Error:', error)
     toast.error('Có lỗi xảy ra')
+  }finally {
+    isLoading.value = false 
   }
 }
 
@@ -148,8 +156,11 @@ onMounted(async () => {
                 </router-link>
               </div>
             </div>
-            <div class="iq-card-body">
-              <div class="table-responsive">
+            <div class="iq-card-body position-relative">
+              <!-- Loading overlay sẽ hiển thị khi đang tải dữ liệu -->
+              <!-- <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." /> -->
+              
+              <div class="table-responsive" :class="{ 'opacity-50': isLoading }">
                 <Table
                   :header="header"
                   :data="data.users"
@@ -204,5 +215,14 @@ onMounted(async () => {
   width: 100%;
   cursor: pointer;
   padding: 0 10px;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+  pointer-events: none;
 }
 </style>
