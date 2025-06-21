@@ -132,12 +132,7 @@ const logout = () => {
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
                     <li>
-                      <router-link to="/ho-so-ca-nhan" class="dropdown-item">Hồ sơ</router-link>
-                    </li>
-                    <li>
-                      <router-link to="/khoa-hoc-cua-toi" class="dropdown-item">
-                        Khóa học của tôi
-                      </router-link>
+                      <router-link to="/ho-so-ca-nhan" class="dropdown-item">Hồ sơ cá nhân</router-link>
                     </li>
                     <li><hr class="dropdown-divider" /></li>
                     <li><button class="dropdown-item" @click="logout">Đăng xuất</button></li>

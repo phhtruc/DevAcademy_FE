@@ -129,16 +129,14 @@
                   <div class="d-flex justify-content-between align-items-center mb-1">
                     <h6 class="mb-0">{{ course.name }}</h6>
                     <span class="text-muted small"
-                      >{{ course.completedLessons }}/{{ course.totalLessons }} bài học</span
+                      >{{ course.completedLessons }}/{{ course.lessonCount }} bài học</span
                     >
                   </div>
                   <div class="progress" style="height: 10px">
                     <div
                       class="progress-bar"
                       role="progressbar"
-                      :style="{
-                        width: (course.completedLessons / course.totalLessons) * 100 + '%',
-                      }"
+                      :style="{ width: `${course.progressPercent}%` }"
                       :aria-valuenow="course.completedLessons"
                       aria-valuemin="0"
                       :aria-valuemax="course.totalLessons"
@@ -307,8 +305,8 @@ const fetchUserProfile = async () => {
 
 const fetchLearningProgress = async () => {
   try {
-    const response = await axios.get(`${rootAPI}/users/learning-progress`)
-    learningProgress.value = response.data.data || []
+    const response = await axios.get(`${rootAPI}/users/courses`)
+    learningProgress.value = response.data.data.items || []
   } catch (error) {
     console.error('Error fetching learning progress:', error)
   }

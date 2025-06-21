@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, onMounted, watch, computed, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import CommentPanel from '@/components/comment/CommentPanel.vue'
@@ -28,6 +28,9 @@ const selectedFile = ref(null)
 const submissionResult = ref(null)
 const submissionHistory = ref([])
 const showSubmissionHistory = ref(false)
+const isLessonCompleted = ref(false)
+const hasScrolledToBottom = ref(false)
+const videoProgress = ref(0)
 const hasPassedExercise = computed(() => {
   return submissionResult.value && submissionResult.value.includes('PASS')
 })
@@ -51,8 +54,14 @@ const toggleSidebar = () => {
 
 const fetchLessonDetails = async (id) => {
   try {
+    hasScrolledToBottom.value = false
+
     const response = await axios.get(`${rootAPI}/lessons/${id}`)
     lesson.value = response.data.data
+
+    isLessonCompleted.value = lesson.value.isCompleted || false
+    hasScrolledToBottom.value = lesson.value.isCompleted || false
+
     if (lesson.value && lesson.value.type === 'EXERCISES') {
       fetchSubmissionHistory(id)
     }
@@ -257,6 +266,17 @@ const formatDate = (dateString) => {
   }
 }
 
+const updateLessonProgress = async () => {
+  if (isLessonCompleted.value ) return
+
+  try {
+    await axios.post(`${rootAPI}/lessons/${lessonId}/progress`)
+    isLessonCompleted.value = true
+  } catch (error) {
+    console.error('Lỗi khi cập nhật tiến độ bài học:', error)
+  }
+}
+
 const goBack = () => {
   router.push(`/khoa-hoc/${idCourse}`)
 }
@@ -269,15 +289,69 @@ watch(
   { immediate: true }
 )
 
+// EXERCISES
+watch(
+  () => submissionResult.value,
+  (newResult) => {
+    if (lesson.value && lesson.value.type === 'EXERCISES') {
+      if (newResult && newResult.includes('PASS')) {
+        updateLessonProgress()
+      }
+    }
+  }
+)
+
+// READINGS
+const handleScroll = () => {
+  if (lesson.value && lesson.value.type === 'READINGS' && !hasScrolledToBottom.value) {
+    // Tính toán vị trí cuộn
+    const scrollPosition = window.scrollY
+    const windowHeight = window.innerHeight
+    const documentHeight = document.documentElement.scrollHeight
+    console.log(scrollPosition + windowHeight)
+    console.log(documentHeight)
+
+    // Kiểm tra đã cuộn xuống cuối trang chưa (để lại margin 50px)
+    if (scrollPosition + windowHeight >= documentHeight - 50) {
+      hasScrolledToBottom.value = true
+      updateLessonProgress()
+    }
+  }
+}
+
+// (LECTURES)
+const handleVideoTimeUpdate = (event) => {
+  if (lesson.value && lesson.value.type === 'LECTURES' && !isLessonCompleted.value) {
+    const video = event.target
+    const currentProgress = (video.currentTime / video.duration) * 100
+
+    videoProgress.value = currentProgress
+
+    // Nếu đã xem hơn 10% video, đánh dấu là đã học
+    if (currentProgress >= 10) {
+      updateLessonProgress()
+    }
+  }
+}
+
 onMounted(async () => {
   await fetchLessonDetails(lessonId)
   await fetchChapters()
+  // sự kiện cuộn trang cho bài đọc
+  if (lesson.value && lesson.value.type === 'READINGS') {
+    window.addEventListener('scroll', handleScroll)
+  }
+})
+
+// Dọn dẹp event listeners khi component unmounted
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 <template>
   <div class="lesson-details-page">
     <div class="container">
-      <div class="row">
+      <div class="row mt-3">
         <!-- Sidebar -->
         <div class="sidebar-container" :style="{ width: isSidebarOpen ? '30%' : '4%' }">
           <div class="course-sidebar">
@@ -289,7 +363,7 @@ onMounted(async () => {
             <div :class="['sidebar-content', { 'd-none': !isSidebarOpen }]">
               <div class="sidebar-header">
                 <h4>Nội dung khóa học</h4>
-                <p>{{ chapters.length }} chương</p>
+                <span>{{ chapters.length }} chương</span>
               </div>
 
               <div class="sidebar-chapters">
@@ -330,9 +404,7 @@ onMounted(async () => {
                             : '',
                           !lessonItem.isPublic ? 'locked' : '',
                         ]"
-                        @click="
-                          lessonItem.isPublic ? handleLessonClick(lessonItem) : null
-                        "
+                        @click="lessonItem.isPublic ? handleLessonClick(lessonItem) : null"
                       >
                         <div class="d-flex align-items-start">
                           <span class="lesson-icon">
@@ -403,10 +475,21 @@ onMounted(async () => {
                 Tham khảo
               </button>
               <div v-if="showReferContent" v-html="lesson.contentRefer"></div>
+
+              <!-- tuỳ chọn -->
+              <div v-if="!hasScrolledToBottom" class="scroll-indicator mt-4">
+                <small class="text-muted">Cuộn xuống để hoàn thành bài học</small>
+                <i class="fas fa-arrow-down"></i>
+              </div>
+
+              <!-- Thông báo đã hoàn thành khi cuộn đến cuối -->
+              <div v-if="hasScrolledToBottom" class="completion-indicator">
+                <i class="fas fa-check-circle text-success"></i> Bài học đã được hoàn thành
+              </div>
             </div>
 
             <!-- Type: LECTURES -->
-            <div v-else-if="lesson.type === 'LECTURES'">
+            <!-- <div v-else-if="lesson.type === 'LECTURES'">
               <div class="video-container mb-4">
                 <iframe
                   :src="lesson.videoUrl"
@@ -414,6 +497,27 @@ onMounted(async () => {
                   allowfullscreen
                   class="lesson-video"
                 ></iframe>
+              </div>
+              <div v-html="lesson.content"></div>
+            </div> -->
+            <div
+              v-if="lesson && lesson.type === 'LECTURES' && lesson.videoUrl"
+              class="video-container"
+            >
+              <div class="video-container mb-4">
+                <video
+                  :src="lesson.videoUrl"
+                  controls
+                  class="lesson-video"
+                  @timeupdate="handleVideoTimeUpdate"
+                ></video>
+              </div>
+              <!-- tuỳ chọn -->
+              <div v-if="!isLessonCompleted" class="video-progress-indicator">
+                {{ videoProgress.toFixed(0) }}% đã xem
+                <div v-if="videoProgress >= 10" class="text-success">
+                  <i class="fas fa-check-circle"></i> Đã đánh dấu hoàn thành
+                </div>
               </div>
               <div v-html="lesson.content"></div>
             </div>
@@ -596,7 +700,6 @@ onMounted(async () => {
 .sidebar-container {
   overflow-y: auto;
   background-color: #f8f9fa;
-  border-right: 1px solid #ddd;
   position: relative;
   transition: all 0.3s ease;
 }
@@ -871,5 +974,48 @@ onMounted(async () => {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   background-color: #fff;
   transition: all 0.3s ease;
+}
+
+/* tuỳ chọn */
+
+.video-container {
+  margin-bottom: 20px;
+}
+
+.lesson-video {
+  width: 100%;
+  max-height: 500px;
+  border-radius: 8px;
+}
+
+.video-progress-indicator {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.scroll-indicator {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  animation: bounce 1s infinite alternate;
+}
+
+.completion-indicator {
+  text-align: center;
+  padding: 15px;
+  margin: 20px 0;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+@keyframes bounce {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(10px);
+  }
 }
 </style>
