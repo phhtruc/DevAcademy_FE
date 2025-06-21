@@ -38,7 +38,6 @@ const fetchMyCourses = async () => {
   try {
     const response = await axios.get(`${rootAPI}/users/courses`)
     myCourses.value = response.data.data.items || []
-    console.log(myCourses.value.duration)
   } catch (err) {
     console.error('Failed to fetch my courses:', err)
     error.value = 'Không thể tải danh sách khóa học của bạn. Vui lòng thử lại.'
@@ -119,6 +118,23 @@ const goBack = () => {
                   <span class="course-category">{{ course.category?.name || 'Lập trình' }}</span>
                   <h5 class="course-title">{{ course.name }}</h5>
                   <div class="course-details">
+                    <div class="course-progress" v-if="course.progressPercent !== undefined">
+                      <div class="progress-container">
+                        <div class="progress">
+                          <div
+                            class="progress-bar"
+                            role="progressbar"
+                            :style="{ width: `${course.progressPercent}%` }"
+                            :aria-valuenow="course.progressPercent"
+                            aria-valuemin="0"
+                            aria-valuemax="100"
+                          ></div>
+                        </div>
+                        <div class="progress-text">
+                          <span>{{ course.progressPercent }}% hoàn thành</span>
+                        </div>
+                      </div>
+                    </div>
                     <div class="course-meta">
                       <span><i class="fas fa-book"></i> {{ course.lessonCount || 0 }} bài học</span>
                       <span
@@ -433,5 +449,37 @@ const goBack = () => {
   .container {
     max-width: 1140px;
   }
+}
+
+/* Progress Bar */
+.course-progress {
+  padding: 10px 0;
+  margin-bottom: 10px;
+}
+
+.progress-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.progress {
+  height: 8px;
+  margin-bottom: 6px;
+  border-radius: 4px;
+  background-color: #e9ecef;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background-color: #3f6ad8;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: flex-end;
+  font-size: 0.8rem;
+  color: #6c757d;
 }
 </style>
