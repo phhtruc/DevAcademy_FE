@@ -81,7 +81,7 @@ const fetchCategory = async () => {
 onMounted(() => {
   fetchCourses()
   fetchCategory()
-  if (localStorage.getItem('roles') === '[USER]') {
+  if (localStorage.getItem('roles') !== null) {
     isActive.value = true
   }
 })
@@ -374,6 +374,11 @@ onMounted(() => {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  line-height: 1.5; 
+  max-height: 4.5em;
+  word-break: break-word;
 }
 
 .badge {
