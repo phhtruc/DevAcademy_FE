@@ -155,7 +155,6 @@ const proceedToPayment = async () => {
     })
 
     const payment = response.data.data
-    localStorage.setItem('paymentMethod', paymentMethod.value.paymentUrl)
 
     if (payment.paymentUrl) {
       localStorage.setItem(
@@ -166,6 +165,7 @@ const proceedToPayment = async () => {
           amount: payment.amount,
           txnRef: payment.txnRef || '',
           timestamp: new Date().toISOString(),
+          paymenturl: payment.paymentUrl || payment.value.paymentUrl,
         })
       )
 
