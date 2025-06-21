@@ -155,7 +155,7 @@ const proceedToPayment = async () => {
     })
 
     const payment = response.data.data
-    console.log('Payment response:', payment.paymentUrl)
+    localStorage.setItem('paymentMethod', paymentMethod.value.paymentUrl)
 
     if (payment.paymentUrl) {
       localStorage.setItem(
