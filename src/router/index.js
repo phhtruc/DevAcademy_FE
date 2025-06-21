@@ -38,7 +38,7 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login,
-      meta: { hideNavbar: true }
+      meta: { hideNavbar: true, title: 'Đăng nhập' }
     },
     {
       path: '/login/oauth2/code/google',
@@ -50,7 +50,7 @@ const router = createRouter({
       path: '/register',
       name: 'register',
       component: Register,
-      meta: { hideNavbar: true }
+      meta: { hideNavbar: true , title: 'Đăng ký'}
     },
     {
       path: '/auth/create-password/token=:token',
@@ -59,7 +59,8 @@ const router = createRouter({
       meta: {
         layout: 'auth',
         requiresAuth: false,
-        hideNavbar: true
+        hideNavbar: true,
+        title: 'Cập nhật mật khẩu'
       }
     },
 
@@ -68,27 +69,27 @@ const router = createRouter({
       path: '/admin/users/add',
       name: 'admin-user-add',
       component: UserForm,
-      meta: { requiresAuth: true, roles: ['ADMIN'] }
+      meta: { requiresAuth: true, roles: ['ADMIN'], title: 'Thêm tài khoản' }
     },
     {
       path: '/admin/users/:idUser/edit',
       name: 'admin-user-edit',
       component: UserForm,
-      meta: { requiresAuth: true, roles: ['ADMIN'] },
+      meta: { requiresAuth: true, roles: ['ADMIN'], title: 'Cập nhật tài khoản' },
       props: true
     },
     {
       path: '/admin/users/:idUser',
       name: 'admin-user-details',
       component: UserDetails,
-      meta: { requiresAuth: true, roles: ['ADMIN'] },
+      meta: { requiresAuth: true, roles: ['ADMIN'], title: 'Thông tin chi tiết' },
       props: true
     },
     {
       path: '/admin/users',
       name: 'admin-user',
       component: UserManager,
-      meta: { requiresAuth: true, roles: ['ADMIN'] }
+      meta: { requiresAuth: true, roles: ['ADMIN'], title: 'Quản lý tài khoản - Dev Academy' }
     },
 
     // Teacher routes
@@ -97,20 +98,20 @@ const router = createRouter({
       path: '/teacher/courses',
       name: 'teacher-courses',
       component: Course,
-      meta: { requiresAuth: true, roles: ['TEACHER'] }
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý khoá học - Dev Academy' }
     },
     {
       path: '/teacher/courses/add',
       name: 'course-add',
       component: CourseForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Thêm khoá học - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/edit',
       name: 'course-edit',
       component: CourseForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Cập nhật khoá học - Dev Academy' },
       props: true
     },
     // Teacher chapters
@@ -118,28 +119,28 @@ const router = createRouter({
       path: '/teacher/courses/:idCourse/chapters',
       name: 'teacher-course-chapters',
       component: Chapter,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý chương - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/add',
       name: 'teacher-course-chapters-add',
       component: ChapterForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Thêm chương - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/:idChapter/edit',
       name: 'teacher-course-chapters-edit',
       component: ChapterForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Sửa chương - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/sort',
       name: 'teacher-course-chapters-sort',
       component: SortChapter,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Sắp xếp chương - Dev Academy' },
       props: true
     },
     // Teacher lessons
@@ -147,28 +148,28 @@ const router = createRouter({
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons',
       name: 'teacher-course-chapters-lesson',
       component: Lesson,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý bài học - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons/add',
       name: 'teacher-course-chapters-lesson-add',
       component: LessonForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Thêm bài học - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons/:idLesson/edit',
       name: 'teacher-course-chapters-lesson-edit',
       component: LessonForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Sửa bài học - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/courses/:idCourse/chapters/:idChapter/lessons/sort',
       name: 'teacher-course-chapters-lesson-sort',
       component: SortLesson,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Sắp xếp bài học - Dev Academy' },
       props: true
     },
     // Teacher categories
@@ -176,21 +177,21 @@ const router = createRouter({
       path: '/teacher/categories',
       name: 'teacher-categories',
       component: Category,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý danh mục - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/categories/add',
       name: 'teacher-categories-add',
       component: CategoryForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Thêm danh mục - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/categories/:idCategory/edit',
       name: 'teacher-categories-edit',
       component: CategoryForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Cập nhật danh mục - Dev Academy' },
       props: true
     },
 
@@ -199,21 +200,21 @@ const router = createRouter({
       path: '/teacher/tech-stacks',
       name: 'teacher-tech-stacks',
       component: TechStack,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý công nghệ - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/tech-stacks/add',
       name: 'teacher-tech-stacks-add',
       component: TechStackForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Thêm công nghệ - Dev Academy' },
       props: true
     },
     {
       path: '/teacher/tech-stacks/:idTechStack/edit',
       name: 'teacher-tech-stacks-edit',
       component: TechStackForm,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Cập nhật công nghệ - Dev Academy' },
       props: true
     },
 
@@ -222,7 +223,7 @@ const router = createRouter({
       path: '/teacher/courses/:idCourse/prompts',
       name: 'teacher-course-prompts',
       component: PromptManager,
-      meta: { requiresAuth: true, roles: ['TEACHER'] },
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý prompt - Dev Academy' },
       props: true
     },
 
@@ -243,54 +244,54 @@ const router = createRouter({
       path: '/khoa-hoc/:idCourse',
       name: 'chi-tiet-khoa-hoc',
       component: CourseDetailsPage,
-      meta: {hideNavbar: true},
+      meta: {hideNavbar: true, title: 'Chi tiết khoá học - Dev Academy'},
       props: true
     },
     {
       path: '/ve-chung-toi',
       name: 've-chung-toi',
       component: AboutUs,
-      meta: {hideNavbar: true}
+      meta: {hideNavbar: true, title: 'Về chúng tôi - Dev Academy'}
     },
     {
       path: '/khoa-hoc/:idCourse/noi-dung/:idLesson',
       name: 'chi-tiet-bai-hoc',
       component: LessonDetailsPage,
-      meta: {hideNavbar: true}
+      meta: {hideNavbar: true }
     },
     {
       path: '/dang-ky-khoa-hoc/:courseId',
       name: 'dang-ky-khoa-hoc',
       component: CheckoutPage,
-      meta: {hideNavbar: true},
+      meta: {hideNavbar: true, title: 'Đăng ký khoá học - Dev Academy'},
       props: true
     },
     {
       path: '/thanh-toan',
       name: 'thanh-toan',
       component: PaymentResultPage,
-      meta: {hideNavbar: true},
+      meta: {hideNavbar: true, title: 'Kết quả thanh toán - Dev Academy'},
       props: true
     },
     {
       path: '/khoa-hoc-cua-toi',
       name: 'khoa-hoc-cua-toi',
       component: MyCourse,
-      meta: {hideNavbar: true},
+      meta: {hideNavbar: true, title: 'Khoá học của tôi - Dev Academy'},
       props: true
     },
     {
       path: '/ho-so-ca-nhan',
       name: 'ho-so-ca-nhan',
       component: UserProfilePage,
-      meta: {hideNavbar: true},
+      meta: {hideNavbar: true, title: 'Hồ sơ cá nhân - Dev Academy'},
       props: true
     },
     {
       path: '/quen-mat-khau',
       name: 'quen-mat-khau',
       component: ForgotPasswordPage,
-      meta: { hideNavbar: true }
+      meta: { hideNavbar: true , title: 'Quên mật khẩu - Dev Academy' }
     },
   ],
 
@@ -316,6 +317,9 @@ router.beforeEach((to, from, next) => {
       return next('/login')
     }
   }
+
+  document.title = to.meta.title || 'Dev Academy - Học lập trình cùng chuyên gia'
+  next()
 
   next()
 })

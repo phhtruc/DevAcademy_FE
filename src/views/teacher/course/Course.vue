@@ -73,8 +73,18 @@ const handleDelete = async () => {
     isModalVisible.value = false
     toast.success('Xóa khóa học thành công')
   } catch (error) {
-    console.log(error)
-    toast.error('Có lỗi xảy ra')
+    if (error.response && error.response.data) {
+      const errorData = error.response.data
+
+      if (errorData.code === 170017) {
+        toast.error('Không thể xóa khóa học đã có người đăng ký')
+      } else if (errorData.message) {
+        toast.error(`Lỗi: ${errorData.message}`)
+      } else {
+        toast.error('Có lỗi xảy ra khi xóa khóa học')
+      }
+      
+    }
   }
 }
 
