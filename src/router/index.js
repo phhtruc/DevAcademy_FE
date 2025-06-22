@@ -29,6 +29,7 @@ import MyCourse from '@/views/user/MyCourse.vue'
 import LoginCallback from '@/views/authentication/LoginCallback.vue'
 import UserProfilePage from '@/views/user/UserProfilePage.vue'
 import ForgotPasswordPage from '@/views/user/ForgotPasswordPage.vue'
+import StudentOverviewPage from '@/views/teacher/StudentOverviewPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -226,6 +227,13 @@ const router = createRouter({
       meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Quản lý prompt - Dev Academy' },
       props: true
     },
+    {
+      path: '/teacher/progress',
+      name: 'teacher-progress',
+      component: StudentOverviewPage,
+      meta: { requiresAuth: true, roles: ['TEACHER'], title: 'Tổng quan tiến độ - Dev Academy' },
+      props: true
+    },
 
     // User routes
     {
@@ -319,8 +327,6 @@ router.beforeEach((to, from, next) => {
   }
 
   document.title = to.meta.title || 'Dev Academy - Học lập trình cùng chuyên gia'
-  next()
-
   next()
 })
 

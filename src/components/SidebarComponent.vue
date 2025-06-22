@@ -51,6 +51,15 @@ const logout = () => {
                 ><i class="ri-stack-line"></i><span>Quản Lý Công Nghệ</span></router-link
               >
             </li>
+            <li :class="{ active: $route.path.startsWith('/teacher/progress') }">
+              <router-link
+                :to="'/teacher/progress'"
+                class="iq-waves-effect collapsed"
+                data-toggle="collapse"
+                aria-expanded="false"
+                ><i class="ri-chat-check-line"></i><span>Tổng quan tiến độ</span></router-link
+              >
+            </li>
           </template>
           <template v-else-if="userRole === '[ADMIN]'">
             <li :class="{ active: $route.path.startsWith('/admin/users') }">

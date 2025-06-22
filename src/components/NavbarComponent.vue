@@ -130,6 +130,7 @@ const breadcrumbMap = {
   '/teacher/categories': { title: 'Quản Lý Danh Mục' },
   '/teacher/tech-stacks': { title: 'Quản Lý Công Nghệ' },
   '/admin/users': { title: 'Quản Lý Người Dùng' },
+  '/teacher/progress': { title: 'Tổng quan tiến độ' },
 }
 
 const currentBreadcrumb = computed(() => {
