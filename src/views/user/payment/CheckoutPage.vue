@@ -54,6 +54,21 @@
                   <input
                     class="form-check-input"
                     type="radio"
+                    id="stripe"
+                    name="paymentMethod"
+                    value="stripe"
+                    v-model="paymentMethod"
+                  />
+                  <label class="form-check-label" for="stripe">
+                    <img src="@/assets/images/stripe.jpeg" alt="Stripe" height="30" />
+                    <span class="ms-2">Thanh toán qua Stripe (Credit/Debit Card)</span>
+                  </label>
+                </div>
+
+                <div class="form-check payment-method mb-3">
+                  <input
+                    class="form-check-input"
+                    type="radio"
                     id="bank-transfer"
                     name="paymentMethod"
                     value="bank"
@@ -151,7 +166,9 @@ const proceedToPayment = async () => {
     const response = await axios.post(`${rootAPI}/payments/create-payment-url`, {
       courseId: props.courseId,
       amount: course.value.price,
+      courseName: course.value.name,
       language: 'vn',
+      paymentMethod: paymentMethod.value,
     })
 
     const payment = response.data.data
@@ -165,7 +182,7 @@ const proceedToPayment = async () => {
           amount: payment.amount,
           txnRef: payment.txnRef || '',
           timestamp: new Date().toISOString(),
-          paymenturl: payment.paymentUrl || payment.value.paymentUrl,
+          paymentMethod: paymentMethod.value,
         })
       )
 
