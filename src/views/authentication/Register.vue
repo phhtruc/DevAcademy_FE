@@ -109,6 +109,8 @@ const handleRegister = async () => {
   }
   if (!password.value) {
     passwordError.value = 'Vui lòng nhập mật khẩu'
+  } else if (password.value.length < 8) {
+    passwordError.value = 'Mật khẩu phải có ít nhất 8 ký tự'
   }
 
   if (nameError.value || emailError.value || passwordError.value) return
