@@ -163,12 +163,20 @@ const formatDate = (dateString) => {
 }
 
 const verifyPaymentViaApi = async () => {
+  let provider = 'vnpay'
+  if(route.query.session_id) {
+    provider = 'stripe'
+  }
+  else if (route.query.vnp_TransactionType || route.query.vnp_TxnRef) {
+      provider = route.query.vnp_TransactionType || 'vnpay';
+    }
   try {
     const response = await axios.get(`${rootAPI}/payments/payment-return`, {
       params: {
         ...route.query,
         courseId: orderDetails.courseId,
         courseName: orderDetails.courseName,
+        provider: provider,
       },
     })
 
@@ -180,7 +188,7 @@ const verifyPaymentViaApi = async () => {
         courseId.value = orderDetails.courseId
 
         Object.assign(paymentDetails, {
-          transactionId: result.transactionId || route.query.vnp_TxnRef,
+          transactionId: result.transactionId || route.query.vnp_TxnRef || route.query.session_id,
           amount: result.amount || parseInt(route.query.vnp_Amount || 0) / 100,
           paymentDate: result.paymentDate || new Date().toISOString(),
           bankCode: result.bankCode || route.query.vnp_BankCode,
@@ -215,20 +223,33 @@ onMounted(async () => {
       orderDetails.courseName = pendingPayment.courseName
       orderDetails.amount = pendingPayment.amount
       orderDetails.timestamp = pendingPayment.timestamp
+      
+      const paymentMethod = pendingPayment.paymentMethod || 'vnpay'
+      orderDetails.paymentMethod = paymentMethod
     } catch (e) {
       console.error('Error parsing pending payment:', e)
     }
   }
 
-  // Nếu có query params từ VNPay, xác thực giao dịch
   if (Object.keys(route.query).length > 0 && route.query.vnp_ResponseCode) {
-    await verifyPaymentViaApi()
-
-    // Nếu thanh toán thành công, xóa thông tin thanh toán tạm thời
+    await verifyPaymentViaApi('vnpay')
+    
     if (paymentStatus.value === 'success') {
       localStorage.removeItem('pendingPayment')
     }
-  } else {
+  } 
+
+  else if (Object.keys(route.query).length > 0 && 
+          (route.query.session_id)) {
+
+    await verifyPaymentViaApi('stripe')
+    
+    if (paymentStatus.value === 'success') {
+      localStorage.removeItem('pendingPayment')
+    }
+  } 
+  
+  else {
     if (orderDetails.courseId) {
       paymentStatus.value = 'pending'
     } else {
