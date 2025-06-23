@@ -5,6 +5,9 @@
       <p class="subtitle">Vui lòng nhập địa chỉ email của bạn để yêu cầu đặt lại mật khẩu</p>
 
       <form @submit.prevent="submitForm">
+        <div v-if="successMessage" class="alert alert-success mt-3 text-center">
+          {{ successMessage }}
+        </div>
         <div class="form-group">
           <label for="email">Email</label>
           <input
@@ -44,6 +47,7 @@ const errors = ref({
   email: '',
 })
 const isSubmitting = ref(false)
+const successMessage = ref('')
 
 const validateForm = () => {
   let isValid = true
@@ -71,18 +75,23 @@ const submitForm = async () => {
   try {
     await axios.post(`${rootAPI}/auth/forgot-password?email=${encodeURIComponent(email.value)}`)
 
-    window.toast.success('Yêu cầu đặt lại mật khẩu đã được gửi đến email của bạn!', {
-      position: 'top-right',
-      autoClose: 5000,
-    })
+    successMessage.value = 'Yêu cầu đặt lại mật khẩu đã được gửi đến email của bạn! Vui lòng kiểm tra hộp thư đến của bạn hoặc trong mục spam.'
 
     email.value = ''
   } catch (error) {
-    console.error('Error requesting password reset:', error)
-    window.toast.error('Có lỗi xảy ra. Vui lòng thử lại sau!', {
-      position: 'top-right',
-      autoClose: 3000,
-    })
+    isSubmitting.value = false
+
+    if (error.response && error.response.data) {
+      const errorData = error.response.data
+
+      if (errorData.code === 1004) {
+        errors.value.email = 'Email này chưa được đăng ký trong hệ thống'
+      } else {
+        errors.value.email = errorData.message || 'Đã có lỗi xảy ra. Vui lòng thử lại sau.'
+      }
+    } else {
+      errors.value.email = 'Không thể kết nối đến máy chủ. Vui lòng thử lại sau.'
+    }
   } finally {
     isSubmitting.value = false
   }
