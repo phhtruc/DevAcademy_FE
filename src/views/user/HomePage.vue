@@ -1,6 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import axios from '@/plugins/axios'
+import Footer from '@/components/Footer.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const featuredCourses = ref([])
@@ -276,6 +277,8 @@ onMounted(() => {
         </div>
       </div>
     </section>
+
+    <Footer />
   </div>
 </template>
 
