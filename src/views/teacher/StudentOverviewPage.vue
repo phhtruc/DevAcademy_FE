@@ -254,8 +254,18 @@
                         <button
                           class="btn btn-sm iq-bg-info"
                           @click="sendCourseReminder(student, course)"
+                          :disabled="reminderLoadingStates[`${student.id}_${course.id}`]"
                         >
-                          <i class="ri-notification-line"></i> Nhắc nhở
+                          <span
+                            v-if="reminderLoadingStates[`${student.id}_${course.id}`]"
+                            class="spinner-border spinner-border-sm mr-1"
+                          ></span>
+                          <i v-else class="ri-notification-line"></i>
+                          {{
+                            reminderLoadingStates[`${student.id}_${course.id}`]
+                              ? 'Đang gửi...'
+                              : 'Nhắc nhở'
+                          }}
                         </button>
                       </div>
                     </div>
@@ -301,84 +311,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Contact Modal -->
-    <div class="modal fade" id="contactModal" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Liên hệ học viên</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="contactSubject">Tiêu đề</label>
-              <input
-                type="text"
-                class="form-control"
-                id="contactSubject"
-                v-model="contactForm.subject"
-              />
-            </div>
-            <div class="form-group">
-              <label for="contactMessage">Nội dung</label>
-              <textarea
-                class="form-control"
-                id="contactMessage"
-                rows="5"
-                v-model="contactForm.message"
-              ></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-            <button type="button" class="btn btn-primary" @click="sendMessage">Gửi</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Course Reminder Modal -->
-    <div class="modal fade" id="reminderModal" tabindex="-1" role="dialog" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">Gửi nhắc nhở</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label for="reminderSubject">Tiêu đề</label>
-              <input
-                type="text"
-                class="form-control"
-                id="reminderSubject"
-                v-model="reminderForm.subject"
-              />
-            </div>
-            <div class="form-group">
-              <label for="reminderMessage">Nội dung</label>
-              <textarea
-                class="form-control"
-                id="reminderMessage"
-                rows="5"
-                v-model="reminderForm.message"
-              ></textarea>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Hủy</button>
-            <button type="button" class="btn btn-primary" @click="sendReminder">
-              Gửi nhắc nhở
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
   
@@ -395,30 +327,28 @@ const isLoadingDetails = ref(false)
 const currentPage = ref(1)
 const pageSize = ref(10)
 const searchName = ref('')
+
 const contactForm = ref({
   subject: '',
   message: '',
   studentId: null,
 })
-const reminderForm = ref({
-  subject: '',
-  message: '',
-  studentId: null,
-  courseId: null,
-})
+
 const stats = ref({
   totalStudents: 0,
   activeStudents: 0,
 })
+
 const filters = ref({
   search: '',
   courseId: '',
   progressStatus: '',
 })
+
 const expandedStudent = ref(null)
 const studentDetails = reactive({})
 const currentStudent = ref(null)
-const currentCourse = ref(null)
+const reminderLoadingStates = reactive({})
 
 const fetchData = async () => {
   isLoading.value = true
@@ -465,7 +395,7 @@ const fetchData = async () => {
 
 const fetchStudentDetails = async (studentId) => {
   if (studentDetails[studentId]) {
-    return 
+    return
   }
 
   isLoadingDetails.value = true
@@ -476,14 +406,12 @@ const fetchStudentDetails = async (studentId) => {
     let coursesData = response.data.data
 
     if (!Array.isArray(coursesData)) {
-      coursesData = [] 
+      coursesData = []
     }
 
     studentDetails[studentId] = {
       courses: coursesData,
     }
-
-    console.log(`Student ${studentId} courses loaded:`, coursesData)
   } catch (error) {
     console.error('Error fetching student details:', error)
     toast.error('Không thể tải chi tiết học viên')
@@ -594,61 +522,31 @@ const getProgressBarClass = (progress) => {
   return 'bg-success'
 }
 
-const sendMessage = async () => {
-  if (!currentStudent.value) return
-
+const sendCourseReminder = async (student, course) => {
+  const loadingKey = `${student.id}_${course.id}`
+  reminderLoadingStates[loadingKey] = true
   try {
-    await axios.post(`${rootAPI}/teacher/students/${contactForm.value.studentId}/contact`, {
-      subject: contactForm.value.subject,
-      message: contactForm.value.message,
+
+    await axios.post(`${rootAPI}/notifications/send-reminder`, null, {
+      params: {
+        toEmail: student.email,
+        courseId: course.id,
+      },
     })
 
-    toast.success('Tin nhắn đã được gửi thành công!', {
-      position: 'top-right',
-      autoClose: 1000,
+    toast.success('Đã gửi nhắc nhở cho học viên thành công!', {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 3000,
     })
-
-    $('#contactModal').modal('hide')
-  } catch (error) {
-    console.error('Error sending message:', error)
-    toast.error('Không thể gửi tin nhắn. Vui lòng thử lại sau.')
-  }
-}
-
-// Send course reminder
-const sendCourseReminder = (student, course) => {
-  currentStudent.value = student
-  currentCourse.value = course
-
-  reminderForm.value.subject = `Nhắc nhở: Tiếp tục khóa học "${course.name}"`
-  reminderForm.value.message = `Chào ${student.name},\n\nChúng tôi nhận thấy bạn đã đăng ký khóa học "${course.name}" nhưng có vẻ bạn đã không tham gia học một thời gian. Hãy quay lại và tiếp tục hành trình học tập của mình.\n\nTrân trọng,\nGiảng viên`
-  reminderForm.value.studentId = student.id
-  reminderForm.value.courseId = course.id
-
-  $('#reminderModal').modal('show')
-}
-
-const sendReminder = async () => {
-  if (!currentStudent.value || !currentCourse.value) return
-
-  try {
-    await axios.post(
-      `${rootAPI}/teacher/students/${reminderForm.value.studentId}/courses/${reminderForm.value.courseId}/reminder`,
-      {
-        subject: reminderForm.value.subject,
-        message: reminderForm.value.message,
-      }
-    )
-
-    toast.success('Đã gửi nhắc nhở thành công!', {
-      position: 'top-right',
-      autoClose: 1000,
-    })
-
-    $('#reminderModal').modal('hide')
   } catch (error) {
     console.error('Error sending reminder:', error)
-    toast.error('Không thể gửi nhắc nhở. Vui lòng thử lại sau.')
+
+    toast.error('Không thể gửi nhắc nhở. Vui lòng thử lại sau.', {
+      position: toast.POSITION.TOP_RIGHT,
+      autoClose: 3000,
+    })
+  } finally {
+    reminderLoadingStates[loadingKey] = false
   }
 }
 
