@@ -148,7 +148,7 @@
                     : 'iq-bg-secondary',
                 ]"
               >
-                {{ item[key] }}
+                {{ formatStatus(item[key]) }}
               </span>
             </template>
             <template v-else-if="key !== 'avatar' && key !== 'roles'">
@@ -202,7 +202,8 @@
             >
               <i :class="item.status === 'INACTIVE' ? 'fas fa-lock' : 'fas fa-lock-open'"></i>
             </button>
-            <router-link v-if="props.prompts"
+            <router-link
+              v-if="props.prompts"
               :to="props.actions.managePrompts(item)"
               class="btn btn-success btn-sm btn-action"
             >
@@ -262,7 +263,7 @@ const props = defineProps({
   },
   currentPage: {
     type: Number,
-    default: 1
+    default: 1,
   },
   viewPublic: {
     type: Boolean,
@@ -308,22 +309,34 @@ const confirmDelete = (item) => {
   emit('deleteItem', item)
 }
 
-const internalCurrentPage = ref(props.currentPage);
+const internalCurrentPage = ref(props.currentPage)
 
-watch(() => props.currentPage, (newValue) => {
-  if (newValue !== internalCurrentPage.value) {
-    internalCurrentPage.value = newValue;
-  }
-}, { immediate: true });
+watch(
+  () => props.currentPage,
+  (newValue) => {
+    if (newValue !== internalCurrentPage.value) {
+      internalCurrentPage.value = newValue
+    }
+  },
+  { immediate: true }
+)
 
 watch(internalCurrentPage, (newValue) => {
-  if (newValue !== props.currentPage) {
-    emit('pageChange', newValue);
-  }
-});
+  // if (newValue !== props.currentPage) {
+  //   emit('pageChange', newValue)
+  // }
+  emit('pageChange', newValue)
+})
 
 const pageChanged = (newPage) => {
   emit('pageChange', newPage)
+}
+
+const formatStatus = (status) => {
+  if (status === 'ACTIVE') return 'Hoạt động'
+  if (status === 'INACTIVE') return 'Bị khóa'
+  if (status === 'PENDING') return 'Đang chờ'
+  return status
 }
 
 const formatPrice = (value) => {
@@ -349,9 +362,36 @@ const getColumnClass = (key) => {
     'text-center': ['price', 'isPublic', 'type', 'status', 'roles'].includes(key),
   }
 }
+// const parseRoles = (roles) => {
+//   return roles.replace(/[\[\]"]/g, '')
+// }
 const parseRoles = (roles) => {
-  return roles.replace(/[\[\]"]/g, '')
-}
+  if (!roles) return '';
+  
+  // Đầu tiên loại bỏ ký tự "[", "]", và " như trước
+  let cleanRoles = roles.replace(/[\[\]"]/g, '');
+  
+  // Tách chuỗi thành mảng các vai trò riêng biệt
+  let roleArray = cleanRoles.split(',');
+  
+  // Map từng vai trò sang tiếng Việt
+  let vietnameseRoles = roleArray.map(role => {
+    const roleTrimmed = role.trim();
+    switch (roleTrimmed) {
+      case 'ADMIN':
+        return 'Quản trị viên';
+      case 'TEACHER':
+        return 'Giảng viên';
+      case 'USER':
+        return 'Học viên';
+      default:
+        return roleTrimmed; // Giữ nguyên nếu không phải các vai trò đã biết
+    }
+  });
+  
+  // Kết hợp tất cả vai trò đã dịch thành một chuỗi, phân cách bằng dấu phẩy
+  return vietnameseRoles.join(', ');
+};
 </script>
 
 <style scoped>
