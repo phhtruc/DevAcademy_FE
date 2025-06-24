@@ -30,6 +30,8 @@ import LoginCallback from '@/views/authentication/LoginCallback.vue'
 import UserProfilePage from '@/views/user/UserProfilePage.vue'
 import ForgotPasswordPage from '@/views/user/ForgotPasswordPage.vue'
 import StudentOverviewPage from '@/views/teacher/StudentOverviewPage.vue'
+import PrivacyPolicy from '@/views/user/PrivacyPolicy.vue'
+import TermsOfService from '@/views/user/TermsOfService.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -260,6 +262,18 @@ const router = createRouter({
       name: 've-chung-toi',
       component: AboutUs,
       meta: {hideNavbar: true, title: 'Về chúng tôi - Dev Academy'}
+    },
+    {
+      path: '/chinh-sach-bao-mat',
+      name: 'chinh-sach-bao-mat',
+      component: PrivacyPolicy,
+      meta: {hideNavbar: true, title: 'Chính sách bảo mật - Dev Academy'}
+    },
+    {
+      path: '/dieu-khoan-su-dung',
+      name: 'dieu-khoan-su-dung',
+      component: TermsOfService,
+      meta: {hideNavbar: true, title: 'Điều khoản sử dụng - Dev Academy'}
     },
     {
       path: '/khoa-hoc/:idCourse/noi-dung/:idLesson',
