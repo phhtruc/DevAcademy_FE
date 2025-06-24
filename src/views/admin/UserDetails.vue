@@ -20,8 +20,8 @@ const user = ref({
   roles: '',
   status: '',
   avatar: null,
-  createdAt: '',
-  updatedAt: '',
+  createdDate: '',
+  modifiedDate: '',
   lastLogin: null
 })
 
@@ -127,7 +127,7 @@ onMounted(fetchUserDetails)
 
                     <h4 class="mt-3">{{ user.fullName }}</h4>
                     <span class="badge" :class="getUserStatusClass(user.status)">
-                      {{ user.status === 'ACTIVE' ? 'Hoạt động' : 'Không hoạt động' }}
+                      {{ user.status === 'ACTIVE' ? 'Hoạt động' : 'Bị khoá' }}
                     </span>
                     <div class="mt-3">
                       <span class="badge badge-primary p-2">
@@ -166,17 +166,11 @@ onMounted(fetchUserDetails)
                           </tr>
                           <tr>
                             <th>Ngày tạo</th>
-                            <td>{{ formatDate(user.createdAt) }}</td>
+                            <td>{{ formatDate(user.createdDate) }}</td>
                           </tr>
                           <tr>
                             <th>Cập nhật lần cuối</th>
-                            <td>{{ formatDate(user.updatedAt) }}</td>
-                          </tr>
-                          <tr>
-                            <th>Đăng nhập lần cuối</th>
-                            <td>
-                              {{ user.lastLogin ? formatDate(user.lastLogin) : 'Chưa đăng nhập' }}
-                            </td>
+                            <td>{{ formatDate(user.modifiedDate) }}</td>
                           </tr>
                         </tbody>
                       </table>

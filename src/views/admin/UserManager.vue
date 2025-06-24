@@ -7,7 +7,7 @@ import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
-const perPage = ref(7)
+const perPage = ref(8)
 const totalRows = ref(0)
 const isModalVisible = ref(false)
 const itemToDelete = ref()
@@ -143,8 +143,9 @@ onMounted(async () => {
                     @change="handleSearch"
                   >
                     <option value="">Lọc trạng thái</option>
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">In Active</option>
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Bị khoá</option>
+                    <option value="PENDING">Đang chờ</option>
                   </select>
                 </div>
                 <router-link

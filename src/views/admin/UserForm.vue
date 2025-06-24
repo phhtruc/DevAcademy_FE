@@ -71,7 +71,22 @@
                         {{ errors.fullName }}
                       </div>
                     </div>
-                    <div class="form-group col-md-6">
+                    <div v-if="isUpdate" class="form-group col-md-6">
+                      <label for="email">Email</label>
+                      <input
+                        id="email"
+                        type="email"
+                        v-model="user.email"
+                        placeholder="Nhập email"
+                        class="form-control"
+                        :class="{ 'is-invalid': errors.email }"
+                        disabled
+                      />
+                      <span class="form-text text-muted small">
+                        Email không thể thay đổi khi cập nhật người dùng</span
+                      >
+                    </div>
+                    <div v-else class="form-group col-md-6">
                       <label for="email">Email</label>
                       <input
                         id="email"
@@ -92,9 +107,9 @@
                         :class="{ 'is-invalid': errors.roles }"
                       >
                         <option value="">Chọn vai trò</option>
-                        <option value="ADMIN">Admin</option>
-                        <option value="TEACHER">Teacher</option>
-                        <option value="USER">Student</option>
+                        <option value="ADMIN">Quản trị viên</option>
+                        <option value="TEACHER">Giảng viên</option>
+                        <option value="USER">Học viên</option>
                       </select>
                       <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
                     </div>
@@ -107,8 +122,9 @@
                         :class="{ 'is-invalid': errors.roles }"
                       >
                         <option value="">Trạng thái</option>
-                        <option value="ACTIVE">Active</option>
-                        <option value="INACTIVE">In Active</option>
+                        <option value="ACTIVE">Hoạt động</option>
+                        <option value="INACTIVE">Bị khoá</option>
+                        <option value="PENDING">Đang chờ</option>
                       </select>
                       <div class="invalid-feedback" v-if="errors.roles">{{ errors.roles }}</div>
                     </div>
