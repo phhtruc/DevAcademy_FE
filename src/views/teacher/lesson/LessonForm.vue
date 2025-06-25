@@ -380,7 +380,7 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (lesson.value.type !== 'EXERCISES') {
+  if (lesson.value.type == 'LECTURES') {
     switch (videoMethod.value) {
       case 'url':
         if (!lesson.value.videoUrl) {
@@ -408,56 +408,6 @@ const validateForm = () => {
   return isValid
 }
 
-// const updateLessonStatus = (status) => {
-//   if (!toastId) {
-//     toastId = toast(`⏳ Video ${getLessonTypeName(lesson.value.type)} đang chờ xử lý...`, {
-//       type: 'default',
-//       autoClose: false,
-//       position: 'top-right',
-//       closeOnClick: true,
-//       isLoading: true,
-//       pauseOnFocusLoss: false,
-//       style: {
-//         color: '#92400e',
-//         borderRadius: '12px',
-//       },
-//     })
-//     currentStatus = 'PENDING'
-//   }
-
-//   const statusPriority = { PENDING: 1, PROCESSING: 2, DONE: 3 }
-//   if (statusPriority[status] < statusPriority[currentStatus]) {
-//     return
-//   }
-
-//   currentStatus = status
-
-//   if (status === 'PROCESSING') {
-//     toast.update(toastId, {
-//       render: `🔄 Video ${getLessonTypeName(lesson.value.type)} đang được xử lý...`,
-//       type: 'info',
-//       isLoading: true,
-//       autoClose: false,
-//       pauseOnFocusLoss: false,
-//       style: {
-//         color: '#0369a1',
-//       },
-//     })
-//   } else if (status === 'DONE') {
-//     toast.update(toastId, {
-//       render: '✅ Đã hoàn tất!',
-//       type: 'success',
-//       isLoading: false,
-//       autoClose: 3000,
-//       pauseOnFocusLoss: false,
-//       style: {
-//         color: '#047857',
-//       },
-//     })
-//     toastId = null
-//     currentStatus = null
-//   }
-// }
 const updateLessonStatus = (status) => {
   const statusPriority = { PENDING: 1, PROCESSING: 2, DONE: 3 }
 
