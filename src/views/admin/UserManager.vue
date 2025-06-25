@@ -158,8 +158,7 @@ onMounted(async () => {
               </div>
             </div>
             <div class="iq-card-body position-relative">
-              <!-- Loading overlay sẽ hiển thị khi đang tải dữ liệu -->
-              <!-- <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." /> -->
+              <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
               
               <div class="table-responsive" :class="{ 'opacity-50': isLoading }">
                 <Table

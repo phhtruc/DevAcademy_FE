@@ -3,8 +3,9 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
 import { toast } from 'vue3-toastify'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
-const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API;
+const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
 const route = useRoute()
 
@@ -22,7 +23,7 @@ const user = ref({
   avatar: null,
   createdDate: '',
   modifiedDate: '',
-  lastLogin: null
+  lastLogin: null,
 })
 
 // Format date
@@ -34,7 +35,7 @@ const formatDate = (dateString) => {
     month: '2-digit',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 
@@ -82,7 +83,6 @@ const fetchUserDetails = async () => {
   }
 }
 
-// Quay lại trang danh sách
 const goBack = () => {
   router.go(-1)
 }
@@ -104,8 +104,8 @@ onMounted(fetchUserDetails)
               <div></div>
             </div>
             <div class="iq-card-body">
-              <div v-if="isLoading">
-                <Spinner />
+              <div v-if="isLoading" class="loading-container">
+                <LoadingComponent text="Đang tải thông tin người dùng..." />
               </div>
               <div v-else-if="error" class="alert alert-danger">
                 {{ error }}
