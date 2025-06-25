@@ -3,6 +3,7 @@ import { ref, onMounted, reactive } from 'vue'
 import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
@@ -92,12 +93,7 @@ onMounted(async () => {
         </div>
 
         <div class="iq-card-body">
-          <div v-if="isLoading" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Đang tải dữ liệu...</p>
-          </div>
+          <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
 
           <div v-else class="table-responsive">
             <div v-if="data.techStacks.length === 0" class="text-center py-5">

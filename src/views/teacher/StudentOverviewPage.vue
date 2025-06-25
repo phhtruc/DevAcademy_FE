@@ -328,12 +328,6 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const searchName = ref('')
 
-const contactForm = ref({
-  subject: '',
-  message: '',
-  studentId: null,
-})
-
 const stats = ref({
   totalStudents: 0,
   activeStudents: 0,
@@ -347,14 +341,18 @@ const filters = ref({
 
 const expandedStudent = ref(null)
 const studentDetails = reactive({})
-const currentStudent = ref(null)
 const reminderLoadingStates = reactive({})
 
 const fetchData = async () => {
   isLoading.value = true
 
   try {
-    const coursesResponse = await axios.get(`${rootAPI}/courses`)
+    const coursesResponse = await axios.get(`${rootAPI}/courses`, {
+      params: {
+        page: 1,
+        pageSize: 100,
+      },
+    })
     courses.value = coursesResponse.data.data.items
 
     let studentsResponse = null
