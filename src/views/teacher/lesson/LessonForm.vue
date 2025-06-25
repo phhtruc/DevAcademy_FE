@@ -67,7 +67,7 @@
                 </div>
               </div>
             </div>
-            <div class="form-group">
+            <!-- <div class="form-group">
               <label for="videoUrl" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
                 >URL Video (nếu có)</label
               >
@@ -81,19 +81,6 @@
               />
               <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
             </div>
-            <!-- <div class="col-md-12 mt-3">
-              <iframe
-                class=""
-                :class="{ 'd-none': lesson.videoUrl.trim().length < 1 }"
-                width="100%"
-                height="300"
-                title="YouTube video player"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                referrerpolicy="strict-origin-when-cross-origin"
-                allowfullscreen
-              ></iframe>
-            </div> -->
             <div class="form-group">
               <label class="d-block" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
                 >Hoặc tải lên video tại đây</label
@@ -129,6 +116,92 @@
               >
                 Trình duyệt của bạn không hỗ trợ thẻ video.
               </video>
+            </div> -->
+            <div v-if="lesson.type !== 'EXERCISES'" class="form-group">
+              <label>Phương thức thêm video</label>
+              <div class="custom-control custom-radio custom-control-inline">
+                <input
+                  type="radio"
+                  id="videoMethodUrl"
+                  name="videoMethod"
+                  class="custom-control-input"
+                  value="url"
+                  v-model="videoMethod"
+                />
+                <label class="custom-control-label" for="videoMethodUrl">Nhập URL video</label>
+              </div>
+              <div class="custom-control custom-radio custom-control-inline">
+                <input
+                  type="radio"
+                  id="videoMethodFile"
+                  name="videoMethod"
+                  class="custom-control-input"
+                  value="file"
+                  v-model="videoMethod"
+                />
+                <label class="custom-control-label" for="videoMethodFile">Tải file video</label>
+              </div>
+            </div>
+            <!-- URL Video input - hiển thị khi chọn phương thức URL và không phải là bài tập -->
+            <div v-if="lesson.type !== 'EXERCISES' && videoMethod === 'url'" class="form-group">
+              <label for="videoUrl">URL Video</label>
+              <input
+                id="videoUrl"
+                v-model="lesson.videoUrl"
+                placeholder="Nhập URL video (YouTube, Vimeo,...)"
+                class="form-control"
+                :class="{ 'is-invalid': errors.videoUrl }"
+              />
+              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
+              <small class="form-text text-muted">
+                Hỗ trợ URL từ YouTube, Vimeo hoặc các nguồn video trực tuyến khác.
+              </small>
+            </div>
+
+            <!-- File upload - hiển thị khi chọn phương thức tải file và không phải bài tập -->
+            <div v-if="lesson.type !== 'EXERCISES' && videoMethod === 'file'" class="form-group">
+              <label for="videoFile">Tải file video</label>
+              <div class="custom-file">
+                <input
+                  type="file"
+                  class="custom-file-input"
+                  id="videoFile"
+                  accept="video/*"
+                  @change="handleVideoFileUpload"
+                  :class="{ 'is-invalid': errors.videoFile }"
+                />
+                <label class="custom-file-label" for="videoFile">
+                  {{ videoFileName || 'Chọn file video...' }}
+                </label>
+                <div class="invalid-feedback" v-if="errors.videoFile">{{ errors.videoFile }}</div>
+              </div>
+              <small class="form-text text-muted">
+                Hỗ trợ các định dạng: MP4, WebM, Ogg. Kích thước tối đa: 100MB.
+              </small>
+            </div>
+            <!-- Preview video nếu đã có URL (tùy chọn) -->
+            <div
+              v-if="lesson.type !== 'EXERCISES' && lesson.videoUrl && videoMethod === 'url'"
+              class="form-group"
+            >
+              <label>Xem trước video:</label>
+              <div class="embed-responsive embed-responsive-16by9">
+                <iframe
+                  v-if="isYoutubeUrl(lesson.videoUrl)"
+                  class="embed-responsive-item"
+                  :src="getYoutubeEmbedUrl(lesson.videoUrl)"
+                  allowfullscreen
+                ></iframe>
+                <iframe
+                  v-else-if="isVimeoUrl(lesson.videoUrl)"
+                  class="embed-responsive-item"
+                  :src="getVimeoEmbedUrl(lesson.videoUrl)"
+                  allowfullscreen
+                ></iframe>
+                <div v-else class="text-center p-5 bg-light">
+                  <p>URL video đã được lưu và sẽ được hiển thị sau khi lưu bài học.</p>
+                </div>
+              </div>
             </div>
             <div class="form-group">
               <label for="content">Nội dung bài học</label>
@@ -157,16 +230,16 @@
 </template>
       
   <script setup>
-import { onMounted, ref, onBeforeUnmount } from 'vue'
+import { onMounted, ref, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import axios from '@/plugins/axios'
-import vueFilePond from 'vue-filepond'
 import 'filepond/dist/filepond.min.css'
-import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 import webSocketService from '@/services/WebSocketService'
+import { useToastStore } from '@/stores/toastStore'
+const toastStore = useToastStore()
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const router = useRouter()
@@ -176,9 +249,8 @@ const idChapter = route.params.idChapter
 const idLesson = route.params.idLesson
 const isLoading = ref(false)
 const isUpdate = ref(false)
-const filePondFiles = ref([])
+let currentStatus = null
 let toastId = null
-const linkYoutubeEmbed = 'https://www.youtube.com/embed/'
 
 const editorKey = ref(0)
 
@@ -190,7 +262,7 @@ const lesson = ref({
   videoUrl: '',
   isPublic: false,
   contentRefer: '',
-  files: [],
+  videoFile: [],
 })
 
 const errors = ref({
@@ -200,13 +272,78 @@ const errors = ref({
   content: '',
   videoUrl: '',
   contentRefer: '',
-  files: '',
+  videoFile: '',
 })
 
-// function renderVideo(UrlYoutube) {
-//   let idVideoYoutube = UrlYoutube.substring(UrlYoutube.indexOf('=') + 1, UrlYoutube.length)
-//   return linkYoutubeEmbed + idVideoYoutube
-// }
+const videoMethod = ref('url')
+const videoFileName = ref('')
+let videoFile = null
+
+// Xử lý khi người dùng chọn file
+const handleVideoFileUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+
+  videoFileName.value = file.name
+
+  const maxSize = 100 * 1024 * 1024 // 100MB
+  if (file.size > maxSize) {
+    errors.videoFile = 'Kích thước file không được vượt quá 100MB'
+    return
+  }
+
+  const validTypes = ['video/mp4', 'video/webm', 'video/ogg']
+  if (!validTypes.includes(file.type)) {
+    errors.videoFile = 'Định dạng file không được hỗ trợ. Vui lòng sử dụng MP4, WebM hoặc Ogg.'
+    return
+  }
+
+  errors.videoFile = ''
+
+  videoFile = file
+
+  lesson.value.videoUrl = ''
+}
+
+const isYoutubeUrl = (url) => {
+  if (!url) return false
+  return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/.test(url)
+}
+
+const getYoutubeEmbedUrl = (url) => {
+  if (!url) return ''
+  let videoId = ''
+
+  try {
+    if (url.includes('youtube.com/watch')) {
+      const urlParams = new URLSearchParams(new URL(url).search)
+      videoId = urlParams.get('v')
+    } else if (url.includes('youtu.be/')) {
+      videoId = url.split('youtu.be/')[1]?.split('?')[0]
+    }
+  } catch (error) {
+    console.error('Error parsing YouTube URL:', error)
+    return ''
+  }
+
+  return videoId ? `https://www.youtube.com/embed/${videoId}` : ''
+}
+
+const isVimeoUrl = (url) => {
+  if (!url) return false
+  return /^(https?:\/\/)?(www\.)?(vimeo\.com)\/.+$/.test(url)
+}
+
+const getVimeoEmbedUrl = (url) => {
+  if (!url) return ''
+  try {
+    const vimeoId = url.split('vimeo.com/')[1]?.split('?')[0]
+    return vimeoId ? `https://player.vimeo.com/video/${vimeoId}` : ''
+  } catch (error) {
+    console.error('Error parsing Vimeo URL:', error)
+    return ''
+  }
+}
 
 const getLessonTypeName = (type) => {
   switch (type) {
@@ -219,13 +356,6 @@ const getLessonTypeName = (type) => {
     default:
       return ''
   }
-}
-
-// Xử lý upload file bằng FilePond
-const FilePond = vueFilePond(FilePondPluginFileValidateType)
-
-const handleUpload = (fileItems) => {
-  lesson.value.files = fileItems.map((fileItem) => fileItem.file) || []
 }
 
 const validateForm = () => {
@@ -250,21 +380,90 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (
-    lesson.value.type === 'LECTURES' &&
-    !lesson.value.videoUrl.trim() &&
-    !lesson.value.files.length
-  ) {
-    errors.value.videoUrl = 'Vui lòng thêm url video hoặc tải lên video'
-    isValid = false
+  if (lesson.value.type !== 'EXERCISES') {
+    switch (videoMethod.value) {
+      case 'url':
+        if (!lesson.value.videoUrl) {
+          errors.value.videoUrl = 'Vui lòng nhập URL video'
+          return false
+        }
+        break
+
+      case 'file':
+        if (!isUpdate.value && !videoFile) {
+          errors.value.videoFile = 'Vui lòng chọn file video'
+          return false
+        } else if (isUpdate.value && !lesson.value.videoUrl && !videoFile) {
+          errors.value.videoFile = 'Vui lòng chọn file video hoặc nhập URL'
+          return false
+        }
+        break
+
+      default:
+        errors.value.videoUrl = 'Vui lòng chọn phương thức thêm video'
+        return false
+    }
   }
 
   return isValid
 }
 
+// const updateLessonStatus = (status) => {
+//   if (!toastId) {
+//     toastId = toast(`⏳ Video ${getLessonTypeName(lesson.value.type)} đang chờ xử lý...`, {
+//       type: 'default',
+//       autoClose: false,
+//       position: 'top-right',
+//       closeOnClick: true,
+//       isLoading: true,
+//       pauseOnFocusLoss: false,
+//       style: {
+//         color: '#92400e',
+//         borderRadius: '12px',
+//       },
+//     })
+//     currentStatus = 'PENDING'
+//   }
+
+//   const statusPriority = { PENDING: 1, PROCESSING: 2, DONE: 3 }
+//   if (statusPriority[status] < statusPriority[currentStatus]) {
+//     return
+//   }
+
+//   currentStatus = status
+
+//   if (status === 'PROCESSING') {
+//     toast.update(toastId, {
+//       render: `🔄 Video ${getLessonTypeName(lesson.value.type)} đang được xử lý...`,
+//       type: 'info',
+//       isLoading: true,
+//       autoClose: false,
+//       pauseOnFocusLoss: false,
+//       style: {
+//         color: '#0369a1',
+//       },
+//     })
+//   } else if (status === 'DONE') {
+//     toast.update(toastId, {
+//       render: '✅ Đã hoàn tất!',
+//       type: 'success',
+//       isLoading: false,
+//       autoClose: 3000,
+//       pauseOnFocusLoss: false,
+//       style: {
+//         color: '#047857',
+//       },
+//     })
+//     toastId = null
+//     currentStatus = null
+//   }
+// }
 const updateLessonStatus = (status) => {
-  if (!toastId) {
-    toastId = toast(`⏳ Video ${getLessonTypeName(lesson.value.type)} đang chờ xử lý...`, {
+  const statusPriority = { PENDING: 1, PROCESSING: 2, DONE: 3 }
+
+  // Nếu chưa có toast, tạo mới
+  if (!toastStore.toastId) {
+    const id = toast(`⏳ Video ${getLessonTypeName(lesson.value.type)} đang chờ xử lý...`, {
       type: 'default',
       autoClose: false,
       position: 'top-right',
@@ -276,10 +475,22 @@ const updateLessonStatus = (status) => {
         borderRadius: '12px',
       },
     })
+
+    toastStore.setToast(id, 'PENDING')
   }
 
+  // Tránh cập nhật lùi trạng thái
+  if (
+    toastStore.currentStatus &&
+    statusPriority[status] < statusPriority[toastStore.currentStatus]
+  ) {
+    return
+  }
+
+  toastStore.currentStatus = status
+
   if (status === 'PROCESSING') {
-    toast.update(toastId, {
+    toast.update(toastStore.toastId, {
       render: `🔄 Video ${getLessonTypeName(lesson.value.type)} đang được xử lý...`,
       type: 'info',
       isLoading: true,
@@ -290,7 +501,7 @@ const updateLessonStatus = (status) => {
       },
     })
   } else if (status === 'DONE') {
-    toast.update(toastId, {
+    toast.update(toastStore.toastId, {
       render: '✅ Đã hoàn tất!',
       type: 'success',
       isLoading: false,
@@ -300,7 +511,7 @@ const updateLessonStatus = (status) => {
         color: '#047857',
       },
     })
-    toastId = null
+    toastStore.clearToast()
   }
 }
 
@@ -323,12 +534,12 @@ const addLesson = async () => {
     formData.append('isPublic', lesson.value.isPublic)
 
     if (lesson.value.type != 'EXERCISES') {
-      if (lesson.value.files.length > 0) {
-        lesson.value.files.forEach((file) => {
-          formData.append('files', file)
-        })
+      if (videoMethod.value === 'url') {
+        formData.append('videoUrl', lesson.value.videoUrl || '')
+      } else if (videoMethod.value === 'file' && videoFile) {
+        formData.append('files', videoFile)
+        formData.append('videoUrl', '') // Xóa URL nếu có
       }
-      formData.append('videoUrl', lesson.value.videoUrl || '')
     }
 
     if (isUpdate.value) {
@@ -354,7 +565,10 @@ const addLesson = async () => {
       Object.keys(lesson.value).forEach((key) => {
         lesson.value[key] = ''
       })
-      filePondFiles.value = []
+
+      videoMethod.value = 'url'
+      videoFileName.value = ''
+      videoFile = null
       lesson.value.isPublic = false
       editorKey.value++
 
@@ -404,6 +618,30 @@ const goBack = () => {
   router.go(-1)
 }
 
+watch(videoMethod, (newMethod) => {
+  errors.videoUrl = ''
+  errors.videoFile = ''
+
+  if (newMethod === 'url') {
+    videoFileName.value = ''
+    videoFile = null
+  } else if (newMethod === 'file') {
+    lesson.value.videoUrl = ''
+  }
+})
+
+// Watch thay đổi của lesson type
+watch(
+  () => lesson.value.type,
+  (newType) => {
+    if (newType === 'EXERCISES') {
+      lesson.value.videoUrl = ''
+      videoFileName.value = ''
+      videoFile = null
+    }
+  }
+)
+
 onMounted(async () => {
   if (idLesson) {
     isUpdate.value = true
@@ -414,6 +652,10 @@ onMounted(async () => {
     updateLessonStatus(message.status)
     console.log('Received message:', message)
   })
+
+  if (isUpdate.value && lesson.value.videoUrl) {
+    videoMethod.value = 'url'
+  }
 })
 onBeforeUnmount(() => {
   webSocketService.unsubscribe('/topic/progress')
