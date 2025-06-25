@@ -2,6 +2,7 @@
 import { ref, onMounted, reactive } from 'vue'
 import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const currentPage = ref(1)
@@ -11,6 +12,7 @@ const isModalVisible = ref(false)
 const itemToDelete = ref()
 const searchName = ref('')
 const sortOrder = ref('')
+const isLoading = ref(true)
 
 const data = reactive({
   courses: [],
@@ -27,6 +29,7 @@ const actions = {
 }
 
 const fetchCourses = async () => {
+  isLoading.value = true
   try {
     let response = null
 
@@ -53,6 +56,8 @@ const fetchCourses = async () => {
       response.data.data.totalPage > 0 ? response.data.data.totalPage * perPage.value : 1
   } catch (error) {
     console.error('Error fetching courses', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -67,6 +72,7 @@ const deleteCourse = (course) => {
 }
 
 const handleDelete = async () => {
+  isLoading.value = true
   try {
     await axios.delete(`${rootAPI}/courses/${itemToDelete.value.id}`)
     await fetchCourses()
@@ -83,8 +89,9 @@ const handleDelete = async () => {
       } else {
         toast.error('Có lỗi xảy ra khi xóa khóa học')
       }
-      
     }
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -149,7 +156,11 @@ onMounted(async () => {
               </div>
             </div>
             <div class="iq-card-body">
-              <div class="table-responsive">
+              <div v-if="isLoading" class="text-center my-5">
+                <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
+              </div>
+
+              <div v-else class="table-responsive">
                 <Table
                   :header="header"
                   :data="data.courses"

@@ -89,8 +89,8 @@ const handleDelete = async () => {
   } catch (error) {
     console.error('Error:', error)
     toast.error('Có lỗi xảy ra')
-  }finally {
-    isLoading.value = false 
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -157,10 +157,20 @@ onMounted(async () => {
                 </router-link>
               </div>
             </div>
-            <div class="iq-card-body position-relative">
-              <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
-              
-              <div class="table-responsive" :class="{ 'opacity-50': isLoading }">
+            <div class="iq-card-body">
+              <div v-if="isLoading" class="text-center my-5">
+                <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
+              </div>
+              <div v-if="data.users.length === 0" class="text-center py-5">
+                <i class="ri-file-list-3-line text-muted" style="font-size: 3rem"></i>
+                <p class="mt-2">Chưa có người dùng nào nào</p>
+                <router-link to="/teacher/users/add" class="btn btn-primary mt-2">
+                  <i class="ri-add-fill"></i>
+                  <span class="pl-1">Thêm người dùng mới</span>
+                </router-link>
+              </div>
+
+              <div v-else class="table-responsive" :class="{ 'opacity-50': isLoading }">
                 <Table
                   :header="header"
                   :data="data.users"

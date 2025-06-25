@@ -4,6 +4,7 @@ import axios from '@/plugins/axios'
 import Table from '@/components/Table.vue'
 import { toast } from 'vue3-toastify'
 import { useRoute } from 'vue-router'
+import LoadingComponent from '@/components/LoadingComponent.vue'
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
 const route = useRoute()
@@ -168,11 +169,9 @@ onMounted(async () => {
         </div>
         <div class="iq-card-body">
           <div v-if="isLoading" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">Đang tải dữ liệu...</p>
+            <LoadingComponent v-if="isLoading" text="Đang tải dữ liệu..." />
           </div>
+          
           <div v-else class="table-responsive">
             <div v-if="data.lessons.length === 0" class="text-center py-5">
               <i class="ri-file-list-3-line text-muted" style="font-size: 3rem"></i>
