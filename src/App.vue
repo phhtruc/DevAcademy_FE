@@ -5,7 +5,6 @@ import { computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Navbar from '@/components/menu/Navbar.vue'
 import { useAuthStore } from '@/stores/auth'
-import { ToastContainer } from 'vue-toastification'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -42,7 +41,6 @@ onMounted(() => {
     <Navbar v-if="!isAuthPage && !isAdminPage" />
 
     <router-view />
-    <ToastContainer />
   </div>
 </template>
 
