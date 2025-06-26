@@ -67,56 +67,7 @@
                 </div>
               </div>
             </div>
-            <!-- <div class="form-group">
-              <label for="videoUrl" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
-                >URL Video (nếu có)</label
-              >
-              <input
-                id="videoUrl"
-                v-model="lesson.videoUrl"
-                placeholder="Nhập URL video"
-                class="form-control"
-                :class="{ 'is-invalid': errors.videoUrl }"
-                :disabled="lesson.type == 'EXERCISES'"
-              />
-              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
-            </div>
-            <div class="form-group">
-              <label class="d-block" :class="{ 'disabled-label': lesson.type == 'EXERCISES' }"
-                >Hoặc tải lên video tại đây</label
-              >
-              <file-pond
-                name="attachments"
-                label-idle="Kéo thả hoặc chọn tệp đính kèm"
-                allow-multiple="true"
-                accepted-file-types="
-                  application/pdf,
-                  application/msword,
-                  application/vnd.openxmlformats-officedocument.wordprocessingml.document,
-                  application/zip,
-                  video/mp4,
-                  video/x-msvideo,
-                  video/x-matroska,
-                  video/quicktime"
-                :files="filePondFiles"
-                :class="{ 'disabled-field': lesson.type == 'EXERCISES' }"
-                @updatefiles="handleUpload"
-                :disabled="lesson.type == 'EXERCISES'"
-              />
-              <div class="invalid-feedback" v-if="errors.videoUrl">{{ errors.videoUrl }}</div>
-            </div>
-            <div class="form-group">
-              <video
-                v-if="isUpdate"
-                :src="decodeURIComponent(lesson.videoUrl)"
-                controls
-                width="70%"
-                height="300px"
-                class="video-player"
-              >
-                Trình duyệt của bạn không hỗ trợ thẻ video.
-              </video>
-            </div> -->
+          
             <div v-if="lesson.type !== 'EXERCISES'" class="form-group">
               <label>Phương thức thêm video</label>
               <div class="custom-control custom-radio custom-control-inline">
@@ -249,8 +200,6 @@ const idChapter = route.params.idChapter
 const idLesson = route.params.idLesson
 const isLoading = ref(false)
 const isUpdate = ref(false)
-let currentStatus = null
-let toastId = null
 
 const editorKey = ref(0)
 
@@ -429,7 +378,6 @@ const updateLessonStatus = (status) => {
     toastStore.setToast(id, 'PENDING')
   }
 
-  // Tránh cập nhật lùi trạng thái
   if (
     toastStore.currentStatus &&
     statusPriority[status] < statusPriority[toastStore.currentStatus]
@@ -488,7 +436,7 @@ const addLesson = async () => {
         formData.append('videoUrl', lesson.value.videoUrl || '')
       } else if (videoMethod.value === 'file' && videoFile) {
         formData.append('files', videoFile)
-        formData.append('videoUrl', '') // Xóa URL nếu có
+        formData.append('videoUrl', '')
       }
     }
 
