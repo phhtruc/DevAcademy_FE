@@ -67,7 +67,7 @@
                 </div>
               </div>
             </div>
-          
+
             <div v-if="lesson.type !== 'EXERCISES'" class="form-group">
               <label>Phương thức thêm video</label>
               <div class="custom-control custom-radio custom-control-inline">
@@ -130,27 +130,31 @@
                 Hỗ trợ các định dạng: MP4, WebM, Ogg. Kích thước tối đa: 100MB.
               </small>
             </div>
-            <!-- Preview video nếu đã có URL (tùy chọn) -->
+
             <div
               v-if="lesson.type !== 'EXERCISES' && lesson.videoUrl && videoMethod === 'url'"
               class="form-group"
             >
               <label>Xem trước video:</label>
-              <div class="embed-responsive embed-responsive-16by9">
-                <iframe
-                  v-if="isYoutubeUrl(lesson.videoUrl)"
-                  class="embed-responsive-item"
-                  :src="getYoutubeEmbedUrl(lesson.videoUrl)"
-                  allowfullscreen
-                ></iframe>
-                <iframe
-                  v-else-if="isVimeoUrl(lesson.videoUrl)"
-                  class="embed-responsive-item"
-                  :src="getVimeoEmbedUrl(lesson.videoUrl)"
-                  allowfullscreen
-                ></iframe>
-                <div v-else class="text-center p-5 bg-light">
-                  <p>URL video đã được lưu và sẽ được hiển thị sau khi lưu bài học.</p>
+              <div class="row">
+                <div class="col-md-6">
+                  <div class="embed-responsive embed-responsive-16by9">
+                    <iframe
+                      v-if="isYoutubeUrl(lesson.videoUrl)"
+                      class="embed-responsive-item"
+                      :src="getYoutubeEmbedUrl(lesson.videoUrl)"
+                      allowfullscreen
+                    ></iframe>
+                    <iframe
+                      v-else-if="isVimeoUrl(lesson.videoUrl)"
+                      class="embed-responsive-item"
+                      :src="getVimeoEmbedUrl(lesson.videoUrl)"
+                      allowfullscreen
+                    ></iframe>
+                    <div v-else class="text-center p-5 bg-light">
+                      <p>URL video đã được lưu và sẽ được hiển thị sau khi lưu bài học.</p>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -324,7 +328,7 @@ const validateForm = () => {
     isValid = false
   }
 
-  if (!lesson.value.content.trim()) {
+  if (!lesson.value.content.trim() && lesson.value.type !== 'LECTURES') {
     errors.value.content = 'Nội dung bài học không được để trống'
     isValid = false
   }
