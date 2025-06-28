@@ -267,14 +267,31 @@ const formatDate = (dateString) => {
 }
 
 const updateLessonProgress = async () => {
-  if (isLessonCompleted.value ) return
+  if (isLessonCompleted.value) return
 
   try {
-    await axios.post(`${rootAPI}/lessons/${lessonId}/progress`)
+    await axios.post(`${rootAPI}/lessons/${currentLessonId.value}/progress`)
     isLessonCompleted.value = true
   } catch (error) {
     console.error('Lỗi khi cập nhật tiến độ bài học:', error)
   }
+}
+
+const getYoutubeEmbedUrl = (url) => {
+  if (!url) return ''
+
+  const regex = /(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/
+  const match = url.match(regex)
+  const videoId = match && match[1] ? match[1] : null
+
+  if (!videoId) return ''
+
+  return `https://www.youtube.com/embed/${videoId}`
+}
+
+const isYoutubeUrl = (url) => {
+  if (!url) return false
+  return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/.test(url)
 }
 
 const goBack = () => {
@@ -327,7 +344,6 @@ const handleVideoTimeUpdate = (event) => {
 
     videoProgress.value = currentProgress
 
-    // Nếu đã xem hơn 10% video, đánh dấu là đã học
     if (currentProgress >= 10) {
       updateLessonProgress()
     }
@@ -339,11 +355,11 @@ onMounted(async () => {
   await fetchChapters()
   // sự kiện cuộn trang cho bài đọc
   if (lesson.value && lesson.value.type === 'READINGS') {
+    window.removeEventListener('scroll', handleScroll)
     window.addEventListener('scroll', handleScroll)
   }
 })
 
-// Dọn dẹp event listeners khi component unmounted
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
 })
@@ -489,22 +505,26 @@ onUnmounted(() => {
             </div>
 
             <!-- Type: LECTURES -->
-            <!-- <div v-else-if="lesson.type === 'LECTURES'">
-              <div class="video-container mb-4">
-                <iframe
-                  :src="lesson.videoUrl"
-                  frameborder="0"
-                  allowfullscreen
-                  class="lesson-video"
-                ></iframe>
-              </div>
-              <div v-html="lesson.content"></div>
-            </div> -->
             <div
               v-if="lesson && lesson.type === 'LECTURES' && lesson.videoUrl"
               class="video-container"
             >
-              <div class="video-container mb-4">
+              <!-- YouTube Video -->
+              <div v-if="isYoutubeUrl(lesson.videoUrl)" class="youtube-wrapper">
+                <div class="youtube-container">
+                  <iframe
+                    class="youtube-iframe"
+                    :src="getYoutubeEmbedUrl(lesson.videoUrl)"
+                    frameborder="0"
+                    title="YouTube video player"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen
+                  ></iframe>
+                </div>
+              </div>
+
+              <!-- Regular Video -->
+              <div v-else>
                 <video
                   :src="lesson.videoUrl"
                   controls
@@ -512,14 +532,6 @@ onUnmounted(() => {
                   @timeupdate="handleVideoTimeUpdate"
                 ></video>
               </div>
-              <!-- tuỳ chọn -->
-              <div v-if="!isLessonCompleted" class="video-progress-indicator">
-                {{ videoProgress.toFixed(0) }}% đã xem
-                <div v-if="videoProgress >= 10" class="text-success">
-                  <i class="fas fa-check-circle"></i> Đã đánh dấu hoàn thành
-                </div>
-              </div>
-              <div v-html="lesson.content"></div>
             </div>
 
             <!-- Type: EXERCISES -->
@@ -1017,5 +1029,49 @@ onUnmounted(() => {
   to {
     transform: translateY(10px);
   }
+}
+
+.youtube-embed-container {
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 Aspect Ratio */
+  margin-bottom: 15px;
+}
+
+.youtube-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+}
+
+.youtube-click-detector {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0; /* Trong suốt */
+  cursor: pointer;
+  z-index: 2;
+}
+
+.lesson-video {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.video-progress-indicator {
+  margin: 10px 0 20px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  font-size: 14px;
 }
 </style>

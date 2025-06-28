@@ -552,7 +552,7 @@ onMounted(async () => {
 
   webSocketService.subscribe('/topic/progress', (message) => {
     updateLessonStatus(message.status)
-    console.log('Received message:', message)
+    // console.log('Received message:', message)
   })
 
   if (isUpdate.value && lesson.value.videoUrl) {
