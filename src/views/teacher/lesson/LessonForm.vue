@@ -160,12 +160,14 @@
             </div>
             <div class="form-group">
               <label for="content">Nội dung bài học</label>
-              <ToastEditorComponent v-model="lesson.content" :key="editorKey" />
+              <!-- <ToastEditorComponent v-model="lesson.content" :key="editorKey" /> -->
+              <CKEditorComponent v-model="lesson.content" />
               <div class="invalid-feedback" v-if="errors.content">{{ errors.content }}</div>
             </div>
             <div class="form-group">
               <label for="contentRefer">Tài liệu tham khảo</label>
-              <ToastEditorComponent v-model="lesson.contentRefer" :key="editorKey" />
+              <!-- <ToastEditorComponent v-model="lesson.contentRefer" :key="editorKey" /> -->
+              <CKEditorComponent v-model="lesson.contentRefer" />
               <div class="invalid-feedback" v-if="errors.contentRefer">
                 {{ errors.contentRefer }}
               </div>
@@ -194,6 +196,8 @@ import { toast } from 'vue3-toastify'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 import webSocketService from '@/services/WebSocketService'
 import { useToastStore } from '@/stores/toastStore'
+import Editor from 'primevue/editor'
+import CKEditorComponent from '@/components/CKEditorComponent.vue'
 const toastStore = useToastStore()
 
 const rootAPI = import.meta.env.VITE_APP_ROOT_API || window.runtime_config.VITE_APP_ROOT_API
@@ -494,7 +498,6 @@ const fetchLesson = async (id) => {
   try {
     const response = await axios.get(`${rootAPI}/lessons/${id}`)
     const lessonData = response.data.data
-
     lesson.value.name = lessonData.name
     lesson.value.type = lessonData.type
     lesson.value.lessonOrder = lessonData.lessonOrder
