@@ -182,10 +182,10 @@ const submitExercise = async () => {
       },
     })
 
-    // submissionResult.value = response.data.data
+    //submissionResult.value = response.data.data
     githubLink.value = ''
     selectedFile.value = null
-    fileInput.value.value = ''
+    fileInput.value = ''
 
     fetchSubmissionHistory(currentLessonId.value)
   } catch (error) {
