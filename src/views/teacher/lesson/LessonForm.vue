@@ -193,10 +193,8 @@ import axios from '@/plugins/axios'
 import 'filepond/dist/filepond.min.css'
 import 'vue3-toastify/dist/index.css'
 import { toast } from 'vue3-toastify'
-import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 import webSocketService from '@/services/WebSocketService'
 import { useToastStore } from '@/stores/toastStore'
-import Editor from 'primevue/editor'
 import CKEditorComponent from '@/components/CKEditorComponent.vue'
 const toastStore = useToastStore()
 
