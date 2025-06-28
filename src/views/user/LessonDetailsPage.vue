@@ -31,6 +31,7 @@ const showSubmissionHistory = ref(false)
 const isLessonCompleted = ref(false)
 const hasScrolledToBottom = ref(false)
 const videoProgress = ref(0)
+const fileInput = ref(null)
 const hasPassedExercise = computed(() => {
   return submissionResult.value && submissionResult.value.includes('PASS')
 })
@@ -55,6 +56,7 @@ const toggleSidebar = () => {
 const fetchLessonDetails = async (id) => {
   try {
     hasScrolledToBottom.value = false
+    showSubmissionHistory.value = false
 
     const response = await axios.get(`${rootAPI}/lessons/${id}`)
     lesson.value = response.data.data
@@ -183,6 +185,7 @@ const submitExercise = async () => {
     // submissionResult.value = response.data.data
     githubLink.value = ''
     selectedFile.value = null
+    fileInput.value.value = ''
 
     fetchSubmissionHistory(currentLessonId.value)
   } catch (error) {
@@ -613,6 +616,7 @@ onUnmounted(() => {
                       accept=".zip"
                       @change="handleFileChange"
                       :disabled="hasPassedExercise || isSubmitting"
+                      ref="fileInput"
                     />
                     <button
                       class="btn btn-primary"
