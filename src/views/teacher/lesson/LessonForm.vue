@@ -196,7 +196,6 @@ import { toast } from 'vue3-toastify'
 import ToastEditorComponent from '@/components/ToastEditorComponent.vue'
 import webSocketService from '@/services/WebSocketService'
 import { useToastStore } from '@/stores/toastStore'
-import Editor from 'primevue/editor'
 import CKEditorComponent from '@/components/CKEditorComponent.vue'
 const toastStore = useToastStore()
 
