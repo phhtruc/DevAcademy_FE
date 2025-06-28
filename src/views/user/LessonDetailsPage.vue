@@ -172,6 +172,7 @@ const submitExercise = async () => {
     formData.append('idExercise', lesson.value.id)
     formData.append('exerciseTitle', lesson.value.name)
     formData.append('idCourse', idCourse)
+    formData.append('content', lesson.value.content)
 
     const response = await axios.post(`${rootAPI}/submissions`, formData, {
       headers: {
