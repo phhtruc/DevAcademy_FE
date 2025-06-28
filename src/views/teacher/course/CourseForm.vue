@@ -376,7 +376,12 @@ const removeTag = (tagToRemove) => {
 
 const fetchCategory = async () => {
   try {
-    const response = await axios.get(`${rootAPI}/categories`)
+    const response = await axios.get(`${rootAPI}/categories`, {
+      params: {
+        page: 1,
+        pageSize: 100,
+      },
+    })
     categoris.value = response.data.data.items
   } catch (error) {
     console.error('Error fetching', error)
@@ -384,7 +389,12 @@ const fetchCategory = async () => {
 }
 
 const fetchTechStack = async () => {
-  const response = await axios.get(`${rootAPI}/tech-stacks`)
+  const response = await axios.get(`${rootAPI}/tech-stacks`, {
+    params: {
+      page: 1,
+      pageSize: 100,
+    },
+  })
   techStack.data = response.data.data.items
 }
 

@@ -52,7 +52,12 @@ const fetchCourses = async () => {
 
 const fetchCategory = async () => {
   try {
-    const response = await axios.get(`${rootAPI}/categories`)
+    const response = await axios.get(`${rootAPI}/categories`, {
+      params: {
+        page: 1,
+        pageSize: 100,
+      },
+    })
     categories.value = response.data.data.items
   } catch (error) {
     console.error('Error fetching', error)
