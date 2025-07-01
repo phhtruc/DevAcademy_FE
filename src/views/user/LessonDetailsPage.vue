@@ -185,7 +185,9 @@ const submitExercise = async () => {
     //submissionResult.value = response.data.data
     githubLink.value = ''
     selectedFile.value = null
-    fileInput.value = ''
+    if (fileInput.value) {
+      fileInput.value.value = ''
+    }
 
     fetchSubmissionHistory(currentLessonId.value)
   } catch (error) {
@@ -329,8 +331,6 @@ const handleScroll = () => {
     const scrollPosition = window.scrollY
     const windowHeight = window.innerHeight
     const documentHeight = document.documentElement.scrollHeight
-    console.log(scrollPosition + windowHeight)
-    console.log(documentHeight)
 
     // Kiểm tra đã cuộn xuống cuối trang chưa (để lại margin 50px)
     if (scrollPosition + windowHeight >= documentHeight - 50) {
